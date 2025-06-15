@@ -322,25 +322,9 @@
     );
   }
   
-  /* Icon Background Gradients - Updated for white with subtle blue */
+  /* Icon Background Classes - Keep only the logo gradient */
   .icon-bg-primary {
     background: linear-gradient(135deg, var(--color-royal-blue), var(--color-purple));
-  }
-  
-  .icon-bg-white {
-    background: linear-gradient(135deg, #ffffff, #e8f2ff);
-  }
-  
-  .icon-bg-accent {
-    background: linear-gradient(135deg, var(--color-purple), var(--color-coral));
-  }
-  
-  .icon-bg-warm {
-    background: linear-gradient(135deg, var(--color-coral), var(--color-pink));
-  }
-  
-  .icon-bg-cool {
-    background: linear-gradient(135deg, var(--color-navy), var(--color-royal-blue));
   }
   
   /* Status Colors */

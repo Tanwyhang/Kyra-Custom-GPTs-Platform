@@ -69,7 +69,7 @@ export function HomePage() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center">
             <div className="scroll-reveal inline-flex items-center px-6 py-3 rounded-full glass-subtle text-white/90 text-sm font-medium mb-8 hover-glow">
-              <Brain className="w-5 h-5 mr-2 icon-bg-primary rounded-full p-1" />
+              <Brain className="w-5 h-5 mr-2 text-white" />
               Decentralized AI Model Platform
             </div>
             
@@ -109,22 +109,22 @@ export function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="scroll-reveal text-center glass-card rounded-3xl p-10 grain-texture hover-glow">
-              <div className="icon-bg-white w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 glow-effect">
-                <TrendingUp className="w-10 h-10 text-blue-600" />
+              <div className="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                <TrendingUp className="w-10 h-10 text-white" />
               </div>
               <div className="text-4xl font-bold gradient-text mb-3">{stats.totalModels.toLocaleString()}</div>
               <div className="text-white/70 text-lg">AI Models</div>
             </div>
             <div className="scroll-reveal text-center glass-card rounded-3xl p-10 grain-texture hover-glow">
-              <div className="icon-bg-white w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 glow-effect">
-                <Users className="w-10 h-10 text-blue-600" />
+              <div className="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                <Users className="w-10 h-10 text-white" />
               </div>
               <div className="text-4xl font-bold gradient-text mb-3">{stats.totalUsers.toLocaleString()}</div>
               <div className="text-white/70 text-lg">Community Members</div>
             </div>
             <div className="scroll-reveal text-center glass-card rounded-3xl p-10 grain-texture hover-glow">
-              <div className="icon-bg-white w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 glow-effect">
-                <Star className="w-10 h-10 text-blue-600" />
+              <div className="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                <Star className="w-10 h-10 text-white" />
               </div>
               <div className="text-4xl font-bold gradient-text mb-3">{stats.totalDownloads.toLocaleString()}</div>
               <div className="text-white/70 text-lg">Total Downloads</div>
@@ -147,8 +147,8 @@ export function HomePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="scroll-reveal-left glass-card rounded-3xl p-10 grain-texture hover:scale-105 transition-all duration-300 hover-glow">
-              <div className="icon-bg-white w-16 h-16 rounded-2xl flex items-center justify-center mb-8 glow-effect">
-                <Shield className="w-8 h-8 text-blue-600" />
+              <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-8">
+                <Shield className="w-8 h-8 text-white" />
               </div>
               <h3 className="text-2xl font-bold gradient-text mb-6">Verified Quality</h3>
               <p className="text-white/80 text-lg leading-relaxed">
@@ -157,8 +157,8 @@ export function HomePage() {
             </div>
 
             <div className="scroll-reveal glass-card rounded-3xl p-10 grain-texture hover:scale-105 transition-all duration-300 hover-glow">
-              <div className="icon-bg-white w-16 h-16 rounded-2xl flex items-center justify-center mb-8 glow-effect">
-                <Search className="w-8 h-8 text-blue-600" />
+              <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-8">
+                <Search className="w-8 h-8 text-white" />
               </div>
               <h3 className="text-2xl font-bold gradient-text mb-6">Easy Discovery</h3>
               <p className="text-white/80 text-lg leading-relaxed">
@@ -167,8 +167,8 @@ export function HomePage() {
             </div>
 
             <div className="scroll-reveal-right glass-card rounded-3xl p-10 grain-texture hover:scale-105 transition-all duration-300 hover-glow">
-              <div className="icon-bg-white w-16 h-16 rounded-2xl flex items-center justify-center mb-8 glow-effect">
-                <Users className="w-8 h-8 text-blue-600" />
+              <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-8">
+                <Users className="w-8 h-8 text-white" />
               </div>
               <h3 className="text-2xl font-bold gradient-text mb-6">Open Community</h3>
               <p className="text-white/80 text-lg leading-relaxed">
