@@ -108,21 +108,21 @@ export function HomePage() {
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="scroll-reveal text-center glass-card rounded-3xl p-10 grain-texture hover-glow">
+            <div className="scroll-reveal text-center glass-card rounded-3xl p-10 grain-texture subtle-hover">
               <div className="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6">
                 <TrendingUp className="w-10 h-10 text-white" />
               </div>
               <div className="text-4xl font-bold gradient-text mb-3">{stats.totalModels.toLocaleString()}</div>
               <div className="text-white/70 text-lg">AI Models</div>
             </div>
-            <div className="scroll-reveal text-center glass-card rounded-3xl p-10 grain-texture hover-glow">
+            <div className="scroll-reveal text-center glass-card rounded-3xl p-10 grain-texture subtle-hover">
               <div className="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6">
                 <Users className="w-10 h-10 text-white" />
               </div>
               <div className="text-4xl font-bold gradient-text mb-3">{stats.totalUsers.toLocaleString()}</div>
               <div className="text-white/70 text-lg">Community Members</div>
             </div>
-            <div className="scroll-reveal text-center glass-card rounded-3xl p-10 grain-texture hover-glow">
+            <div className="scroll-reveal text-center glass-card rounded-3xl p-10 grain-texture subtle-hover">
               <div className="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6">
                 <Star className="w-10 h-10 text-white" />
               </div>
@@ -145,35 +145,37 @@ export function HomePage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="scroll-reveal-left glass-card rounded-3xl p-10 grain-texture hover:scale-105 transition-all duration-300 hover-glow">
-              <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-8">
-                <Shield className="w-8 h-8 text-white" />
+          <div className="max-w-5xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 justify-items-center">
+              <div className="scroll-reveal-left glass-card rounded-3xl p-10 grain-texture hover:scale-105 transition-all duration-300 subtle-hover w-full max-w-sm">
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-8 mx-auto">
+                  <Shield className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold gradient-text mb-6 text-center">Verified Quality</h3>
+                <p className="text-white/80 text-lg leading-relaxed text-center">
+                  Community-driven verification system ensures high-quality models with transparent performance metrics.
+                </p>
               </div>
-              <h3 className="text-2xl font-bold gradient-text mb-6">Verified Quality</h3>
-              <p className="text-white/80 text-lg leading-relaxed">
-                Community-driven verification system ensures high-quality models with transparent performance metrics.
-              </p>
-            </div>
 
-            <div className="scroll-reveal glass-card rounded-3xl p-10 grain-texture hover:scale-105 transition-all duration-300 hover-glow">
-              <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-8">
-                <Search className="w-8 h-8 text-white" />
+              <div className="scroll-reveal glass-card rounded-3xl p-10 grain-texture hover:scale-105 transition-all duration-300 subtle-hover w-full max-w-sm">
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-8 mx-auto">
+                  <Search className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold gradient-text mb-6 text-center">Easy Discovery</h3>
+                <p className="text-white/80 text-lg leading-relaxed text-center">
+                  Advanced search and filtering capabilities help you find the perfect model for your specific needs.
+                </p>
               </div>
-              <h3 className="text-2xl font-bold gradient-text mb-6">Easy Discovery</h3>
-              <p className="text-white/80 text-lg leading-relaxed">
-                Advanced search and filtering capabilities help you find the perfect model for your specific needs.
-              </p>
-            </div>
 
-            <div className="scroll-reveal-right glass-card rounded-3xl p-10 grain-texture hover:scale-105 transition-all duration-300 hover-glow">
-              <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-8">
-                <Users className="w-8 h-8 text-white" />
+              <div className="scroll-reveal-right glass-card rounded-3xl p-10 grain-texture hover:scale-105 transition-all duration-300 subtle-hover w-full max-w-sm">
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-8 mx-auto">
+                  <Users className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold gradient-text mb-6 text-center">Open Community</h3>
+                <p className="text-white/80 text-lg leading-relaxed text-center">
+                  Join a global community of AI researchers, developers, and enthusiasts sharing knowledge and models.
+                </p>
               </div>
-              <h3 className="text-2xl font-bold gradient-text mb-6">Open Community</h3>
-              <p className="text-white/80 text-lg leading-relaxed">
-                Join a global community of AI researchers, developers, and enthusiasts sharing knowledge and models.
-              </p>
             </div>
           </div>
         </div>

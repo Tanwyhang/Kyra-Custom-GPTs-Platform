@@ -352,6 +352,16 @@
   .scroll-reveal:nth-child(5) { transition-delay: 0.5s; }
   .scroll-reveal:nth-child(6) { transition-delay: 0.6s; }
   
+  /* Subtle Hover Effects - Replace glow with clean subtle effects */
+  .subtle-hover {
+    transition: all 0.3s ease;
+  }
+  
+  .subtle-hover:hover {
+    box-shadow: 0 8px 25px rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+  
   /* Enhanced Hover Effects */
   .hover-glow {
     transition: all 0.3s ease;
