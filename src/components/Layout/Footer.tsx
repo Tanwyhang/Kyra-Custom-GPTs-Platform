@@ -3,7 +3,7 @@ import { Brain, Github, Twitter, Mail } from 'lucide-react';
 
 export function Footer() {
   return (
-    <footer className="glass grain-texture border-t border-white/20 mt-20">
+    <footer className="glass-dark grain-texture border-t border-white/10 mt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
@@ -59,7 +59,7 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-white/20 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
+        <div className="border-t border-white/10 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-white/60 text-sm">
             © 2025 AI Model Hub. All rights reserved.
           </p>

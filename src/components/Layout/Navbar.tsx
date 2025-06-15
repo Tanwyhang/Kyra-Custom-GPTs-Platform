@@ -16,11 +16,11 @@ export function Navbar() {
   };
 
   return (
-    <nav className="glass grain-texture sticky top-0 z-50 border-b border-white/20">
+    <nav className="glass-dark grain-texture sticky top-0 z-50 border-b border-white/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2 group floating-element">
+          <Link to="/" className="flex items-center space-x-2 group">
             <div className="bg-gradient-to-r from-purple-500 to-blue-500 p-2 rounded-xl group-hover:shadow-lg transition-all duration-300 glow-effect">
               <Brain className="w-6 h-6 text-white" />
             </div>
@@ -112,7 +112,7 @@ export function Navbar() {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden py-4 border-t border-white/20">
+          <div className="md:hidden py-4 border-t border-white/10">
             <div className="flex flex-col space-y-3">
               <Link
                 to="/marketplace"
@@ -150,7 +150,7 @@ export function Navbar() {
                   </button>
                 </>
               ) : (
-                <div className="flex flex-col space-y-3 pt-3 border-t border-white/20">
+                <div className="flex flex-col space-y-3 pt-3 border-t border-white/10">
                   <Link
                     to="/signin"
                     onClick={() => setIsMenuOpen(false)}

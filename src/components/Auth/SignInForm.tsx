@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, Sparkles } from 'lucide-react';
 import { useAuthContext } from '../../contexts/AuthContext';
+import { useScrollReveal } from '../../hooks/useScrollReveal';
 
 export function SignInForm() {
   const [email, setEmail] = useState('');
@@ -12,6 +13,7 @@ export function SignInForm() {
 
   const { signIn } = useAuthContext();
   const navigate = useNavigate();
+  useScrollReveal();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,22 +33,16 @@ export function SignInForm() {
 
   return (
     <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      {/* Floating Background Elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-r from-purple-400/20 to-blue-400/20 rounded-full blur-xl floating-element"></div>
-        <div className="absolute bottom-20 right-10 w-40 h-40 bg-gradient-to-r from-pink-400/20 to-purple-400/20 rounded-full blur-xl floating-element"></div>
-      </div>
-
       <div className="max-w-md w-full space-y-8 relative">
         <div className="text-center">
-          <div className="inline-flex items-center px-4 py-2 rounded-full glass-subtle text-white/80 text-sm font-medium mb-6 floating-element">
+          <div className="scroll-reveal inline-flex items-center px-4 py-2 rounded-full glass-subtle text-white/80 text-sm font-medium mb-6">
             <Sparkles className="w-4 h-4 mr-2" />
             Welcome Back
           </div>
-          <h2 className="text-3xl font-bold gradient-text">
+          <h2 className="scroll-reveal text-3xl font-bold gradient-text">
             Sign In
           </h2>
-          <p className="mt-2 text-sm text-white/60">
+          <p className="scroll-reveal mt-2 text-sm text-white/60">
             Don't have an account?{' '}
             <Link to="/signup" className="font-medium text-purple-300 hover:text-purple-200 transition-colors">
               Sign up
@@ -54,7 +50,7 @@ export function SignInForm() {
           </p>
         </div>
 
-        <form className="mt-8 space-y-6 glass-strong p-8 rounded-2xl grain-texture" onSubmit={handleSubmit}>
+        <form className="scroll-reveal-scale mt-8 space-y-6 glass-strong p-8 rounded-2xl grain-texture" onSubmit={handleSubmit}>
           {error && (
             <div className="glass-subtle border border-red-400/30 text-red-300 px-4 py-3 rounded-xl text-sm">
               {error}
