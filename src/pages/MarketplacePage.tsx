@@ -97,7 +97,7 @@ export function MarketplacePage() {
         </div>
 
         {/* Search and Filters */}
-        <div className="scroll-reveal border-gradient rounded-2xl p-6 mb-8 grain-texture">
+        <div className="scroll-reveal glass-strong rounded-2xl p-6 mb-8 grain-texture">
           <div className="flex flex-col lg:flex-row gap-4">
             {/* Search */}
             <div className="flex-1">
@@ -189,7 +189,7 @@ export function MarketplacePage() {
             <p className="text-white/60 mt-4">Loading models...</p>
           </div>
         ) : models.length === 0 ? (
-          <div className="text-center py-12 border-gradient rounded-2xl grain-texture">
+          <div className="text-center py-12 glass-card rounded-2xl grain-texture">
             <Search className="w-12 h-12 text-white/30 mx-auto mb-4" />
             <h3 className="text-lg font-medium gradient-text mb-2">No models found</h3>
             <p className="text-white/60">Try adjusting your search criteria or filters.</p>
@@ -200,7 +200,7 @@ export function MarketplacePage() {
               <Link
                 key={model.id}
                 to={`/models/${model.id}`}
-                className="scroll-reveal border-gradient rounded-2xl hover:scale-105 transition-all duration-300 overflow-hidden group grain-texture"
+                className="scroll-reveal glass-card rounded-2xl hover:scale-105 transition-all duration-300 overflow-hidden group grain-texture"
                 style={{ transitionDelay: `${index * 0.1}s` }}
               >
                 <div className="p-6">

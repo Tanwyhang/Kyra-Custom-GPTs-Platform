@@ -108,21 +108,21 @@ export function HomePage() {
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="scroll-reveal text-center border-gradient rounded-3xl p-10 grain-texture subtle-hover">
+            <div className="scroll-reveal text-center glass-card rounded-3xl p-10 grain-texture subtle-hover">
               <div className="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6">
                 <TrendingUp className="w-10 h-10 text-white" />
               </div>
               <div className="text-4xl font-bold gradient-text mb-3">{stats.totalModels.toLocaleString()}</div>
               <div className="text-white/70 text-lg">AI Models</div>
             </div>
-            <div className="scroll-reveal text-center border-gradient rounded-3xl p-10 grain-texture subtle-hover">
+            <div className="scroll-reveal text-center glass-card rounded-3xl p-10 grain-texture subtle-hover">
               <div className="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6">
                 <Users className="w-10 h-10 text-white" />
               </div>
               <div className="text-4xl font-bold gradient-text mb-3">{stats.totalUsers.toLocaleString()}</div>
               <div className="text-white/70 text-lg">Community Members</div>
             </div>
-            <div className="scroll-reveal text-center border-gradient rounded-3xl p-10 grain-texture subtle-hover">
+            <div className="scroll-reveal text-center glass-card rounded-3xl p-10 grain-texture subtle-hover">
               <div className="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6">
                 <Star className="w-10 h-10 text-white" />
               </div>
@@ -147,7 +147,7 @@ export function HomePage() {
 
           <div className="max-w-5xl mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 justify-items-center">
-              <div className="scroll-reveal-left border-gradient rounded-3xl p-10 grain-texture hover:scale-105 transition-all duration-300 subtle-hover w-full max-w-sm">
+              <div className="scroll-reveal-left glass-card rounded-3xl p-10 grain-texture hover:scale-105 transition-all duration-300 subtle-hover w-full max-w-sm">
                 <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-8 mx-auto">
                   <Shield className="w-8 h-8 text-white" />
                 </div>
@@ -157,7 +157,7 @@ export function HomePage() {
                 </p>
               </div>
 
-              <div className="scroll-reveal border-gradient rounded-3xl p-10 grain-texture hover:scale-105 transition-all duration-300 subtle-hover w-full max-w-sm">
+              <div className="scroll-reveal glass-card rounded-3xl p-10 grain-texture hover:scale-105 transition-all duration-300 subtle-hover w-full max-w-sm">
                 <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-8 mx-auto">
                   <Search className="w-8 h-8 text-white" />
                 </div>
@@ -167,7 +167,7 @@ export function HomePage() {
                 </p>
               </div>
 
-              <div className="scroll-reveal-right border-gradient rounded-3xl p-10 grain-texture hover:scale-105 transition-all duration-300 subtle-hover w-full max-w-sm">
+              <div className="scroll-reveal-right glass-card rounded-3xl p-10 grain-texture hover:scale-105 transition-all duration-300 subtle-hover w-full max-w-sm">
                 <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-8 mx-auto">
                   <Users className="w-8 h-8 text-white" />
                 </div>
@@ -208,7 +208,7 @@ export function HomePage() {
                 <Link
                   key={model.id}
                   to={`/models/${model.id}`}
-                  className="scroll-reveal-scale border-gradient rounded-3xl p-8 grain-texture hover:scale-105 transition-all duration-300 group hover-glow"
+                  className="scroll-reveal-scale glass-card rounded-3xl p-8 grain-texture hover:scale-105 transition-all duration-300 group hover-glow"
                   style={{ transitionDelay: `${index * 0.1}s` }}
                 >
                   <div className="flex items-center justify-between mb-6">
@@ -260,7 +260,7 @@ export function HomePage() {
       {/* CTA Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-5xl mx-auto text-center">
-          <div className="scroll-reveal border-gradient rounded-3xl p-16 grain-texture hover-glow">
+          <div className="scroll-reveal glass-strong rounded-3xl p-16 grain-texture hover-glow">
             <div className="inline-flex items-center px-6 py-3 rounded-full glass-subtle text-white/90 text-sm font-medium mb-8">
               <Zap className="w-5 h-5 mr-2 text-white" />
               Join Today
