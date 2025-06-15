@@ -16,27 +16,27 @@ export function Navbar() {
   };
 
   return (
-    <nav className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50">
+    <nav className="glass grain-texture sticky top-0 z-50 border-b border-white/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2 group">
-            <div className="bg-gradient-to-r from-purple-600 to-blue-600 p-2 rounded-lg group-hover:shadow-lg transition-all duration-200">
+          <Link to="/" className="flex items-center space-x-2 group floating-element">
+            <div className="bg-gradient-to-r from-purple-500 to-blue-500 p-2 rounded-xl group-hover:shadow-lg transition-all duration-300 glow-effect">
               <Brain className="w-6 h-6 text-white" />
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+            <span className="text-xl font-bold gradient-text">
               AI Model Hub
             </span>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-2">
             <Link
               to="/marketplace"
-              className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+              className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
                 isActive('/marketplace')
-                  ? 'text-purple-600 bg-purple-50'
-                  : 'text-gray-700 hover:text-purple-600 hover:bg-gray-50'
+                  ? 'glass-strong text-white glow-effect'
+                  : 'glass-subtle text-white/80 hover:text-white hover:glass'
               }`}
             >
               <Search className="w-4 h-4" />
@@ -46,10 +46,10 @@ export function Navbar() {
             {user && (
               <Link
                 to="/upload"
-                className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
                   isActive('/upload')
-                    ? 'text-purple-600 bg-purple-50'
-                    : 'text-gray-700 hover:text-purple-600 hover:bg-gray-50'
+                    ? 'glass-strong text-white glow-effect'
+                    : 'glass-subtle text-white/80 hover:text-white hover:glass'
                 }`}
               >
                 <Upload className="w-4 h-4" />
@@ -59,15 +59,15 @@ export function Navbar() {
           </div>
 
           {/* User Menu */}
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden md:flex items-center space-x-3">
             {user ? (
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-3">
                 <Link
                   to="/dashboard"
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
                     isActive('/dashboard')
-                      ? 'text-purple-600 bg-purple-50'
-                      : 'text-gray-700 hover:text-purple-600 hover:bg-gray-50'
+                      ? 'glass-strong text-white glow-effect'
+                      : 'glass-subtle text-white/80 hover:text-white hover:glass'
                   }`}
                 >
                   <User className="w-4 h-4" />
@@ -75,7 +75,7 @@ export function Navbar() {
                 </Link>
                 <button
                   onClick={handleSignOut}
-                  className="flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-red-600 hover:bg-red-50 transition-colors"
+                  className="flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-medium text-white/80 hover:text-red-300 glass-subtle hover:glass transition-all duration-300"
                 >
                   <LogOut className="w-4 h-4" />
                   <span>Sign Out</span>
@@ -85,13 +85,13 @@ export function Navbar() {
               <div className="flex items-center space-x-3">
                 <Link
                   to="/signin"
-                  className="text-sm font-medium text-gray-700 hover:text-purple-600 transition-colors"
+                  className="text-sm font-medium text-white/80 hover:text-white transition-colors px-4 py-2 rounded-xl glass-subtle hover:glass"
                 >
                   Sign In
                 </Link>
                 <Link
                   to="/signup"
-                  className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:shadow-lg transition-all duration-200 hover:scale-105"
+                  className="glass-button text-white px-6 py-2 rounded-xl text-sm font-medium hover:scale-105 transition-all duration-300"
                 >
                   Sign Up
                 </Link>
@@ -103,7 +103,7 @@ export function Navbar() {
           <div className="md:hidden">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-gray-700 hover:text-purple-600 transition-colors"
+              className="text-white/80 hover:text-white transition-colors p-2 rounded-lg glass-subtle"
             >
               {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -112,12 +112,12 @@ export function Navbar() {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden py-4 border-t border-gray-200">
+          <div className="md:hidden py-4 border-t border-white/20">
             <div className="flex flex-col space-y-3">
               <Link
                 to="/marketplace"
                 onClick={() => setIsMenuOpen(false)}
-                className="flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-purple-600 hover:bg-gray-50"
+                className="flex items-center space-x-2 px-4 py-3 rounded-xl text-sm font-medium text-white/80 hover:text-white glass-subtle hover:glass transition-all duration-300"
               >
                 <Search className="w-4 h-4" />
                 <span>Marketplace</span>
@@ -128,7 +128,7 @@ export function Navbar() {
                   <Link
                     to="/upload"
                     onClick={() => setIsMenuOpen(false)}
-                    className="flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-purple-600 hover:bg-gray-50"
+                    className="flex items-center space-x-2 px-4 py-3 rounded-xl text-sm font-medium text-white/80 hover:text-white glass-subtle hover:glass transition-all duration-300"
                   >
                     <Upload className="w-4 h-4" />
                     <span>Upload Model</span>
@@ -136,32 +136,32 @@ export function Navbar() {
                   <Link
                     to="/dashboard"
                     onClick={() => setIsMenuOpen(false)}
-                    className="flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-purple-600 hover:bg-gray-50"
+                    className="flex items-center space-x-2 px-4 py-3 rounded-xl text-sm font-medium text-white/80 hover:text-white glass-subtle hover:glass transition-all duration-300"
                   >
                     <User className="w-4 h-4" />
                     <span>Dashboard</span>
                   </Link>
                   <button
                     onClick={handleSignOut}
-                    className="flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-red-600 hover:bg-red-50 transition-colors w-full text-left"
+                    className="flex items-center space-x-2 px-4 py-3 rounded-xl text-sm font-medium text-white/80 hover:text-red-300 glass-subtle hover:glass transition-all duration-300 w-full text-left"
                   >
                     <LogOut className="w-4 h-4" />
                     <span>Sign Out</span>
                   </button>
                 </>
               ) : (
-                <div className="flex flex-col space-y-3 pt-3 border-t border-gray-200">
+                <div className="flex flex-col space-y-3 pt-3 border-t border-white/20">
                   <Link
                     to="/signin"
                     onClick={() => setIsMenuOpen(false)}
-                    className="text-sm font-medium text-gray-700 hover:text-purple-600 px-3 py-2"
+                    className="text-sm font-medium text-white/80 hover:text-white px-4 py-3 rounded-xl glass-subtle hover:glass transition-all duration-300"
                   >
                     Sign In
                   </Link>
                   <Link
                     to="/signup"
                     onClick={() => setIsMenuOpen(false)}
-                    className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-3 py-2 rounded-md text-sm font-medium text-center"
+                    className="glass-button text-white px-4 py-3 rounded-xl text-sm font-medium text-center transition-all duration-300"
                   >
                     Sign Up
                   </Link>
