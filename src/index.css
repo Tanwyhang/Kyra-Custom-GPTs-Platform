@@ -237,59 +237,19 @@
     box-shadow: 0 15px 35px rgba(247, 101, 163, 0.4);
   }
   
-  /* Card Tilt Effect */
-  .card-tilt {
-    transform-style: preserve-3d;
-    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    perspective: 1000px;
-  }
-  
-  .card-tilt:hover {
-    transform: rotateX(5deg) rotateY(10deg) translateY(-10px);
-  }
-  
-  /* Black and White Card Styles */
   .glass-card {
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    transition: all 0.3s ease;
-  }
-  
-  .glass-card:hover {
-    background: rgba(255, 255, 255, 0.1);
-    transform: translateY(-5px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-    border-color: rgba(255, 255, 255, 0.25);
-  }
-  
-  .glass-card-black {
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(255, 255, 255, 0.04);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     transition: all 0.3s ease;
   }
   
-  .glass-card-black:hover {
-    background: rgba(0, 0, 0, 0.9);
-    border-color: rgba(255, 255, 255, 0.2);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
-  }
-  
-  .glass-card-white {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    transition: all 0.3s ease;
-  }
-  
-  .glass-card-white:hover {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: rgba(255, 255, 255, 0.3);
-    box-shadow: 0 20px 40px rgba(255, 255, 255, 0.1);
+  .glass-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.15);
   }
   
   /* Custom Gradient Text Classes */
@@ -362,21 +322,21 @@
     );
   }
   
-  /* Icon Background - Black and White */
+  /* Icon Background Gradients */
   .icon-bg-primary {
-    background: linear-gradient(135deg, #000000, #333333);
+    background: linear-gradient(135deg, var(--color-royal-blue), var(--color-purple));
   }
   
   .icon-bg-accent {
-    background: linear-gradient(135deg, #ffffff, #f0f0f0);
+    background: linear-gradient(135deg, var(--color-purple), var(--color-coral));
   }
   
   .icon-bg-warm {
-    background: linear-gradient(135deg, #1a1a1a, #000000);
+    background: linear-gradient(135deg, var(--color-coral), var(--color-pink));
   }
   
   .icon-bg-cool {
-    background: linear-gradient(135deg, #f5f5f5, #ffffff);
+    background: linear-gradient(135deg, var(--color-navy), var(--color-royal-blue));
   }
   
   /* Status Colors */
