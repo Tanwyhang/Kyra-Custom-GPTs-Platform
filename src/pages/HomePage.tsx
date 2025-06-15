@@ -88,15 +88,15 @@ export function HomePage() {
                 to="/marketplace"
                 className="inline-flex items-center px-10 py-5 rounded-2xl text-lg font-semibold text-white glass-button hover:scale-105 transition-all duration-300 glow-effect shadow-2xl"
               >
-                <Search className="w-6 h-6 mr-3" />
+                <Search className="w-6 h-6 mr-3 text-white" />
                 Explore Models
-                <ArrowRight className="w-6 h-6 ml-3" />
+                <ArrowRight className="w-6 h-6 ml-3 text-white" />
               </Link>
               <Link
                 to="/upload"
                 className="inline-flex items-center px-10 py-5 rounded-2xl text-lg font-semibold text-white glass-strong hover:scale-105 transition-all duration-300 border-gradient"
               >
-                <Upload className="w-6 h-6 mr-3" />
+                <Upload className="w-6 h-6 mr-3 text-white" />
                 Upload Model
               </Link>
             </div>
@@ -109,22 +109,22 @@ export function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="scroll-reveal text-center glass-card rounded-3xl p-10 grain-texture hover-glow">
-              <div className="icon-bg-primary w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 glow-effect">
-                <TrendingUp className="w-10 h-10 text-white" />
+              <div className="icon-bg-white w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 glow-effect">
+                <TrendingUp className="w-10 h-10 text-blue-600" />
               </div>
               <div className="text-4xl font-bold gradient-text mb-3">{stats.totalModels.toLocaleString()}</div>
               <div className="text-white/70 text-lg">AI Models</div>
             </div>
             <div className="scroll-reveal text-center glass-card rounded-3xl p-10 grain-texture hover-glow">
-              <div className="icon-bg-accent w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 glow-effect">
-                <Users className="w-10 h-10 text-white" />
+              <div className="icon-bg-white w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 glow-effect">
+                <Users className="w-10 h-10 text-blue-600" />
               </div>
               <div className="text-4xl font-bold gradient-text mb-3">{stats.totalUsers.toLocaleString()}</div>
               <div className="text-white/70 text-lg">Community Members</div>
             </div>
             <div className="scroll-reveal text-center glass-card rounded-3xl p-10 grain-texture hover-glow">
-              <div className="icon-bg-warm w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 glow-effect">
-                <Star className="w-10 h-10 text-white" />
+              <div className="icon-bg-white w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 glow-effect">
+                <Star className="w-10 h-10 text-blue-600" />
               </div>
               <div className="text-4xl font-bold gradient-text mb-3">{stats.totalDownloads.toLocaleString()}</div>
               <div className="text-white/70 text-lg">Total Downloads</div>
@@ -147,8 +147,8 @@ export function HomePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="scroll-reveal-left glass-card rounded-3xl p-10 grain-texture hover:scale-105 transition-all duration-300 hover-glow">
-              <div className="icon-bg-primary w-16 h-16 rounded-2xl flex items-center justify-center mb-8 glow-effect">
-                <Shield className="w-8 h-8 text-white" />
+              <div className="icon-bg-white w-16 h-16 rounded-2xl flex items-center justify-center mb-8 glow-effect">
+                <Shield className="w-8 h-8 text-blue-600" />
               </div>
               <h3 className="text-2xl font-bold gradient-text mb-6">Verified Quality</h3>
               <p className="text-white/80 text-lg leading-relaxed">
@@ -157,8 +157,8 @@ export function HomePage() {
             </div>
 
             <div className="scroll-reveal glass-card rounded-3xl p-10 grain-texture hover:scale-105 transition-all duration-300 hover-glow">
-              <div className="icon-bg-accent w-16 h-16 rounded-2xl flex items-center justify-center mb-8 glow-effect">
-                <Search className="w-8 h-8 text-white" />
+              <div className="icon-bg-white w-16 h-16 rounded-2xl flex items-center justify-center mb-8 glow-effect">
+                <Search className="w-8 h-8 text-blue-600" />
               </div>
               <h3 className="text-2xl font-bold gradient-text mb-6">Easy Discovery</h3>
               <p className="text-white/80 text-lg leading-relaxed">
@@ -167,8 +167,8 @@ export function HomePage() {
             </div>
 
             <div className="scroll-reveal-right glass-card rounded-3xl p-10 grain-texture hover:scale-105 transition-all duration-300 hover-glow">
-              <div className="icon-bg-warm w-16 h-16 rounded-2xl flex items-center justify-center mb-8 glow-effect">
-                <Users className="w-8 h-8 text-white" />
+              <div className="icon-bg-white w-16 h-16 rounded-2xl flex items-center justify-center mb-8 glow-effect">
+                <Users className="w-8 h-8 text-blue-600" />
               </div>
               <h3 className="text-2xl font-bold gradient-text mb-6">Open Community</h3>
               <p className="text-white/80 text-lg leading-relaxed">
@@ -197,7 +197,7 @@ export function HomePage() {
                 className="scroll-reveal text-white/90 hover:text-white font-semibold flex items-center glass-subtle px-6 py-3 rounded-2xl hover:glass transition-all duration-300 hover-glow"
               >
                 View all models
-                <ArrowRight className="w-5 h-5 ml-2" />
+                <ArrowRight className="w-5 h-5 ml-2 text-white" />
               </Link>
             </div>
 
@@ -215,7 +215,7 @@ export function HomePage() {
                     </span>
                     {model.is_verified && (
                       <div className="flex items-center status-verified">
-                        <Shield className="w-5 h-5 mr-2" />
+                        <Shield className="w-5 h-5 mr-2 text-green-400" />
                         <span className="text-sm font-medium">Verified</span>
                       </div>
                     )}
@@ -238,12 +238,12 @@ export function HomePage() {
                     <div className="flex items-center space-x-6 text-white/70">
                       {model.accuracy && (
                         <div className="flex items-center">
-                          <Star className="w-4 h-4 mr-2 status-verified" />
+                          <Star className="w-4 h-4 mr-2 text-yellow-400" />
                           <span className="font-medium">{model.accuracy}%</span>
                         </div>
                       )}
                       <div className="flex items-center">
-                        <TrendingUp className="w-4 h-4 mr-2" />
+                        <TrendingUp className="w-4 h-4 mr-2 text-white" />
                         <span className="font-medium">{model.download_count}</span>
                       </div>
                     </div>
@@ -260,7 +260,7 @@ export function HomePage() {
         <div className="max-w-5xl mx-auto text-center">
           <div className="scroll-reveal glass-strong rounded-3xl p-16 grain-texture hover-glow">
             <div className="inline-flex items-center px-6 py-3 rounded-full glass-subtle text-white/90 text-sm font-medium mb-8">
-              <Zap className="w-5 h-5 mr-2" />
+              <Zap className="w-5 h-5 mr-2 text-white" />
               Join Today
             </div>
             <h2 className="text-4xl lg:text-5xl font-bold gradient-text mb-8">
@@ -275,7 +275,7 @@ export function HomePage() {
                 className="inline-flex items-center px-10 py-5 rounded-2xl text-lg font-semibold text-white glass-button hover:scale-105 transition-all duration-300 glow-effect shadow-2xl"
               >
                 Get Started
-                <ArrowRight className="w-6 h-6 ml-3" />
+                <ArrowRight className="w-6 h-6 ml-3 text-white" />
               </Link>
             </div>
           </div>

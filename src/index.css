@@ -322,9 +322,13 @@
     );
   }
   
-  /* Icon Background Gradients */
+  /* Icon Background Gradients - Updated for white with subtle blue */
   .icon-bg-primary {
     background: linear-gradient(135deg, var(--color-royal-blue), var(--color-purple));
+  }
+  
+  .icon-bg-white {
+    background: linear-gradient(135deg, #ffffff, #e8f2ff);
   }
   
   .icon-bg-accent {
