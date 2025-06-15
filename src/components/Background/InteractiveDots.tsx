@@ -102,7 +102,7 @@ export function InteractiveDots() {
           (dot.x - dot.originalX) ** 2 + (dot.y - dot.originalY) ** 2
         );
         const maxDisplacement = 50;
-        const baseOpacity = 0.5;
+        const baseOpacity = 0.3;
         const maxOpacity = 0.9;
         const opacity = Math.min(
           maxOpacity,
