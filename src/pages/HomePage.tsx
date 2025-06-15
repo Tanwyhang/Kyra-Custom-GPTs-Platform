@@ -86,7 +86,7 @@ export function HomePage() {
             <div className="scroll-reveal flex flex-col sm:flex-row gap-6 justify-center">
               <Link
                 to="/marketplace"
-                className="inline-flex items-center px-10 py-5 rounded-2xl text-lg font-semibold text-white glass-button hover:scale-105 transition-all duration-300 glow-effect shadow-2xl"
+                className="inline-flex items-center px-10 py-5 rounded-2xl text-lg font-semibold text-white button-primary hover:scale-105 transition-all duration-300 shadow-2xl"
               >
                 <Search className="w-6 h-6 mr-3 text-white" />
                 Explore Models
@@ -94,7 +94,7 @@ export function HomePage() {
               </Link>
               <Link
                 to="/upload"
-                className="inline-flex items-center px-10 py-5 rounded-2xl text-lg font-semibold text-white glass-strong hover:scale-105 transition-all duration-300 border-gradient"
+                className="inline-flex items-center px-10 py-5 rounded-2xl text-lg font-semibold text-white border-clean hover:scale-105 transition-all duration-300"
               >
                 <Upload className="w-6 h-6 mr-3 text-white" />
                 Upload Model
@@ -274,7 +274,7 @@ export function HomePage() {
             <div className="flex flex-col sm:flex-row gap-6 justify-center">
               <Link
                 to="/signup"
-                className="inline-flex items-center px-10 py-5 rounded-2xl text-lg font-semibold text-white glass-button hover:scale-105 transition-all duration-300 glow-effect shadow-2xl"
+                className="inline-flex items-center px-10 py-5 rounded-2xl text-lg font-semibold text-white button-primary hover:scale-105 transition-all duration-300 shadow-2xl"
               >
                 Get Started
                 <ArrowRight className="w-6 h-6 ml-3 text-white" />

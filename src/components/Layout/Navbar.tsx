@@ -91,7 +91,7 @@ export function Navbar() {
                 </Link>
                 <Link
                   to="/signup"
-                  className="glass-button text-white px-6 py-3 rounded-2xl text-sm font-semibold hover:scale-105 transition-all duration-300 glow-effect"
+                  className="button-primary text-white px-6 py-3 rounded-2xl text-sm font-semibold hover:scale-105 transition-all duration-300"
                 >
                   Sign Up
                 </Link>
@@ -161,7 +161,7 @@ export function Navbar() {
                   <Link
                     to="/signup"
                     onClick={() => setIsMenuOpen(false)}
-                    className="glass-button text-white px-4 py-3 rounded-2xl text-sm font-semibold text-center transition-all duration-300"
+                    className="button-primary text-white px-4 py-3 rounded-2xl text-sm font-semibold text-center transition-all duration-300"
                   >
                     Sign Up
                   </Link>

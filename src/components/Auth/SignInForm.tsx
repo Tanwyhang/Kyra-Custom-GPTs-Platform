@@ -118,7 +118,7 @@ export function SignInForm() {
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-4 px-6 text-base font-semibold rounded-2xl text-white glass-button focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105 glow-effect"
+              className="group relative w-full flex justify-center py-4 px-6 text-base font-semibold rounded-2xl text-white button-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105"
             >
               {loading ? 'Signing in...' : 'Sign in'}
             </button>

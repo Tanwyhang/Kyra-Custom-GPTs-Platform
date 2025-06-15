@@ -194,15 +194,12 @@
     box-shadow: 0 0 20px rgba(247, 101, 163, 0.3);
   }
   
+  /* Clean Button Design - Replace gradient with subtle glass effect */
   .glass-button {
-    background: linear-gradient(135deg, 
-      var(--color-royal-blue), 
-      var(--color-purple), 
-      var(--color-coral)
-    );
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
@@ -217,7 +214,7 @@
     height: 100%;
     background: linear-gradient(90deg, 
       transparent, 
-      rgba(255, 255, 255, 0.2), 
+      rgba(255, 255, 255, 0.1), 
       transparent
     );
     transition: left 0.5s ease;
@@ -228,13 +225,27 @@
   }
   
   .glass-button:hover {
-    background: linear-gradient(135deg, 
-      #1e6bb8, 
-      #b565c7, 
-      #f875b1
-    );
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
     transform: translateY(-2px);
-    box-shadow: 0 15px 35px rgba(247, 101, 163, 0.4);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Primary Button - Clean accent version */
+  .button-primary {
+    background: rgba(161, 85, 185, 0.2);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(161, 85, 185, 0.3);
+    color: white;
+    transition: all 0.3s ease;
+  }
+  
+  .button-primary:hover {
+    background: rgba(161, 85, 185, 0.3);
+    border-color: rgba(161, 85, 185, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(161, 85, 185, 0.2);
   }
   
   .glass-card {
@@ -371,30 +382,18 @@
     box-shadow: 0 0 30px rgba(247, 101, 163, 0.2);
   }
   
-  /* Custom Border Gradients - Fixed implementation */
-  .border-gradient {
-    position: relative;
+  /* Clean Border Design - Replace gradient border */
+  .border-clean {
     background: rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(28px);
     -webkit-backdrop-filter: blur(28px);
-    border: 2px solid transparent;
-    background-clip: padding-box;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    transition: all 0.3s ease;
   }
   
-  .border-gradient::before {
-    content: '';
-    position: absolute;
-    top: -2px;
-    left: -2px;
-    right: -2px;
-    bottom: -2px;
-    background: linear-gradient(135deg, 
-      var(--color-royal-blue), 
-      var(--color-purple), 
-      var(--color-coral)
-    );
-    border-radius: inherit;
-    z-index: -1;
+  .border-clean:hover {
+    border-color: rgba(255, 255, 255, 0.25);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
   }
 }
 
