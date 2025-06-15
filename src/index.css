@@ -371,18 +371,30 @@
     box-shadow: 0 0 30px rgba(247, 101, 163, 0.2);
   }
   
-  /* Custom Border Gradients */
+  /* Custom Border Gradients - Fixed implementation */
   .border-gradient {
+    position: relative;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
     border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  
+  .border-gradient::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
     background: linear-gradient(135deg, 
-      rgba(255, 255, 255, 0.08), 
-      rgba(255, 255, 255, 0.04)
-    ) padding-box,
-    linear-gradient(135deg, 
       var(--color-royal-blue), 
       var(--color-purple), 
       var(--color-coral)
-    ) border-box;
+    );
+    border-radius: inherit;
+    z-index: -1;
   }
 }
 
