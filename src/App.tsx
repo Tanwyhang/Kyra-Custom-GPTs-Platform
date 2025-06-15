@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { Navbar } from './components/Layout/Navbar';
 import { Footer } from './components/Layout/Footer';
+import { InteractiveDots } from './components/Background/InteractiveDots';
 import { HomePage } from './pages/HomePage';
 import { MarketplacePage } from './pages/MarketplacePage';
 import { UploadPage } from './pages/UploadPage';
@@ -15,9 +16,10 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        <div className="min-h-screen flex flex-col">
+        <div className="min-h-screen flex flex-col relative">
+          <InteractiveDots />
           <Navbar />
-          <main className="flex-1">
+          <main className="flex-1 relative z-10">
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/marketplace" element={<MarketplacePage />} />
