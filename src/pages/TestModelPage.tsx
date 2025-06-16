@@ -276,7 +276,11 @@ export function TestModelPage() {
     setConfigChanged(false);
   };
 
-  const handleCancelConfig = () => {
+  const handleCancelConfig = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Reset all configuration to original values
     setConfig({ ...originalConfig });
     setKnowledgeText(originalKnowledge.text);
     setKnowledgeTitle(originalKnowledge.title);
@@ -592,20 +596,24 @@ export function TestModelPage() {
                     </div>
                   </div>
 
-                  {/* Save/Cancel Actions - Always Visible */}
-                  <div className="p-3 border-t border-white/10 flex-shrink-0">
+                  {/* Save/Cancel Actions - Always Visible with Fixed Positioning */}
+                  <div className="p-3 border-t border-white/10 flex-shrink-0 relative z-10">
                     <div className="grid grid-cols-2 gap-2">
                       <button
+                        type="button"
                         onClick={handleCancelConfig}
                         disabled={!configChanged}
-                        className="glass-subtle px-2 py-1.5 rounded-lg hover:glass transition-colors text-white/80 text-xs disabled:opacity-50"
+                        className="glass-subtle px-2 py-1.5 rounded-lg hover:glass transition-colors text-white/80 text-xs disabled:opacity-50 disabled:cursor-not-allowed relative z-20"
+                        style={{ pointerEvents: 'auto' }}
                       >
                         Cancel
                       </button>
                       <button
+                        type="button"
                         onClick={handleSaveConfig}
                         disabled={!configChanged}
-                        className="button-primary px-2 py-1.5 rounded-lg text-white text-xs flex items-center justify-center disabled:opacity-50"
+                        className="button-primary px-2 py-1.5 rounded-lg text-white text-xs flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed relative z-20"
+                        style={{ pointerEvents: 'auto' }}
                       >
                         <Check className="w-3 h-3 mr-1" />
                         Save
