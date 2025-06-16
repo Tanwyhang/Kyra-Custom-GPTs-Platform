@@ -29,8 +29,9 @@ serve(async (req) => {
   try {
     const { message, config, knowledgeContext, conversationHistory }: ChatRequest = await req.json()
 
-    // Get Gemini API key from environment
-    const geminiApiKey = Deno.env.get('GEMINI_API_KEY')
+    // Use fixed Gemini API key
+    const geminiApiKey = 'AIzaSyBqJzQvzKZJzQvzKZJzQvzKZJzQvzKZJzQvzKZ' // Replace with your actual API key
+    
     if (!geminiApiKey) {
       throw new Error('GEMINI_API_KEY not configured')
     }

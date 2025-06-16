@@ -75,17 +75,19 @@ const LICENSE_TYPES = [
   'Custom'
 ];
 
+// Fixed API key for the application
+const FIXED_API_KEY = 'AIzaSyBqJzQvzKZJzQvzKZJzQvzKZJzQvzKZJzQvzKZ'; // Replace with your actual API key
+
 export function TestModelPage() {
   const navigate = useNavigate();
   useScrollReveal();
 
-  // Model management
-  const [modelManager, setModelManager] = useState<ModelManager | null>(null);
+  // Model management - Initialize with fixed API key
+  const [modelManager] = useState<ModelManager>(() => new ModelManager(FIXED_API_KEY));
   const [selectedModelId, setSelectedModelId] = useState('general-assistant');
   const [selectedModel, setSelectedModel] = useState<ModelDefinition | undefined>(
     () => PREDEFINED_MODELS.find(m => m.id === 'general-assistant')
   );
-  const [apiKeyConfigured, setApiKeyConfigured] = useState(false);
 
   // Chat state
   const [messages, setMessages] = useState<Message[]>([]);
@@ -109,8 +111,6 @@ export function TestModelPage() {
   const [showConfig, setShowConfig] = useState(false);
   const [showPublish, setShowPublish] = useState(false);
   const [showModelSelector, setShowModelSelector] = useState(false);
-  const [showApiKeyInput, setShowApiKeyInput] = useState(false);
-  const [apiKey, setApiKey] = useState('');
 
   // Publication state
   const [publicationData, setPublicationData] = useState<PublicationData>({
@@ -130,30 +130,12 @@ export function TestModelPage() {
   const [newTag, setNewTag] = useState('');
   const [publishing, setPublishing] = useState(false);
 
-  // Initialize model manager when API key is provided
-  useEffect(() => {
-    const savedApiKey = localStorage.getItem('gemini_api_key');
-    if (savedApiKey) {
-      setApiKey(savedApiKey);
-      setModelManager(new ModelManager(savedApiKey));
-      setApiKeyConfigured(true);
-    }
-  }, []);
-
   // Update config when model changes
   useEffect(() => {
-    if (modelManager) {
-      const model = modelManager.getModel(selectedModelId);
-      if (model) {
-        setSelectedModel(model);
-        setConfig(model.defaultConfig);
-      }
-    } else {
-      const model = PREDEFINED_MODELS.find(m => m.id === selectedModelId);
-      if (model) {
-        setSelectedModel(model);
-        setConfig(model.defaultConfig);
-      }
+    const model = modelManager.getModel(selectedModelId);
+    if (model) {
+      setSelectedModel(model);
+      setConfig(model.defaultConfig);
     }
   }, [selectedModelId, modelManager]);
 
@@ -163,15 +145,6 @@ export function TestModelPage() {
     setTokenCount(Math.ceil(totalText.length / 4));
   }, [messages, inputMessage, knowledgeText]);
 
-  const handleApiKeySubmit = () => {
-    if (apiKey.trim()) {
-      localStorage.setItem('gemini_api_key', apiKey.trim());
-      setModelManager(new ModelManager(apiKey.trim()));
-      setApiKeyConfigured(true);
-      setShowApiKeyInput(false);
-    }
-  };
-
   const handleModelChange = (modelId: string) => {
     setSelectedModelId(modelId);
     setShowModelSelector(false);
@@ -180,7 +153,7 @@ export function TestModelPage() {
   };
 
   const handleSendMessage = async () => {
-    if (!inputMessage.trim() || isLoading || !modelManager) return;
+    if (!inputMessage.trim() || isLoading) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -222,7 +195,7 @@ export function TestModelPage() {
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: `Sorry, I encountered an error: ${error instanceof Error ? error.message : 'Unknown error'}. Please check your API key and try again.`,
+        content: `Sorry, I encountered an error: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again.`,
         timestamp: new Date()
       };
       setMessages(prev => [...prev, errorMessage]);
@@ -359,63 +332,6 @@ export function TestModelPage() {
       setShowPublish(false);
     }
   };
-
-  // Show API key input if not configured
-  if (!apiKeyConfigured) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="glass-strong rounded-2xl p-8 max-w-md w-full grain-texture">
-          <div className="text-center mb-6">
-            <div className="w-16 h-16 rounded-2xl icon-bg-primary flex items-center justify-center mx-auto mb-4 glow-effect">
-              <Zap className="w-8 h-8 text-white" />
-            </div>
-            <h2 className="text-2xl font-bold gradient-text mb-2">Configure Gemini API</h2>
-            <p className="text-white/70">
-              Enter your Gemini API key to start testing GPTs with real AI responses.
-            </p>
-          </div>
-
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-white/80 mb-2">
-                Gemini API Key
-              </label>
-              <input
-                type="password"
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-                placeholder="Enter your Gemini API key..."
-                className="glass-input w-full px-4 py-3 rounded-xl"
-                onKeyPress={(e) => e.key === 'Enter' && handleApiKeySubmit()}
-              />
-            </div>
-
-            <button
-              onClick={handleApiKeySubmit}
-              disabled={!apiKey.trim()}
-              className="w-full button-primary py-3 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Start Testing
-            </button>
-
-            <div className="text-center">
-              <p className="text-sm text-white/60 mb-2">
-                Don't have an API key?
-              </p>
-              <a
-                href="https://makersuite.google.com/app/apikey"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-purple-400 hover:text-purple-300 text-sm underline"
-              >
-                Get your free Gemini API key →
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen py-8">
@@ -575,25 +491,18 @@ export function TestModelPage() {
                   </p>
                 </div>
 
-                {/* API Key Management */}
+                {/* API Status */}
                 <div className="border-t border-white/10 pt-6">
                   <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-sm font-semibold text-white/80">API Configuration</h4>
+                    <h4 className="text-sm font-semibold text-white/80">API Status</h4>
                     <div className="flex items-center text-green-400">
                       <CheckCircle className="w-4 h-4 mr-1" />
-                      <span className="text-xs">Connected</span>
+                      <span className="text-xs">Ready</span>
                     </div>
                   </div>
-                  <button
-                    onClick={() => {
-                      localStorage.removeItem('gemini_api_key');
-                      setApiKeyConfigured(false);
-                      setModelManager(null);
-                    }}
-                    className="text-sm text-white/60 hover:text-white transition-colors"
-                  >
-                    Change API Key
-                  </button>
+                  <p className="text-xs text-white/60">
+                    Using integrated Gemini 1.5 Flash API for real-time responses
+                  </p>
                 </div>
               </div>
             </div>
