@@ -322,7 +322,7 @@ export function TestModelPage() {
           {/* Configuration Panel */}
           {showConfig && (
             <div className="lg:col-span-1">
-              <div className="scroll-reveal glass-strong rounded-2xl p-6 grain-texture space-y-6">
+              <div className="scroll-reveal glass-strong rounded-2xl p-6 grain-texture space-y-6 max-h-[calc(100vh-12rem)] overflow-y-auto">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-semibold gradient-text">Configuration</h3>
                   <button
@@ -476,9 +476,9 @@ export function TestModelPage() {
 
           {/* Chat Interface */}
           <div className={`${showConfig ? 'lg:col-span-3' : 'lg:col-span-4'}`}>
-            <div className="scroll-reveal glass-strong rounded-2xl overflow-hidden grain-texture">
+            <div className="scroll-reveal glass-strong rounded-2xl overflow-hidden grain-texture h-[calc(100vh-12rem)] flex flex-col">
               {/* Chat Header */}
-              <div className="flex items-center justify-between p-6 border-b border-white/10">
+              <div className="flex items-center justify-between p-6 border-b border-white/10 flex-shrink-0">
                 <div className="flex items-center">
                   <div className="w-10 h-10 rounded-xl icon-bg-primary flex items-center justify-center mr-3">
                     <Bot className="w-5 h-5 text-white" />
@@ -504,7 +504,7 @@ export function TestModelPage() {
               </div>
 
               {/* Messages */}
-              <div className="h-96 overflow-y-auto p-6 space-y-4">
+              <div className="flex-1 overflow-y-auto p-6 space-y-4">
                 {messages.length === 0 ? (
                   <div className="text-center py-12">
                     <MessageSquare className="w-12 h-12 mx-auto mb-4 text-white/30" />
@@ -563,7 +563,7 @@ export function TestModelPage() {
               </div>
 
               {/* Input */}
-              <div className="p-6 border-t border-white/10">
+              <div className="p-6 border-t border-white/10 flex-shrink-0">
                 <div className="flex space-x-4">
                   <input
                     type="text"
@@ -591,7 +591,7 @@ export function TestModelPage() {
       {/* Publish Modal */}
       {showPublish && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="glass-strong rounded-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto grain-texture">
+          <div className="glass-strong rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto grain-texture">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold gradient-text">Publish Model</h2>
               <button
