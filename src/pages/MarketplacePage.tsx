@@ -296,7 +296,7 @@ export function MarketplacePage() {
                 <Link
                   key={model.id}
                   to={`/models/${model.id}`}
-                  className="scroll-reveal glass-card rounded-2xl hover:scale-105 transition-all duration-300 overflow-hidden group grain-texture"
+                  className="glass-card rounded-2xl hover:scale-105 transition-all duration-300 overflow-hidden group grain-texture"
                   style={{ transitionDelay: `${index * 0.1}s` }}
                 >
                   <div className="p-6">
