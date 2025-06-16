@@ -390,11 +390,13 @@ ${model.knowledge_context}`;
           </div>
         )}
 
-        {/* Messages Container - Increased height and spacing */}
+        {/* Messages Container - Fixed height with proper scrolling */}
         <div 
           ref={messagesContainerRef}
           className="flex-1 overflow-y-auto p-6 space-y-6 min-h-0"
           style={{ 
+            height: '500px', // Fixed height
+            maxHeight: '500px',
             scrollBehavior: 'smooth',
             overscrollBehavior: 'contain'
           }}
@@ -552,7 +554,7 @@ ${model.knowledge_context}`;
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input - Enhanced spacing */}
+        {/* Input - Fixed at bottom */}
         <div className="p-6 border-t border-white/10 flex-shrink-0">
           <div className="flex space-x-4">
             <input

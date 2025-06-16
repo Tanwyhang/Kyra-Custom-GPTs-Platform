@@ -418,361 +418,364 @@ export function TestModelPage() {
   }
 
   return (
-    <div className="fixed inset-0 flex flex-col pt-16">
-      {/* Main Content - Fills remaining space below navbar */}
-      <div className="flex-1 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 h-full py-6">
-            {/* Configuration Panel */}
-            {showConfig && (
-              <div className="lg:col-span-1">
-                <div className="glass-strong rounded-2xl p-6 grain-texture space-y-6 h-full overflow-y-auto">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold gradient-text">Configuration</h3>
-                    <button
-                      onClick={() => {
-                        if (selectedModel) {
-                          setConfig(selectedModel.defaultConfig);
-                        }
-                      }}
-                      className="text-sm text-white/60 hover:text-white transition-colors"
-                    >
-                      Reset to Defaults
-                    </button>
-                  </div>
+    <div className="min-h-screen py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* Configuration Panel */}
+          {showConfig && (
+            <div className="lg:col-span-1">
+              <div className="glass-strong rounded-2xl p-6 grain-texture space-y-6 max-h-[80vh] overflow-y-auto">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold gradient-text">Configuration</h3>
+                  <button
+                    onClick={() => {
+                      if (selectedModel) {
+                        setConfig(selectedModel.defaultConfig);
+                      }
+                    }}
+                    className="text-sm text-white/60 hover:text-white transition-colors"
+                  >
+                    Reset to Defaults
+                  </button>
+                </div>
 
-                  {/* Model Selection */}
-                  <div>
-                    <label className="block text-sm font-medium text-white/80 mb-2">
-                      AI GPT
-                    </label>
-                    <button
-                      onClick={() => setShowModelSelector(true)}
-                      className="w-full glass-input px-3 py-2 rounded-xl text-left flex items-center justify-between"
-                    >
-                      <span>{selectedModel?.name || 'Select GPT'}</span>
-                      <Zap className="w-4 h-4 text-white/50" />
-                    </button>
-                    {selectedModel && (
-                      <p className="text-xs text-white/60 mt-1">{selectedModel.description}</p>
-                    )}
-                  </div>
+                {/* Model Selection */}
+                <div>
+                  <label className="block text-sm font-medium text-white/80 mb-2">
+                    AI GPT
+                  </label>
+                  <button
+                    onClick={() => setShowModelSelector(true)}
+                    className="w-full glass-input px-3 py-2 rounded-xl text-left flex items-center justify-between"
+                  >
+                    <span>{selectedModel?.name || 'Select GPT'}</span>
+                    <Zap className="w-4 h-4 text-white/50" />
+                  </button>
+                  {selectedModel && (
+                    <p className="text-xs text-white/60 mt-1">{selectedModel.description}</p>
+                  )}
+                </div>
 
-                  {/* Temperature */}
-                  <div>
-                    <label className="block text-sm font-medium text-white/80 mb-2">
-                      Temperature: {config.temperature}
-                    </label>
+                {/* Temperature */}
+                <div>
+                  <label className="block text-sm font-medium text-white/80 mb-2">
+                    Temperature: {config.temperature}
+                  </label>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.1"
+                    value={config.temperature}
+                    onChange={(e) => setConfig(prev => ({ ...prev, temperature: parseFloat(e.target.value) }))}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-xs text-white/50 mt-1">
+                    <span>Focused</span>
+                    <span>Creative</span>
+                  </div>
+                </div>
+
+                {/* Top-p */}
+                <div>
+                  <label className="block text-sm font-medium text-white/80 mb-2">
+                    Top-p: {config.topP}
+                  </label>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.1"
+                    value={config.topP}
+                    onChange={(e) => setConfig(prev => ({ ...prev, topP: parseFloat(e.target.value) }))}
+                    className="w-full"
+                  />
+                </div>
+
+                {/* Max Tokens */}
+                <div>
+                  <label className="block text-sm font-medium text-white/80 mb-2">
+                    Max Tokens
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="4096"
+                    value={config.maxTokens}
+                    onChange={(e) => setConfig(prev => ({ ...prev, maxTokens: parseInt(e.target.value) }))}
+                    className="glass-input w-full px-3 py-2 rounded-xl"
+                  />
+                </div>
+
+                {/* Knowledge Enhancement */}
+                <div className="border-t border-white/10 pt-6">
+                  <h4 className="text-sm font-semibold text-white/80 mb-4 flex items-center">
+                    <Database className="w-4 h-4 mr-2" />
+                    Knowledge Enhancement
+                  </h4>
+                  
+                  {/* File Upload */}
+                  <div
+                    className={`border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-colors mb-4 ${
+                      dragActive ? 'border-purple-400 bg-purple-400/10' : 'border-white/20 hover:border-white/30'
+                    }`}
+                    onDragEnter={handleDrag}
+                    onDragLeave={handleDrag}
+                    onDragOver={handleDrag}
+                    onDrop={handleDrop}
+                    onClick={() => document.getElementById('knowledge-files')?.click()}
+                  >
                     <input
-                      type="range"
-                      min="0"
-                      max="1"
-                      step="0.1"
-                      value={config.temperature}
-                      onChange={(e) => setConfig(prev => ({ ...prev, temperature: parseFloat(e.target.value) }))}
-                      className="w-full"
+                      id="knowledge-files"
+                      type="file"
+                      multiple
+                      accept=".pdf,.txt,.csv,.json,.md"
+                      onChange={(e) => handleFileUpload(e.target.files)}
+                      className="hidden"
                     />
-                    <div className="flex justify-between text-xs text-white/50 mt-1">
-                      <span>Focused</span>
-                      <span>Creative</span>
-                    </div>
-                  </div>
-
-                  {/* Top-p */}
-                  <div>
-                    <label className="block text-sm font-medium text-white/80 mb-2">
-                      Top-p: {config.topP}
-                    </label>
-                    <input
-                      type="range"
-                      min="0"
-                      max="1"
-                      step="0.1"
-                      value={config.topP}
-                      onChange={(e) => setConfig(prev => ({ ...prev, topP: parseFloat(e.target.value) }))}
-                      className="w-full"
-                    />
-                  </div>
-
-                  {/* Max Tokens */}
-                  <div>
-                    <label className="block text-sm font-medium text-white/80 mb-2">
-                      Max Tokens
-                    </label>
-                    <input
-                      type="number"
-                      min="1"
-                      max="4096"
-                      value={config.maxTokens}
-                      onChange={(e) => setConfig(prev => ({ ...prev, maxTokens: parseInt(e.target.value) }))}
-                      className="glass-input w-full px-3 py-2 rounded-xl"
-                    />
-                  </div>
-
-                  {/* Knowledge Enhancement */}
-                  <div className="border-t border-white/10 pt-6">
-                    <h4 className="text-sm font-semibold text-white/80 mb-4 flex items-center">
-                      <Database className="w-4 h-4 mr-2" />
-                      Knowledge Enhancement
-                    </h4>
-                    
-                    {/* File Upload */}
-                    <div
-                      className={`border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-colors mb-4 ${
-                        dragActive ? 'border-purple-400 bg-purple-400/10' : 'border-white/20 hover:border-white/30'
-                      }`}
-                      onDragEnter={handleDrag}
-                      onDragLeave={handleDrag}
-                      onDragOver={handleDrag}
-                      onDrop={handleDrop}
-                      onClick={() => document.getElementById('knowledge-files')?.click()}
-                    >
-                      <input
-                        id="knowledge-files"
-                        type="file"
-                        multiple
-                        accept=".pdf,.txt,.csv,.json,.md"
-                        onChange={(e) => handleFileUpload(e.target.files)}
-                        className="hidden"
-                      />
-                      <Upload className="w-6 h-6 mx-auto mb-2 text-white/50" />
-                      <p className="text-sm text-white/70">
-                        Drop files or click to upload
-                      </p>
-                      <p className="text-xs text-white/50 mt-1">
-                        PDF, TXT, CSV, JSON, MD (max 10 files, 50MB each)
-                      </p>
-                    </div>
-
-                    {/* Uploaded Files */}
-                    {uploadedFiles.length > 0 && (
-                      <div className="space-y-2 mb-4">
-                        {uploadedFiles.map((file, index) => (
-                          <div key={index} className="flex items-center justify-between glass-subtle rounded-lg p-2">
-                            <div className="flex items-center">
-                              <FileText className="w-4 h-4 mr-2 text-white/50" />
-                              <span className="text-sm text-white/80 truncate">{file.name}</span>
-                            </div>
-                            <button
-                              onClick={() => removeFile(index)}
-                              className="text-white/50 hover:text-red-400 transition-colors"
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Text Input */}
-                    <textarea
-                      value={knowledgeText}
-                      onChange={(e) => setKnowledgeText(e.target.value)}
-                      rows={4}
-                      className="glass-input w-full px-3 py-2 rounded-xl resize-none"
-                      placeholder="Add context, instructions, or knowledge that will enhance the GPT's responses..."
-                    />
+                    <Upload className="w-6 h-6 mx-auto mb-2 text-white/50" />
+                    <p className="text-sm text-white/70">
+                      Drop files or click to upload
+                    </p>
                     <p className="text-xs text-white/50 mt-1">
-                      This context will be included with every message to provide more relevant responses.
+                      PDF, TXT, CSV, JSON, MD (max 10 files, 50MB each)
                     </p>
                   </div>
 
-                  {/* API Key Management */}
-                  <div className="border-t border-white/10 pt-6">
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="text-sm font-semibold text-white/80">API Configuration</h4>
-                      <div className="flex items-center text-green-400">
-                        <CheckCircle className="w-4 h-4 mr-1" />
-                        <span className="text-xs">Connected</span>
-                      </div>
+                  {/* Uploaded Files */}
+                  {uploadedFiles.length > 0 && (
+                    <div className="space-y-2 mb-4">
+                      {uploadedFiles.map((file, index) => (
+                        <div key={index} className="flex items-center justify-between glass-subtle rounded-lg p-2">
+                          <div className="flex items-center">
+                            <FileText className="w-4 h-4 mr-2 text-white/50" />
+                            <span className="text-sm text-white/80 truncate">{file.name}</span>
+                          </div>
+                          <button
+                            onClick={() => removeFile(index)}
+                            className="text-white/50 hover:text-red-400 transition-colors"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
                     </div>
-                    <button
-                      onClick={() => {
-                        localStorage.removeItem('gemini_api_key');
-                        setApiKeyConfigured(false);
-                        setModelManager(null);
-                      }}
-                      className="text-sm text-white/60 hover:text-white transition-colors"
-                    >
-                      Change API Key
-                    </button>
+                  )}
+
+                  {/* Text Input */}
+                  <textarea
+                    value={knowledgeText}
+                    onChange={(e) => setKnowledgeText(e.target.value)}
+                    rows={4}
+                    className="glass-input w-full px-3 py-2 rounded-xl resize-none"
+                    placeholder="Add context, instructions, or knowledge that will enhance the GPT's responses..."
+                  />
+                  <p className="text-xs text-white/50 mt-1">
+                    This context will be included with every message to provide more relevant responses.
+                  </p>
+                </div>
+
+                {/* API Key Management */}
+                <div className="border-t border-white/10 pt-6">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-sm font-semibold text-white/80">API Configuration</h4>
+                    <div className="flex items-center text-green-400">
+                      <CheckCircle className="w-4 h-4 mr-1" />
+                      <span className="text-xs">Connected</span>
+                    </div>
                   </div>
+                  <button
+                    onClick={() => {
+                      localStorage.removeItem('gemini_api_key');
+                      setApiKeyConfigured(false);
+                      setModelManager(null);
+                    }}
+                    className="text-sm text-white/60 hover:text-white transition-colors"
+                  >
+                    Change API Key
+                  </button>
                 </div>
               </div>
-            )}
+            </div>
+          )}
 
-            {/* Chat Interface */}
-            <div className={`${showConfig ? 'lg:col-span-3' : 'lg:col-span-4'}`}>
-              <div className="glass-strong rounded-2xl overflow-hidden grain-texture h-full flex flex-col">
-                {/* Integrated Header */}
-                <div className="flex items-center justify-between p-6 border-b border-white/10 flex-shrink-0">
-                  {/* Left side - AI Assistant info */}
-                  <div className="flex items-center">
-                    <div className="w-10 h-10 rounded-xl icon-bg-primary flex items-center justify-center mr-3 glow-effect">
-                      <Sparkles className="w-5 h-5 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold gradient-text">{selectedModel?.name || 'AI GPT Tester'}</h3>
-                      <p className="text-sm text-white/60">Powered by Gemini 1.5 Flash</p>
-                    </div>
+          {/* Chat Interface */}
+          <div className={`${showConfig ? 'lg:col-span-3' : 'lg:col-span-4'}`}>
+            <div className="glass-strong rounded-2xl overflow-hidden grain-texture">
+              {/* Header */}
+              <div className="flex items-center justify-between p-6 border-b border-white/10">
+                {/* Left side - AI Assistant info */}
+                <div className="flex items-center">
+                  <div className="w-10 h-10 rounded-xl icon-bg-primary flex items-center justify-center mr-3 glow-effect">
+                    <Sparkles className="w-5 h-5 text-white" />
                   </div>
+                  <div>
+                    <h3 className="font-semibold gradient-text">{selectedModel?.name || 'AI GPT Tester'}</h3>
+                    <p className="text-sm text-white/60">Powered by Gemini 1.5 Flash</p>
+                  </div>
+                </div>
 
-                  {/* Center - Status indicators */}
-                  <div className="hidden md:flex items-center space-x-4">
+                {/* Center - Status indicators */}
+                <div className="hidden md:flex items-center space-x-4">
+                  <div className="flex items-center space-x-2 glass-subtle px-3 py-2 rounded-xl">
+                    <Clock className="w-4 h-4 text-white/60" />
+                    <span className="text-sm text-white/80">{tokenCount} tokens</span>
+                  </div>
+                  <div className="flex items-center space-x-2 glass-subtle px-3 py-2 rounded-xl">
+                    <MessageSquare className="w-4 h-4 text-white/60" />
+                    <span className="text-sm text-white/80">{messages.length} messages</span>
+                  </div>
+                  {(knowledgeText.trim() || uploadedFiles.length > 0) && (
                     <div className="flex items-center space-x-2 glass-subtle px-3 py-2 rounded-xl">
-                      <Clock className="w-4 h-4 text-white/60" />
-                      <span className="text-sm text-white/80">{tokenCount} tokens</span>
+                      <Database className="w-4 h-4 text-green-400" />
+                      <span className="text-sm text-green-400">KB Active</span>
                     </div>
-                    <div className="flex items-center space-x-2 glass-subtle px-3 py-2 rounded-xl">
-                      <MessageSquare className="w-4 h-4 text-white/60" />
-                      <span className="text-sm text-white/80">{messages.length} messages</span>
-                    </div>
+                  )}
+                </div>
+
+                {/* Right side - Action buttons */}
+                <div className="flex items-center space-x-3">
+                  <button
+                    onClick={resetConversation}
+                    className="flex items-center px-3 py-2 glass-subtle rounded-xl hover:glass transition-all duration-300 text-white/80 hover:text-white"
+                    title="Reset conversation"
+                  >
+                    <RotateCcw className="w-4 h-4 mr-2" />
+                    <span className="hidden sm:inline">Reset</span>
+                  </button>
+                  
+                  <button
+                    onClick={() => setShowConfig(!showConfig)}
+                    className={`flex items-center px-3 py-2 rounded-xl transition-all duration-300 ${
+                      showConfig ? 'button-primary' : 'glass-subtle hover:glass'
+                    } text-white`}
+                    title="Configure GPT"
+                  >
+                    <Settings className="w-4 h-4 mr-2" />
+                    <span className="hidden sm:inline">Configure</span>
+                  </button>
+                  
+                  <button
+                    onClick={() => setShowPublish(true)}
+                    className="flex items-center px-3 py-2 rounded-xl button-primary text-white transition-all duration-300 hover:scale-105"
+                    title="Publish GPT"
+                  >
+                    <Save className="w-4 h-4 mr-2" />
+                    <span className="hidden sm:inline">Publish</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Mobile status indicators */}
+              <div className="md:hidden flex items-center justify-center space-x-4 px-6 py-3 border-b border-white/10">
+                <div className="flex items-center space-x-2 glass-subtle px-3 py-1 rounded-lg">
+                  <Clock className="w-3 h-3 text-white/60" />
+                  <span className="text-xs text-white/80">{tokenCount} tokens</span>
+                </div>
+                <div className="flex items-center space-x-2 glass-subtle px-3 py-1 rounded-lg">
+                  <MessageSquare className="w-3 h-3 text-white/60" />
+                  <span className="text-xs text-white/80">{messages.length} messages</span>
+                </div>
+                {(knowledgeText.trim() || uploadedFiles.length > 0) && (
+                  <div className="flex items-center space-x-2 glass-subtle px-3 py-1 rounded-lg">
+                    <Database className="w-3 h-3 text-green-400" />
+                    <span className="text-xs text-green-400">KB</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Messages - Fixed height container */}
+              <div 
+                className="overflow-y-auto p-6 space-y-4"
+                style={{ 
+                  height: '500px',
+                  maxHeight: '500px'
+                }}
+              >
+                {messages.length === 0 ? (
+                  <div className="text-center py-12">
+                    <MessageSquare className="w-12 h-12 mx-auto mb-4 text-white/30" />
+                    <p className="text-white/60">Start a conversation to test your AI GPT</p>
+                    <p className="text-white/40 text-sm mt-2">
+                      Currently using: <span className="text-purple-400">{selectedModel?.name}</span>
+                    </p>
                     {(knowledgeText.trim() || uploadedFiles.length > 0) && (
-                      <div className="flex items-center space-x-2 glass-subtle px-3 py-2 rounded-xl">
-                        <Database className="w-4 h-4 text-green-400" />
-                        <span className="text-sm text-green-400">KB Active</span>
+                      <div className="mt-4 flex items-center justify-center text-green-400">
+                        <Database className="w-4 h-4 mr-2" />
+                        <span className="text-sm">Knowledge base is active</span>
                       </div>
                     )}
                   </div>
-
-                  {/* Right side - Action buttons */}
-                  <div className="flex items-center space-x-3">
-                    <button
-                      onClick={resetConversation}
-                      className="flex items-center px-3 py-2 glass-subtle rounded-xl hover:glass transition-all duration-300 text-white/80 hover:text-white"
-                      title="Reset conversation"
+                ) : (
+                  messages.map((message) => (
+                    <div
+                      key={message.id}
+                      className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                     >
-                      <RotateCcw className="w-4 h-4 mr-2" />
-                      <span className="hidden sm:inline">Reset</span>
-                    </button>
-                    
-                    <button
-                      onClick={() => setShowConfig(!showConfig)}
-                      className={`flex items-center px-3 py-2 rounded-xl transition-all duration-300 ${
-                        showConfig ? 'button-primary' : 'glass-subtle hover:glass'
-                      } text-white`}
-                      title="Configure GPT"
-                    >
-                      <Settings className="w-4 h-4 mr-2" />
-                      <span className="hidden sm:inline">Configure</span>
-                    </button>
-                    
-                    <button
-                      onClick={() => setShowPublish(true)}
-                      className="flex items-center px-3 py-2 rounded-xl button-primary text-white transition-all duration-300 hover:scale-105"
-                      title="Publish GPT"
-                    >
-                      <Save className="w-4 h-4 mr-2" />
-                      <span className="hidden sm:inline">Publish</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Mobile status indicators */}
-                <div className="md:hidden flex items-center justify-center space-x-4 px-6 py-3 border-b border-white/10">
-                  <div className="flex items-center space-x-2 glass-subtle px-3 py-1 rounded-lg">
-                    <Clock className="w-3 h-3 text-white/60" />
-                    <span className="text-xs text-white/80">{tokenCount} tokens</span>
-                  </div>
-                  <div className="flex items-center space-x-2 glass-subtle px-3 py-1 rounded-lg">
-                    <MessageSquare className="w-3 h-3 text-white/60" />
-                    <span className="text-xs text-white/80">{messages.length} messages</span>
-                  </div>
-                  {(knowledgeText.trim() || uploadedFiles.length > 0) && (
-                    <div className="flex items-center space-x-2 glass-subtle px-3 py-1 rounded-lg">
-                      <Database className="w-3 h-3 text-green-400" />
-                      <span className="text-xs text-green-400">KB</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Messages */}
-                <div className="flex-1 overflow-y-auto p-6 space-y-4">
-                  {messages.length === 0 ? (
-                    <div className="text-center py-12">
-                      <MessageSquare className="w-12 h-12 mx-auto mb-4 text-white/30" />
-                      <p className="text-white/60">Start a conversation to test your AI GPT</p>
-                      <p className="text-white/40 text-sm mt-2">
-                        Currently using: <span className="text-purple-400">{selectedModel?.name}</span>
-                      </p>
-                      {(knowledgeText.trim() || uploadedFiles.length > 0) && (
-                        <div className="mt-4 flex items-center justify-center text-green-400">
-                          <Database className="w-4 h-4 mr-2" />
-                          <span className="text-sm">Knowledge base is active</span>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    messages.map((message) => (
-                      <div
-                        key={message.id}
-                        className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                      >
-                        <div className={`max-w-3xl ${message.role === 'user' ? 'order-2' : 'order-1'}`}>
-                          <div className="flex items-start space-x-3">
-                            {message.role === 'assistant' && (
-                              <div className="w-8 h-8 rounded-lg icon-bg-primary flex items-center justify-center flex-shrink-0">
-                                <Bot className="w-4 h-4 text-white" />
-                              </div>
-                            )}
-                            <div className={`rounded-2xl p-4 ${
-                              message.role === 'user' 
-                                ? 'button-primary text-white' 
-                                : 'glass-subtle text-white/90'
-                            }`}>
-                              <p className="whitespace-pre-wrap">{message.content}</p>
-                              <p className="text-xs opacity-60 mt-2">
-                                {message.timestamp.toLocaleTimeString()}
-                              </p>
+                      <div className={`max-w-3xl ${message.role === 'user' ? 'order-2' : 'order-1'}`}>
+                        <div className="flex items-start space-x-3">
+                          {message.role === 'assistant' && (
+                            <div className="w-8 h-8 rounded-lg icon-bg-primary flex items-center justify-center flex-shrink-0">
+                              <Bot className="w-4 h-4 text-white" />
                             </div>
-                            {message.role === 'user' && (
-                              <div className="w-8 h-8 rounded-lg glass-subtle flex items-center justify-center flex-shrink-0">
-                                <UserIcon className="w-4 h-4 text-white" />
-                              </div>
-                            )}
+                          )}
+                          <div className={`rounded-2xl p-4 ${
+                            message.role === 'user' 
+                              ? 'button-primary text-white' 
+                              : 'glass-subtle text-white/90'
+                          }`}>
+                            <p className="whitespace-pre-wrap">{message.content}</p>
+                            <p className="text-xs opacity-60 mt-2">
+                              {message.timestamp.toLocaleTimeString()}
+                            </p>
                           </div>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                  {isLoading && (
-                    <div className="flex justify-start">
-                      <div className="flex items-start space-x-3">
-                        <div className="w-8 h-8 rounded-lg icon-bg-primary flex items-center justify-center">
-                          <Bot className="w-4 h-4 text-white" />
-                        </div>
-                        <div className="glass-subtle rounded-2xl p-4">
-                          <div className="flex space-x-2">
-                            <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce"></div>
-                            <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                            <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                          </div>
+                          {message.role === 'user' && (
+                            <div className="w-8 h-8 rounded-lg glass-subtle flex items-center justify-center flex-shrink-0">
+                              <UserIcon className="w-4 h-4 text-white" />
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
-                  )}
-                </div>
-
-                {/* Input */}
-                <div className="p-6 border-t border-white/10 flex-shrink-0">
-                  <div className="flex space-x-4">
-                    <input
-                      type="text"
-                      value={inputMessage}
-                      onChange={(e) => setInputMessage(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                      placeholder="Type your message..."
-                      className="flex-1 glass-input px-4 py-3 rounded-xl focus:ring-2 focus:ring-purple-500"
-                      disabled={isLoading}
-                    />
-                    <button
-                      onClick={handleSendMessage}
-                      disabled={!inputMessage.trim() || isLoading}
-                      className="button-primary px-6 py-3 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
-                    >
-                      <Send className="w-5 h-5" />
-                    </button>
+                  ))
+                )}
+                {isLoading && (
+                  <div className="flex justify-start">
+                    <div className="flex items-start space-x-3">
+                      <div className="w-8 h-8 rounded-lg icon-bg-primary flex items-center justify-center">
+                        <Bot className="w-4 h-4 text-white" />
+                      </div>
+                      <div className="glass-subtle rounded-2xl p-4">
+                        <div className="flex space-x-2">
+                          <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce"></div>
+                          <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                          <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
+                )}
+              </div>
+
+              {/* Input - Fixed at bottom */}
+              <div className="p-6 border-t border-white/10">
+                <div className="flex space-x-4">
+                  <input
+                    type="text"
+                    value={inputMessage}
+                    onChange={(e) => setInputMessage(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                    placeholder="Type your message..."
+                    className="flex-1 glass-input px-4 py-3 rounded-xl focus:ring-2 focus:ring-purple-500"
+                    disabled={isLoading}
+                  />
+                  <button
+                    onClick={handleSendMessage}
+                    disabled={!inputMessage.trim() || isLoading}
+                    className="button-primary px-6 py-3 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
+                  >
+                    <Send className="w-5 h-5" />
+                  </button>
                 </div>
               </div>
             </div>
