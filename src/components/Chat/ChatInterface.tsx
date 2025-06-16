@@ -9,8 +9,7 @@ import {
   Copy, 
   Check, 
   Zap, 
-  Database,
-  Sparkles
+  Database
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -80,14 +79,7 @@ export function ChatInterface({ model }: ChatInterfaceProps) {
   const [showConfig, setShowConfig] = useState(false);
 
   // Refs
-  const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  // Auto-scroll to bottom when new messages arrive
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
 
   // Focus input on mount
   useEffect(() => {
@@ -108,18 +100,7 @@ export function ChatInterface({ model }: ChatInterfaceProps) {
     setInputMessage('');
     setIsLoading(true);
 
-    // Add loading message
-    const loadingMessage: Message = {
-      id: (Date.now() + 1).toString(),
-      role: 'assistant',
-      content: '',
-      timestamp: new Date(),
-      isLoading: true
-    };
-    setMessages(prev => [...prev, loadingMessage]);
-
     try {
-      // Simulate API call to Gemini with GPT configuration
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/gemini-chat`, {
         method: 'POST',
         headers: {
@@ -149,24 +130,23 @@ export function ChatInterface({ model }: ChatInterfaceProps) {
       }
 
       const assistantMessage: Message = {
-        id: (Date.now() + 2).toString(),
+        id: (Date.now() + 1).toString(),
         role: 'assistant',
         content: data.response || 'I apologize, but I encountered an issue generating a response. Please try again.',
         timestamp: new Date()
       };
 
-      // Remove loading message and add real response
-      setMessages(prev => prev.filter(m => !m.isLoading).concat(assistantMessage));
+      setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
       console.error('Error sending message:', error);
       const errorMessage: Message = {
-        id: (Date.now() + 2).toString(),
+        id: (Date.now() + 1).toString(),
         role: 'assistant',
         content: 'I apologize, but I encountered an error. Please try again in a moment.',
         timestamp: new Date()
       };
       
-      setMessages(prev => prev.filter(m => !m.isLoading).concat(errorMessage));
+      setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
     }
@@ -200,262 +180,275 @@ export function ChatInterface({ model }: ChatInterfaceProps) {
   };
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="glass-strong rounded-2xl overflow-hidden grain-texture h-full flex flex-col">
-        {/* Header - Compact like TestGPT */}
-        <div className="flex items-center justify-between p-4 border-b border-white/10 flex-shrink-0">
-          <div className="flex items-center">
-            <div className="w-8 h-8 rounded-xl icon-bg-primary flex items-center justify-center mr-3 glow-effect">
-              <Bot className="w-4 h-4 text-white" />
-            </div>
-            <div>
-              <h3 className="font-semibold gradient-text text-sm">{model.title}</h3>
-              <p className="text-xs text-white/60">Interactive Chat</p>
-            </div>
+    <div className="glass-strong rounded-2xl overflow-hidden grain-texture">
+      {/* Header - Exact same as TestGPT */}
+      <div className="flex items-center justify-between p-6 border-b border-white/10">
+        <div className="flex items-center">
+          <div className="w-10 h-10 rounded-xl icon-bg-primary flex items-center justify-center mr-3 glow-effect">
+            <Bot className="w-5 h-5 text-white" />
           </div>
-
-          <div className="flex items-center space-x-2">
-            <div className="hidden sm:flex items-center space-x-2">
-              <div className="flex items-center space-x-1 glass-subtle px-2 py-1 rounded-lg">
-                <MessageSquare className="w-3 h-3 text-white/60" />
-                <span className="text-xs text-white/80">{messages.filter(m => !m.isLoading).length}</span>
-              </div>
-              
-              {model.knowledge_context && (
-                <div className="flex items-center space-x-1 glass-subtle px-2 py-1 rounded-lg">
-                  <Database className="w-3 h-3 text-green-400" />
-                  <span className="text-xs text-green-400">KB</span>
-                </div>
-              )}
-            </div>
-            
-            <button
-              onClick={resetConversation}
-              className="flex items-center px-2 py-1 glass-subtle rounded-lg hover:glass transition-all duration-300 text-white/80 hover:text-white"
-              title="Reset conversation"
-            >
-              <RotateCcw className="w-3 h-3 mr-1" />
-              <span className="hidden sm:inline text-xs">Reset</span>
-            </button>
-            
-            <button
-              onClick={() => setShowConfig(!showConfig)}
-              className={`flex items-center px-2 py-1 rounded-lg transition-all duration-300 ${
-                showConfig ? 'button-primary' : 'glass-subtle hover:glass'
-              } text-white`}
-              title="Configure GPT"
-            >
-              <Settings className="w-3 h-3 mr-1" />
-              <span className="hidden sm:inline text-xs">Config</span>
-            </button>
+          <div>
+            <h3 className="font-semibold gradient-text">{model.title}</h3>
+            <p className="text-sm text-white/60">Powered by Gemini 1.5 Flash</p>
           </div>
         </div>
 
-        {/* Configuration Panel - Compact */}
-        {showConfig && (
-          <div className="p-4 border-b border-white/10 glass-subtle flex-shrink-0">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-xs font-medium text-white/80 mb-2">
-                  Temperature: {config.temperature}
-                </label>
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.1"
-                  value={config.temperature}
-                  onChange={(e) => setConfig(prev => ({ ...prev, temperature: parseFloat(e.target.value) }))}
-                  className="w-full h-1"
-                />
-                <div className="flex justify-between text-xs text-white/50 mt-1">
-                  <span>Focused</span>
-                  <span>Creative</span>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-white/80 mb-2">
-                  Top-p: {config.topP}
-                </label>
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.1"
-                  value={config.topP}
-                  onChange={(e) => setConfig(prev => ({ ...prev, topP: parseFloat(e.target.value) }))}
-                  className="w-full h-1"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-white/80 mb-2">
-                  Max Tokens
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  max="4096"
-                  value={config.maxTokens}
-                  onChange={(e) => setConfig(prev => ({ ...prev, maxTokens: parseInt(e.target.value) }))}
-                  className="glass-input w-full px-2 py-1 rounded-lg text-xs"
-                />
-              </div>
+        {/* Center - Status indicators */}
+        <div className="hidden md:flex items-center space-x-2">
+          <div className="flex items-center space-x-1 glass-subtle px-2 py-1 rounded-lg">
+            <MessageSquare className="w-3 h-3 text-white/60" />
+            <span className="text-xs text-white/80">{messages.length}</span>
+          </div>
+          {model.knowledge_context && (
+            <div className="flex items-center glass-subtle px-2 py-1 rounded-lg">
+              <Database className="w-3 h-3 text-green-400" />
             </div>
+          )}
+        </div>
+
+        {/* Right side - Action buttons */}
+        <div className="flex items-center space-x-3">
+          <button
+            onClick={resetConversation}
+            className="flex items-center px-3 py-2 glass-subtle rounded-xl hover:glass transition-all duration-300 text-white/80 hover:text-white"
+            title="Reset conversation"
+          >
+            <RotateCcw className="w-4 h-4 mr-2" />
+            <span className="hidden sm:inline">Reset</span>
+          </button>
+          
+          <button
+            onClick={() => setShowConfig(!showConfig)}
+            className={`flex items-center px-3 py-2 rounded-xl transition-all duration-300 ${
+              showConfig ? 'button-primary' : 'glass-subtle hover:glass'
+            } text-white`}
+            title="Configure GPT"
+          >
+            <Settings className="w-4 h-4 mr-2" />
+            <span className="hidden sm:inline">Configure</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile status indicators */}
+      <div className="md:hidden flex items-center justify-center space-x-4 px-6 py-3 border-b border-white/10">
+        <div className="flex items-center space-x-2 glass-subtle px-3 py-1 rounded-lg">
+          <MessageSquare className="w-3 h-3 text-white/60" />
+          <span className="text-xs text-white/80">{messages.length} messages</span>
+        </div>
+        {model.knowledge_context && (
+          <div className="flex items-center space-x-2 glass-subtle px-3 py-1 rounded-lg">
+            <Database className="w-3 h-3 text-green-400" />
+            <span className="text-xs text-green-400">KB</span>
           </div>
         )}
+      </div>
 
-        {/* Messages Container - Fixed height like TestGPT */}
-        <div 
-          ref={messagesContainerRef}
-          className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0"
-          style={{ 
-            height: '500px',
-            maxHeight: '500px',
-            scrollBehavior: 'smooth',
-            overscrollBehavior: 'contain'
-          }}
-        >
-          {messages.map((message) => (
+      {/* Configuration Panel - Same as TestGPT */}
+      {showConfig && (
+        <div className="p-6 border-b border-white/10 glass-subtle">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-white/80 mb-2">
+                Temperature: {config.temperature}
+              </label>
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.1"
+                value={config.temperature}
+                onChange={(e) => setConfig(prev => ({ ...prev, temperature: parseFloat(e.target.value) }))}
+                className="w-full"
+              />
+              <div className="flex justify-between text-xs text-white/50 mt-1">
+                <span>Focused</span>
+                <span>Creative</span>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-white/80 mb-2">
+                Top-p: {config.topP}
+              </label>
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.1"
+                value={config.topP}
+                onChange={(e) => setConfig(prev => ({ ...prev, topP: parseFloat(e.target.value) }))}
+                className="w-full"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-white/80 mb-2">
+                Max Tokens
+              </label>
+              <input
+                type="number"
+                min="1"
+                max="4096"
+                value={config.maxTokens}
+                onChange={(e) => setConfig(prev => ({ ...prev, maxTokens: parseInt(e.target.value) }))}
+                className="glass-input w-full px-3 py-2 rounded-xl text-sm"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Messages - Fixed height container exactly like TestGPT */}
+      <div 
+        className="overflow-y-auto p-6 space-y-4"
+        style={{ 
+          height: '500px',
+          maxHeight: '500px'
+        }}
+      >
+        {messages.length === 0 ? (
+          <div className="text-center py-12">
+            <MessageSquare className="w-12 h-12 mx-auto mb-4 text-white/30" />
+            <p className="text-white/60">Start a conversation to test your AI GPT</p>
+            <p className="text-white/40 text-sm mt-2">
+              Currently using: <span className="text-purple-400">{model.title}</span>
+            </p>
+            {model.knowledge_context && (
+              <div className="mt-4 flex items-center justify-center text-green-400">
+                <Database className="w-4 h-4 mr-2" />
+                <span className="text-sm">Knowledge base is active</span>
+              </div>
+            )}
+          </div>
+        ) : (
+          messages.map((message) => (
             <div
               key={message.id}
               className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
-              <div className={`max-w-[85%] ${message.role === 'user' ? 'order-2' : 'order-1'}`}>
+              <div className={`max-w-3xl ${message.role === 'user' ? 'order-2' : 'order-1'}`}>
                 <div className="flex items-start space-x-3">
                   {message.role === 'assistant' && (
                     <div className="w-8 h-8 rounded-lg icon-bg-primary flex items-center justify-center flex-shrink-0">
                       <Bot className="w-4 h-4 text-white" />
                     </div>
                   )}
-                  
-                  <div className={`rounded-2xl p-4 relative group ${
+                  <div className={`rounded-2xl p-4 ${
                     message.role === 'user' 
                       ? 'button-primary text-white' 
                       : 'glass-subtle text-white/90'
                   }`}>
-                    {message.isLoading ? (
-                      <div className="flex space-x-2">
-                        <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce"></div>
-                        <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                        <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                      </div>
+                    {message.role === 'user' ? (
+                      <p className="whitespace-pre-wrap">{message.content}</p>
                     ) : (
-                      <>
-                        {message.role === 'user' ? (
-                          <p className="whitespace-pre-wrap break-words leading-relaxed text-sm">{message.content}</p>
-                        ) : (
-                          <div className="prose prose-invert prose-sm max-w-none">
-                            <ReactMarkdown 
-                              remarkPlugins={[remarkGfm]}
-                              components={{
-                                code: ({ node, inline, className, children, ...props }) => {
-                                  return inline ? (
-                                    <code className="bg-white/10 px-1 py-0.5 rounded text-xs font-mono" {...props}>
-                                      {children}
-                                    </code>
-                                  ) : (
-                                    <pre className="bg-white/5 p-3 rounded-lg overflow-x-auto">
-                                      <code className="text-xs font-mono" {...props}>
-                                        {children}
-                                      </code>
-                                    </pre>
-                                  );
-                                },
-                                blockquote: ({ children }) => (
-                                  <blockquote className="border-l-4 border-purple-400 pl-3 italic text-white/80">
-                                    {children}
-                                  </blockquote>
-                                ),
-                                table: ({ children }) => (
-                                  <div className="overflow-x-auto">
-                                    <table className="min-w-full border-collapse border border-white/20">
-                                      {children}
-                                    </table>
-                                  </div>
-                                ),
-                                th: ({ children }) => (
-                                  <th className="border border-white/20 px-2 py-1 bg-white/10 font-semibold text-left text-xs">
-                                    {children}
-                                  </th>
-                                ),
-                                td: ({ children }) => (
-                                  <td className="border border-white/20 px-2 py-1 text-xs">
-                                    {children}
-                                  </td>
-                                ),
-                                ul: ({ children }) => (
-                                  <ul className="list-disc list-inside space-y-1">
-                                    {children}
-                                  </ul>
-                                ),
-                                ol: ({ children }) => (
-                                  <ol className="list-decimal list-inside space-y-1">
-                                    {children}
-                                  </ol>
-                                ),
-                                h1: ({ children }) => (
-                                  <h1 className="text-lg font-bold gradient-text mb-2">
-                                    {children}
-                                  </h1>
-                                ),
-                                h2: ({ children }) => (
-                                  <h2 className="text-base font-bold gradient-text mb-2">
-                                    {children}
-                                  </h2>
-                                ),
-                                h3: ({ children }) => (
-                                  <h3 className="text-sm font-bold gradient-text mb-1">
-                                    {children}
-                                  </h3>
-                                ),
-                                p: ({ children }) => (
-                                  <p className="mb-2 last:mb-0 break-words leading-relaxed text-sm">
-                                    {children}
-                                  </p>
-                                ),
-                                strong: ({ children }) => (
-                                  <strong className="font-bold text-white">
-                                    {children}
-                                  </strong>
-                                ),
-                                em: ({ children }) => (
-                                  <em className="italic text-white/90">
-                                    {children}
-                                  </em>
-                                ),
-                                hr: () => (
-                                  <hr className="border-white/20 my-4" />
-                                )
-                              }}
-                            >
-                              {message.content}
-                            </ReactMarkdown>
-                          </div>
-                        )}
-                        <div className="flex items-center justify-between mt-2">
-                          <p className="text-xs opacity-60">
-                            {message.timestamp.toLocaleTimeString()}
-                          </p>
-                          {message.role === 'assistant' && (
-                            <button
-                              onClick={() => copyMessage(message.id, message.content)}
-                              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-white/10 rounded"
-                              title="Copy message"
-                            >
-                              {copiedMessageId === message.id ? (
-                                <Check className="w-3 h-3 text-green-400" />
+                      <div className="prose prose-invert prose-base max-w-none">
+                        <ReactMarkdown 
+                          remarkPlugins={[remarkGfm]}
+                          components={{
+                            code: ({ node, inline, className, children, ...props }) => {
+                              return inline ? (
+                                <code className="bg-white/10 px-1 py-0.5 rounded text-sm font-mono" {...props}>
+                                  {children}
+                                </code>
                               ) : (
-                                <Copy className="w-3 h-3" />
-                              )}
-                            </button>
-                          )}
-                        </div>
-                      </>
+                                <pre className="bg-white/5 p-4 rounded-lg overflow-x-auto">
+                                  <code className="text-sm font-mono" {...props}>
+                                    {children}
+                                  </code>
+                                </pre>
+                              );
+                            },
+                            blockquote: ({ children }) => (
+                              <blockquote className="border-l-4 border-purple-400 pl-4 italic text-white/80">
+                                {children}
+                              </blockquote>
+                            ),
+                            table: ({ children }) => (
+                              <div className="overflow-x-auto">
+                                <table className="min-w-full border-collapse border border-white/20">
+                                  {children}
+                                </table>
+                              </div>
+                            ),
+                            th: ({ children }) => (
+                              <th className="border border-white/20 px-3 py-2 bg-white/10 font-semibold text-left">
+                                {children}
+                              </th>
+                            ),
+                            td: ({ children }) => (
+                              <td className="border border-white/20 px-3 py-2">
+                                {children}
+                              </td>
+                            ),
+                            ul: ({ children }) => (
+                              <ul className="list-disc list-inside space-y-2">
+                                {children}
+                              </ul>
+                            ),
+                            ol: ({ children }) => (
+                              <ol className="list-decimal list-inside space-y-2">
+                                {children}
+                              </ol>
+                            ),
+                            h1: ({ children }) => (
+                              <h1 className="text-xl font-bold gradient-text mb-3">
+                                {children}
+                              </h1>
+                            ),
+                            h2: ({ children }) => (
+                              <h2 className="text-lg font-bold gradient-text mb-3">
+                                {children}
+                              </h2>
+                            ),
+                            h3: ({ children }) => (
+                              <h3 className="text-base font-bold gradient-text mb-2">
+                                {children}
+                              </h3>
+                            ),
+                            p: ({ children }) => (
+                              <p className="mb-3 last:mb-0 break-words leading-relaxed">
+                                {children}
+                              </p>
+                            ),
+                            strong: ({ children }) => (
+                              <strong className="font-bold text-white">
+                                {children}
+                              </strong>
+                            ),
+                            em: ({ children }) => (
+                              <em className="italic text-white/90">
+                                {children}
+                              </em>
+                            ),
+                            hr: () => (
+                              <hr className="border-white/20 my-6" />
+                            )
+                          }}
+                        >
+                          {message.content}
+                        </ReactMarkdown>
+                      </div>
                     )}
+                    <div className="flex items-center justify-between mt-3">
+                      <p className="text-xs opacity-60">
+                        {message.timestamp.toLocaleTimeString()}
+                      </p>
+                      {message.role === 'assistant' && (
+                        <button
+                          onClick={() => copyMessage(message.id, message.content)}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-white/10 rounded"
+                          title="Copy message"
+                        >
+                          {copiedMessageId === message.id ? (
+                            <Check className="w-3 h-3 text-green-400" />
+                          ) : (
+                            <Copy className="w-3 h-3" />
+                          )}
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  
                   {message.role === 'user' && (
                     <div className="w-8 h-8 rounded-lg glass-subtle flex items-center justify-center flex-shrink-0">
                       <UserIcon className="w-4 h-4 text-white" />
@@ -464,40 +457,46 @@ export function ChatInterface({ model }: ChatInterfaceProps) {
                 </div>
               </div>
             </div>
-          ))}
-          {/* Invisible element for auto-scroll reference */}
-          <div ref={messagesEndRef} />
-        </div>
-
-        {/* Input - Fixed at bottom like TestGPT */}
-        <div className="p-4 border-t border-white/10 flex-shrink-0">
-          <div className="flex space-x-3">
-            <input
-              ref={inputRef}
-              type="text"
-              value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder={`Chat with ${model.title}...`}
-              className="flex-1 glass-input px-4 py-3 rounded-xl focus:ring-2 focus:ring-purple-500 text-sm"
-              disabled={isLoading}
-            />
-            <button
-              onClick={handleSendMessage}
-              disabled={!inputMessage.trim() || isLoading}
-              className="button-primary px-6 py-3 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105"
-            >
-              <Send className="w-4 h-4" />
-            </button>
-          </div>
-          
-          <div className="flex items-center justify-between mt-2 text-xs text-white/50">
-            <span>Press Enter to send, Shift+Enter for new line</span>
-            <div className="flex items-center space-x-2">
-              <Zap className="w-3 h-3" />
-              <span>Powered by Gemini 1.5 Flash</span>
+          ))
+        )}
+        {isLoading && (
+          <div className="flex justify-start">
+            <div className="flex items-start space-x-3">
+              <div className="w-8 h-8 rounded-lg icon-bg-primary flex items-center justify-center">
+                <Bot className="w-4 h-4 text-white" />
+              </div>
+              <div className="glass-subtle rounded-2xl p-4">
+                <div className="flex space-x-2">
+                  <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce"></div>
+                  <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                  <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                </div>
+              </div>
             </div>
           </div>
+        )}
+      </div>
+
+      {/* Input - Fixed at bottom exactly like TestGPT */}
+      <div className="p-6 border-t border-white/10">
+        <div className="flex space-x-4">
+          <input
+            ref={inputRef}
+            type="text"
+            value={inputMessage}
+            onChange={(e) => setInputMessage(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder="Type your message..."
+            className="flex-1 glass-input px-4 py-3 rounded-xl focus:ring-2 focus:ring-purple-500"
+            disabled={isLoading}
+          />
+          <button
+            onClick={handleSendMessage}
+            disabled={!inputMessage.trim() || isLoading}
+            className="button-primary px-6 py-3 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
+          >
+            <Send className="w-5 h-5" />
+          </button>
         </div>
       </div>
     </div>
