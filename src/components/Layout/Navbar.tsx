@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Brain, Search, TestTube, Upload, BarChart3, Menu, X } from 'lucide-react';
+import { Brain, Search, TestTube, Menu, X } from 'lucide-react';
 
 export function Navbar() {
   const location = useLocation();
@@ -47,30 +47,6 @@ export function Navbar() {
               <Search className="w-4 h-4" />
               <span>Marketplace</span>
             </Link>
-
-            <Link
-              to="/upload"
-              className={`flex items-center space-x-2 px-5 py-3 rounded-2xl text-sm font-semibold transition-all duration-300 ${
-                isActive('/upload')
-                  ? 'glass-strong text-white glow-effect'
-                  : 'glass-subtle text-white/90 hover:text-white hover:glass'
-              }`}
-            >
-              <Upload className="w-4 h-4" />
-              <span>Upload</span>
-            </Link>
-
-            <Link
-              to="/dashboard"
-              className={`flex items-center space-x-2 px-5 py-3 rounded-2xl text-sm font-semibold transition-all duration-300 ${
-                isActive('/dashboard')
-                  ? 'glass-strong text-white glow-effect'
-                  : 'glass-subtle text-white/90 hover:text-white hover:glass'
-              }`}
-            >
-              <BarChart3 className="w-4 h-4" />
-              <span>Dashboard</span>
-            </Link>
           </div>
 
           {/* Mobile menu button */}
@@ -104,24 +80,6 @@ export function Navbar() {
               >
                 <Search className="w-4 h-4" />
                 <span>Marketplace</span>
-              </Link>
-
-              <Link
-                to="/upload"
-                onClick={() => setIsMenuOpen(false)}
-                className="flex items-center space-x-3 px-4 py-3 rounded-2xl text-sm font-semibold text-white/90 hover:text-white glass-subtle hover:glass transition-all duration-300"
-              >
-                <Upload className="w-4 h-4" />
-                <span>Upload</span>
-              </Link>
-
-              <Link
-                to="/dashboard"
-                onClick={() => setIsMenuOpen(false)}
-                className="flex items-center space-x-3 px-4 py-3 rounded-2xl text-sm font-semibold text-white/90 hover:text-white glass-subtle hover:glass transition-all duration-300"
-              >
-                <BarChart3 className="w-4 h-4" />
-                <span>Dashboard</span>
               </Link>
             </div>
           </div>

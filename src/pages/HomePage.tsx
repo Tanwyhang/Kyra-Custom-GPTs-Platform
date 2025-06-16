@@ -17,7 +17,7 @@ interface FeaturedModel {
   };
 }
 
-// Mock featured models
+// Featured models for demonstration
 const FEATURED_MODELS: FeaturedModel[] = [
   {
     id: '1',
@@ -51,6 +51,39 @@ const FEATURED_MODELS: FeaturedModel[] = [
     download_count: 567,
     is_verified: false,
     uploader: { display_name: 'Mobile Dev' }
+  },
+  {
+    id: '4',
+    title: 'Object Detection YOLO',
+    description: 'Fast and accurate object detection model for real-time applications.',
+    model_type: 'Computer Vision',
+    framework: 'PyTorch',
+    accuracy: 89.3,
+    download_count: 743,
+    is_verified: true,
+    uploader: { display_name: 'Vision Expert' }
+  },
+  {
+    id: '5',
+    title: 'Text Summarization Model',
+    description: 'Transformer-based model for automatic text summarization.',
+    model_type: 'Natural Language Processing',
+    framework: 'TensorFlow',
+    accuracy: 91.7,
+    download_count: 456,
+    is_verified: true,
+    uploader: { display_name: 'NLP Researcher' }
+  },
+  {
+    id: '6',
+    title: 'Recommendation Engine',
+    description: 'Collaborative filtering model for personalized recommendations.',
+    model_type: 'Reinforcement Learning',
+    framework: 'Scikit-learn',
+    accuracy: 87.2,
+    download_count: 321,
+    is_verified: false,
+    uploader: { display_name: 'ML Engineer' }
   }
 ];
 
@@ -70,20 +103,14 @@ export function HomePage() {
   }, []);
 
   const fetchFeaturedModels = async () => {
-    // Get uploaded models from localStorage and combine with mock data
-    const uploadedModels = JSON.parse(localStorage.getItem('uploaded_models') || '[]');
-    const allModels = [...FEATURED_MODELS, ...uploadedModels.slice(0, 3)]; // Show max 6 models
-    setFeaturedModels(allModels.slice(0, 6));
+    // Show featured models
+    setFeaturedModels(FEATURED_MODELS);
   };
 
   const fetchStats = async () => {
-    // Get uploaded models from localStorage
-    const uploadedModels = JSON.parse(localStorage.getItem('uploaded_models') || '[]');
-    
-    const totalModels = FEATURED_MODELS.length + uploadedModels.length;
-    const totalDownloads = FEATURED_MODELS.reduce((sum, model) => sum + model.download_count, 0) + 
-                          uploadedModels.reduce((sum: number, model: any) => sum + (model.download_count || 0), 0);
-    const totalUsers = 150; // Mock user count
+    const totalModels = FEATURED_MODELS.length;
+    const totalDownloads = FEATURED_MODELS.reduce((sum, model) => sum + model.download_count, 0);
+    const totalUsers = 250; // Mock user count
 
     setStats({ totalModels, totalDownloads, totalUsers });
   };
@@ -96,24 +123,24 @@ export function HomePage() {
           <div className="text-center">
             <div className="scroll-reveal inline-flex items-center px-6 py-3 rounded-full glass-subtle text-white/90 text-sm font-medium mb-8 hover-glow">
               <Brain className="w-5 h-5 mr-2 text-white" />
-              Decentralized AI Model Platform
+              AI Model Testing Platform
             </div>
             
             <h1 className="scroll-reveal text-4xl sm:text-6xl lg:text-7xl font-bold mb-8 leading-tight">
-              <span className="gradient-text block mb-2">Test & Share</span>
+              <span className="gradient-text block mb-2">Test & Discover</span>
               <span className="gradient-text-primary">AI Models</span>
             </h1>
             
             <p className="scroll-reveal text-xl lg:text-2xl text-white/80 mb-12 max-w-4xl mx-auto leading-relaxed">
-              Test AI models powered by Gemini 1.5 Flash for free. Configure, enhance with your knowledge, 
-              and publish to the global community. Zero cost, maximum impact.
+              Test AI models powered by Gemini 1.5 Flash for free. Configure parameters, enhance with your knowledge, 
+              and discover models from the global community.
             </p>
             
             <div className="scroll-reveal flex flex-col sm:flex-row gap-6 justify-center">
               <Link
                 to="/test"
                 className="inline-flex items-center px-10 py-5 rounded-2xl text-lg font-semibold text-white button-primary hover:scale-105 transition-all duration-300 shadow-2xl"
-                title="Test and publish your AI model for free"
+                title="Test AI models for free"
               >
                 <TestTube className="w-6 h-6 mr-3 text-white" />
                 Test Model
@@ -168,7 +195,7 @@ export function HomePage() {
               Why Choose AI Model Hub?
             </h2>
             <p className="scroll-reveal text-xl lg:text-2xl text-white/80 max-w-4xl mx-auto">
-              Test models for free, enhance with your knowledge, and share with the world.
+              Test models for free, enhance with your knowledge, and discover the best AI models from the community.
             </p>
           </div>
 
@@ -296,7 +323,7 @@ export function HomePage() {
               Ready to Test Your AI Model?
             </h2>
             <p className="text-xl lg:text-2xl text-white/80 mb-12 leading-relaxed">
-              Start testing with Gemini 1.5 Flash for free. Configure, enhance, and publish your AI model to the community.
+              Start testing with Gemini 1.5 Flash for free. Configure, enhance, and explore AI models from the community.
             </p>
             <div className="flex flex-col sm:flex-row gap-6 justify-center">
               <Link

@@ -5,9 +5,7 @@ import { Footer } from './components/Layout/Footer';
 import { InteractiveDots } from './components/Background/InteractiveDots';
 import { HomePage } from './pages/HomePage';
 import { MarketplacePage } from './pages/MarketplacePage';
-import { UploadPage } from './pages/UploadPage';
 import { TestModelPage } from './pages/TestModelPage';
-import { DashboardPage } from './pages/DashboardPage';
 import { ModelDetailPage } from './pages/ModelDetailPage';
 
 function AppContent() {
@@ -22,9 +20,7 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/marketplace" element={<MarketplacePage />} />
-          <Route path="/upload" element={<UploadPage />} />
           <Route path="/test" element={<TestModelPage />} />
-          <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/models/:id" element={<ModelDetailPage />} />
         </Routes>
       </main>
