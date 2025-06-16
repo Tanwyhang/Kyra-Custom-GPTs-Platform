@@ -643,20 +643,20 @@ export function TestModelPage() {
                     </div>
                   </div>
 
-                  {/* Center - Status indicators */}
-                  <div className="hidden md:flex items-center space-x-4">
-                    <div className="flex items-center space-x-2 glass-subtle px-3 py-2 rounded-xl">
-                      <Clock className="w-4 h-4 text-white/60" />
-                      <span className="text-sm text-white/80">{tokenCount} tokens</span>
+                  {/* Center - Status indicators - Made smaller and more compact */}
+                  <div className="hidden md:flex items-center space-x-2">
+                    <div className="flex items-center space-x-1 glass-subtle px-2 py-1 rounded-lg">
+                      <Clock className="w-3 h-3 text-white/60" />
+                      <span className="text-xs text-white/80">{tokenCount}</span>
                     </div>
-                    <div className="flex items-center space-x-2 glass-subtle px-3 py-2 rounded-xl">
-                      <MessageSquare className="w-4 h-4 text-white/60" />
-                      <span className="text-sm text-white/80">{messages.length} messages</span>
+                    <div className="flex items-center space-x-1 glass-subtle px-2 py-1 rounded-lg">
+                      <MessageSquare className="w-3 h-3 text-white/60" />
+                      <span className="text-xs text-white/80">{messages.length}</span>
                     </div>
                     {(knowledgeText.trim() || uploadedFiles.length > 0) && (
-                      <div className="flex items-center space-x-2 glass-subtle px-3 py-2 rounded-xl">
-                        <Database className="w-4 h-4 text-green-400" />
-                        <span className="text-sm text-green-400">KB Active</span>
+                      <div className="flex items-center space-x-1 glass-subtle px-2 py-1 rounded-lg">
+                        <Database className="w-3 h-3 text-green-400" />
+                        <span className="text-xs text-green-400">KB</span>
                       </div>
                     )}
                   </div>
@@ -697,18 +697,18 @@ export function TestModelPage() {
                   </div>
                 </div>
 
-                {/* Mobile status indicators */}
-                <div className="md:hidden flex items-center justify-center space-x-4 px-6 py-3 border-b border-white/10">
-                  <div className="flex items-center space-x-2 glass-subtle px-3 py-1 rounded-lg">
+                {/* Mobile status indicators - Made smaller and more compact */}
+                <div className="md:hidden flex items-center justify-center space-x-2 px-6 py-2 border-b border-white/10">
+                  <div className="flex items-center space-x-1 glass-subtle px-2 py-1 rounded-lg">
                     <Clock className="w-3 h-3 text-white/60" />
-                    <span className="text-xs text-white/80">{tokenCount} tokens</span>
+                    <span className="text-xs text-white/80">{tokenCount}</span>
                   </div>
-                  <div className="flex items-center space-x-2 glass-subtle px-3 py-1 rounded-lg">
+                  <div className="flex items-center space-x-1 glass-subtle px-2 py-1 rounded-lg">
                     <MessageSquare className="w-3 h-3 text-white/60" />
-                    <span className="text-xs text-white/80">{messages.length} messages</span>
+                    <span className="text-xs text-white/80">{messages.length}</span>
                   </div>
                   {(knowledgeText.trim() || uploadedFiles.length > 0) && (
-                    <div className="flex items-center space-x-2 glass-subtle px-3 py-1 rounded-lg">
+                    <div className="flex items-center space-x-1 glass-subtle px-2 py-1 rounded-lg">
                       <Database className="w-3 h-3 text-green-400" />
                       <span className="text-xs text-green-400">KB</span>
                     </div>
