@@ -18,7 +18,7 @@ export function Navbar() {
               <Brain className="w-7 h-7 text-white" />
             </div>
             <span className="text-xl font-bold gradient-text-primary">
-              AI GPT Hub
+              Kyra
             </span>
           </Link>
 
