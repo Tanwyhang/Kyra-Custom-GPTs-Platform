@@ -351,8 +351,8 @@ export function ChatInterface({ model }: ChatInterfaceProps) {
           ref={messagesContainerRef}
           className="flex-1 overflow-y-auto p-6 space-y-6 min-h-0"
           style={{ 
-            height: '1000px', // Increased from 700px
-            maxHeight: '1000px',
+            height: '700px', // Increased from 700px
+            maxHeight: '700px',
             scrollBehavior: 'smooth',
             overscrollBehavior: 'contain'
           }}
