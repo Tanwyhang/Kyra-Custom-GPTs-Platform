@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Brain, Search, Upload, User, LogOut, Menu, X } from 'lucide-react';
+import { Brain, Search, TestTube, User, LogOut, Menu, X } from 'lucide-react';
 import { useAuthContext } from '../../contexts/AuthContext';
 
 export function Navbar() {
@@ -32,6 +32,18 @@ export function Navbar() {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-2">
             <Link
+              to="/test"
+              className={`flex items-center space-x-2 px-5 py-3 rounded-2xl text-sm font-semibold transition-all duration-300 ${
+                isActive('/test')
+                  ? 'glass-strong text-white glow-effect'
+                  : 'glass-subtle text-white/90 hover:text-white hover:glass'
+              }`}
+            >
+              <TestTube className="w-4 h-4" />
+              <span>Test Model</span>
+            </Link>
+
+            <Link
               to="/marketplace"
               className={`flex items-center space-x-2 px-5 py-3 rounded-2xl text-sm font-semibold transition-all duration-300 ${
                 isActive('/marketplace')
@@ -42,20 +54,6 @@ export function Navbar() {
               <Search className="w-4 h-4" />
               <span>Marketplace</span>
             </Link>
-
-            {user && (
-              <Link
-                to="/upload"
-                className={`flex items-center space-x-2 px-5 py-3 rounded-2xl text-sm font-semibold transition-all duration-300 ${
-                  isActive('/upload')
-                    ? 'glass-strong text-white glow-effect'
-                    : 'glass-subtle text-white/90 hover:text-white hover:glass'
-                }`}
-              >
-                <Upload className="w-4 h-4" />
-                <span>Upload Model</span>
-              </Link>
-            )}
           </div>
 
           {/* User Menu */}
@@ -115,6 +113,15 @@ export function Navbar() {
           <div className="md:hidden py-4 border-t border-white/10">
             <div className="flex flex-col space-y-3">
               <Link
+                to="/test"
+                onClick={() => setIsMenuOpen(false)}
+                className="flex items-center space-x-3 px-4 py-3 rounded-2xl text-sm font-semibold text-white/90 hover:text-white glass-subtle hover:glass transition-all duration-300"
+              >
+                <TestTube className="w-4 h-4" />
+                <span>Test Model</span>
+              </Link>
+
+              <Link
                 to="/marketplace"
                 onClick={() => setIsMenuOpen(false)}
                 className="flex items-center space-x-3 px-4 py-3 rounded-2xl text-sm font-semibold text-white/90 hover:text-white glass-subtle hover:glass transition-all duration-300"
@@ -125,14 +132,6 @@ export function Navbar() {
 
               {user ? (
                 <>
-                  <Link
-                    to="/upload"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="flex items-center space-x-3 px-4 py-3 rounded-2xl text-sm font-semibold text-white/90 hover:text-white glass-subtle hover:glass transition-all duration-300"
-                  >
-                    <Upload className="w-4 h-4" />
-                    <span>Upload Model</span>
-                  </Link>
                   <Link
                     to="/dashboard"
                     onClick={() => setIsMenuOpen(false)}

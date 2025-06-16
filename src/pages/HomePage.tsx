@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Upload, Search, Shield, TrendingUp, Users, Star, Sparkles, Zap, Brain } from 'lucide-react';
+import { ArrowRight, Search, Shield, TrendingUp, Users, Star, Sparkles, Zap, Brain, TestTube } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 
@@ -74,30 +74,31 @@ export function HomePage() {
             </div>
             
             <h1 className="scroll-reveal text-4xl sm:text-6xl lg:text-7xl font-bold mb-8 leading-tight">
-              <span className="gradient-text block mb-2">Discover & Share</span>
+              <span className="gradient-text block mb-2">Test & Share</span>
               <span className="gradient-text-primary">AI Models</span>
             </h1>
             
             <p className="scroll-reveal text-xl lg:text-2xl text-white/80 mb-12 max-w-4xl mx-auto leading-relaxed">
-              The decentralized platform for machine learning models. Upload, discover, and collaborate 
-              with the global AI community. Transparent, open, and community-driven.
+              Test AI models powered by Gemini 1.5 Flash for free. Configure, enhance with your knowledge, 
+              and publish to the global community. Zero cost, maximum impact.
             </p>
             
             <div className="scroll-reveal flex flex-col sm:flex-row gap-6 justify-center">
               <Link
-                to="/marketplace"
+                to="/test"
                 className="inline-flex items-center px-10 py-5 rounded-2xl text-lg font-semibold text-white button-primary hover:scale-105 transition-all duration-300 shadow-2xl"
+                title="Test and publish your AI model for free"
               >
-                <Search className="w-6 h-6 mr-3 text-white" />
-                Explore Models
+                <TestTube className="w-6 h-6 mr-3 text-white" />
+                Test Model
                 <ArrowRight className="w-6 h-6 ml-3 text-white" />
               </Link>
               <Link
-                to="/upload"
+                to="/marketplace"
                 className="inline-flex items-center px-10 py-5 rounded-2xl text-lg font-semibold text-white border-clean hover:scale-105 transition-all duration-300"
               >
-                <Upload className="w-6 h-6 mr-3 text-white" />
-                Upload Model
+                <Search className="w-6 h-6 mr-3 text-white" />
+                Explore Models
               </Link>
             </div>
           </div>
@@ -141,7 +142,7 @@ export function HomePage() {
               Why Choose AI Model Hub?
             </h2>
             <p className="scroll-reveal text-xl lg:text-2xl text-white/80 max-w-4xl mx-auto">
-              Built for the community, by the community. Transparent, secure, and accessible to all.
+              Test models for free, enhance with your knowledge, and share with the world.
             </p>
           </div>
 
@@ -149,21 +150,21 @@ export function HomePage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 justify-items-center">
               <div className="scroll-reveal-left glass-card rounded-3xl p-10 grain-texture hover:scale-105 transition-all duration-300 subtle-hover w-full max-w-sm">
                 <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-8 mx-auto">
-                  <Shield className="w-8 h-8 text-white" />
+                  <TestTube className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold gradient-text mb-6 text-center">Verified Quality</h3>
+                <h3 className="text-2xl font-bold gradient-text mb-6 text-center">Free Testing</h3>
                 <p className="text-white/80 text-lg leading-relaxed text-center">
-                  Community-driven verification system ensures high-quality models with transparent performance metrics.
+                  Test AI models powered by Gemini 1.5 Flash at zero cost. Configure parameters and enhance with your knowledge.
                 </p>
               </div>
 
               <div className="scroll-reveal glass-card rounded-3xl p-10 grain-texture hover:scale-105 transition-all duration-300 subtle-hover w-full max-w-sm">
                 <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-8 mx-auto">
-                  <Search className="w-8 h-8 text-white" />
+                  <Shield className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold gradient-text mb-6 text-center">Easy Discovery</h3>
+                <h3 className="text-2xl font-bold gradient-text mb-6 text-center">Verified Quality</h3>
                 <p className="text-white/80 text-lg leading-relaxed text-center">
-                  Advanced search and filtering capabilities help you find the perfect model for your specific needs.
+                  Community-driven verification system ensures high-quality models with transparent performance metrics.
                 </p>
               </div>
 
@@ -263,20 +264,21 @@ export function HomePage() {
           <div className="scroll-reveal glass-strong rounded-3xl p-16 grain-texture hover-glow">
             <div className="inline-flex items-center px-6 py-3 rounded-full glass-subtle text-white/90 text-sm font-medium mb-8">
               <Zap className="w-5 h-5 mr-2 text-white" />
-              Join Today
+              Start Testing Today
             </div>
             <h2 className="text-4xl lg:text-5xl font-bold gradient-text mb-8">
-              Ready to Join the AI Revolution?
+              Ready to Test Your AI Model?
             </h2>
             <p className="text-xl lg:text-2xl text-white/80 mb-12 leading-relaxed">
-              Start sharing your models or discover the perfect AI solution for your project.
+              Start testing with Gemini 1.5 Flash for free. Configure, enhance, and publish your AI model to the community.
             </p>
             <div className="flex flex-col sm:flex-row gap-6 justify-center">
               <Link
-                to="/signup"
+                to="/test"
                 className="inline-flex items-center px-10 py-5 rounded-2xl text-lg font-semibold text-white button-primary hover:scale-105 transition-all duration-300 shadow-2xl"
               >
-                Get Started
+                <TestTube className="w-6 h-6 mr-3 text-white" />
+                Start Testing
                 <ArrowRight className="w-6 h-6 ml-3 text-white" />
               </Link>
             </div>
