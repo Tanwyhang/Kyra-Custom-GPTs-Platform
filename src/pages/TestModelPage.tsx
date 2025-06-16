@@ -591,7 +591,7 @@ export function TestModelPage() {
       {/* Publish Modal */}
       {showPublish && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="glass-strong rounded-2xl p-6 w-full max-w-2xl max-h-[40vh] overflow-y-auto grain-texture">
+          <div className="glass-strong rounded-2xl p-6 w-full max-w-2xl max-h-[65vh] overflow-y-auto grain-texture">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold gradient-text">Publish Model</h2>
               <button
