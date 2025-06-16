@@ -58,178 +58,193 @@ export function ModelDetailPage() {
     }
   }, [id]);
 
+  // Helper function to validate UUID format
+  const isValidUUID = (str: string): boolean => {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(str);
+  };
+
   const fetchGPT = async () => {
     if (!id) return;
 
     try {
-      // First try to fetch from database
-      const dbResult = await DatabaseService.getGPT(id);
-      
-      if (dbResult.success && dbResult.gpt) {
-        // Convert database GPT to detail format
-        const dbGPT = dbResult.gpt;
+      // First check if it's a predefined GPT
+      const predefinedGPT = PREDEFINED_MODELS.find(m => m.id === id);
+      if (predefinedGPT) {
         const gptDetail: GPTDetail = {
-          id: dbGPT.id,
-          title: dbGPT.name,
-          description: dbGPT.description,
-          gpt_type: dbGPT.category,
+          id: predefinedGPT.id,
+          title: predefinedGPT.name,
+          description: predefinedGPT.description + '\n\nThis is a context-based AI GPT powered by Gemini 1.5 Flash. It uses specialized prompting to provide responses tailored to specific use cases and domains.',
+          gpt_type: predefinedGPT.category,
           framework: 'Gemini 1.5 Flash',
-          tags: dbGPT.tags,
-          accuracy: dbGPT.accuracy_score,
-          file_size: Math.floor(Math.random() * 500000000) + 50000000, // Mock file size
-          is_verified: dbGPT.validation_status === 'approved',
-          download_count: dbGPT.download_count,
-          created_at: dbGPT.created_at,
-          updated_at: dbGPT.updated_at,
-          uploader: { display_name: dbGPT.publisher_name },
+          tags: predefinedGPT.tags,
+          accuracy: 85 + Math.floor(Math.random() * 15),
+          file_size: Math.floor(Math.random() * 500000000) + 50000000, // 50MB to 550MB
+          is_verified: true,
+          download_count: Math.floor(Math.random() * 1000) + 100,
+          created_at: new Date(Date.now() - Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000).toISOString(),
+          updated_at: new Date(Date.now() - Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000).toISOString(),
+          uploader: { display_name: 'AI GPT Hub' },
           // Chat interface fields
-          system_prompt: dbGPT.system_prompt,
-          default_temperature: dbGPT.default_temperature,
-          default_top_p: dbGPT.default_top_p,
-          default_max_tokens: dbGPT.default_max_tokens,
-          knowledge_context: dbGPT.knowledge_context
+          system_prompt: predefinedGPT.systemPrompt,
+          default_temperature: predefinedGPT.defaultConfig.temperature,
+          default_top_p: predefinedGPT.defaultConfig.topP,
+          default_max_tokens: predefinedGPT.defaultConfig.maxTokens,
+          knowledge_context: 'This GPT has been optimized for specific use cases and provides contextual responses based on its specialized training.'
         };
         setGPT(gptDetail);
+        setLoading(false);
+        return;
+      }
+
+      // Check community GPTs with comprehensive data
+      const communityGPTs: { [key: string]: GPTDetail } = {
+        'community-1': {
+          id: 'community-1',
+          title: 'Advanced Image Classifier',
+          description: 'A state-of-the-art image classification GPT trained on ImageNet with 95% accuracy. This GPT uses a ResNet-50 architecture with custom modifications for improved performance on edge devices. The GPT has been fine-tuned on a diverse dataset of over 1 million images across 1000 categories.',
+          gpt_type: 'Computer Vision',
+          framework: 'TensorFlow',
+          tags: ['image-classification', 'cnn', 'imagenet', 'resnet'],
+          accuracy: 95.2,
+          file_size: 102400000, // 100MB
+          is_verified: true,
+          download_count: 1250,
+          created_at: '2024-01-15T10:30:00Z',
+          updated_at: '2024-01-15T10:30:00Z',
+          uploader: { display_name: 'AI Researcher' },
+          system_prompt: 'You are an expert computer vision assistant specialized in image classification and analysis. Help users understand image content, classify objects, and provide detailed visual analysis.',
+          default_temperature: 0.3,
+          default_top_p: 0.8,
+          default_max_tokens: 1024,
+          knowledge_context: 'Trained on ImageNet dataset with 1000+ object categories. Optimized for accuracy and edge device deployment.'
+        },
+        'community-2': {
+          id: 'community-2',
+          title: 'Sentiment Analysis BERT',
+          description: 'Fine-tuned BERT GPT for sentiment analysis on social media text. Trained on a diverse dataset of tweets and social media posts from multiple platforms. Achieves state-of-the-art performance on sentiment classification tasks.',
+          gpt_type: 'Natural Language Processing',
+          framework: 'PyTorch',
+          tags: ['sentiment-analysis', 'bert', 'nlp', 'social-media'],
+          accuracy: 92.8,
+          file_size: 438000000, // 438MB
+          is_verified: true,
+          download_count: 890,
+          created_at: '2024-01-10T14:20:00Z',
+          updated_at: '2024-01-10T14:20:00Z',
+          uploader: { display_name: 'NLP Expert' },
+          system_prompt: 'You are a sentiment analysis expert specializing in understanding emotions and opinions in text. Analyze sentiment, detect emotional nuances, and provide insights about textual content.',
+          default_temperature: 0.4,
+          default_top_p: 0.85,
+          default_max_tokens: 1280,
+          knowledge_context: 'Fine-tuned on diverse social media datasets including Twitter, Reddit, and Facebook posts. Specialized in detecting subtle emotional cues.'
+        },
+        'community-3': {
+          id: 'community-3',
+          title: 'Speech Recognition GPT',
+          description: 'Real-time speech recognition GPT optimized for mobile devices. Supports multiple languages and accents with low latency processing. Perfect for voice-controlled applications and transcription services.',
+          gpt_type: 'Speech',
+          framework: 'TensorFlow.js',
+          tags: ['speech-recognition', 'mobile', 'real-time', 'multilingual'],
+          accuracy: 88.5,
+          file_size: 25600000, // 25MB
+          is_verified: false,
+          download_count: 567,
+          created_at: '2024-01-08T09:15:00Z',
+          updated_at: '2024-01-08T09:15:00Z',
+          uploader: { display_name: 'Mobile Dev' },
+          system_prompt: 'You are a speech recognition and audio processing expert. Help users with speech-to-text conversion, audio analysis, and voice-related applications.',
+          default_temperature: 0.2,
+          default_top_p: 0.7,
+          default_max_tokens: 1024,
+          knowledge_context: 'Optimized for real-time processing on mobile devices. Supports multiple languages and accent variations.'
+        },
+        'community-4': {
+          id: 'community-4',
+          title: 'Object Detection YOLO',
+          description: 'Fast and accurate object detection GPT for real-time applications. Based on YOLOv8 architecture with custom optimizations for speed and accuracy. Detects 80+ object classes with high precision.',
+          gpt_type: 'Computer Vision',
+          framework: 'PyTorch',
+          tags: ['object-detection', 'yolo', 'real-time'],
+          accuracy: 89.3,
+          file_size: 67108864, // 64MB
+          is_verified: true,
+          download_count: 743,
+          created_at: '2024-01-12T16:45:00Z',
+          updated_at: '2024-01-12T16:45:00Z',
+          uploader: { display_name: 'Vision Expert' },
+          system_prompt: 'You are an object detection specialist using YOLO architecture. Help users identify and locate objects in images, provide bounding box coordinates, and explain detection confidence scores.',
+          default_temperature: 0.3,
+          default_top_p: 0.8,
+          default_max_tokens: 1536,
+          knowledge_context: 'Based on YOLOv8 architecture, trained on COCO dataset with 80+ object classes. Optimized for real-time detection applications.'
+        },
+        'community-5': {
+          id: 'community-5',
+          title: 'Text Summarization GPT',
+          description: 'Transformer-based GPT for automatic text summarization. Capable of generating concise and coherent summaries from long documents. Trained on news articles, research papers, and web content.',
+          gpt_type: 'Natural Language Processing',
+          framework: 'TensorFlow',
+          tags: ['text-summarization', 'transformer', 'nlp'],
+          accuracy: 91.7,
+          file_size: 512000000, // 512MB
+          is_verified: true,
+          download_count: 456,
+          created_at: '2024-01-05T11:30:00Z',
+          updated_at: '2024-01-05T11:30:00Z',
+          uploader: { display_name: 'NLP Researcher' },
+          system_prompt: 'You are a text summarization expert. Help users create concise, coherent summaries of long documents while preserving key information and maintaining readability.',
+          default_temperature: 0.5,
+          default_top_p: 0.9,
+          default_max_tokens: 2048,
+          knowledge_context: 'Trained on diverse text sources including news articles, research papers, and web content. Specialized in extractive and abstractive summarization techniques.'
+        }
+      };
+
+      if (communityGPTs[id]) {
+        setGPT(communityGPTs[id]);
+        setLoading(false);
+        return;
+      }
+
+      // Only query database if the ID is a valid UUID
+      if (isValidUUID(id)) {
+        const dbResult = await DatabaseService.getGPT(id);
         
-        // Log interaction
-        await DatabaseService.logInteraction(id, 'view');
-      } else {
-        // Check if it's a predefined GPT
-        const predefinedGPT = PREDEFINED_MODELS.find(m => m.id === id);
-        if (predefinedGPT) {
+        if (dbResult.success && dbResult.gpt) {
+          // Convert database GPT to detail format
+          const dbGPT = dbResult.gpt;
           const gptDetail: GPTDetail = {
-            id: predefinedGPT.id,
-            title: predefinedGPT.name,
-            description: predefinedGPT.description + '\n\nThis is a context-based AI GPT powered by Gemini 1.5 Flash. It uses specialized prompting to provide responses tailored to specific use cases and domains.',
-            gpt_type: predefinedGPT.category,
+            id: dbGPT.id,
+            title: dbGPT.name,
+            description: dbGPT.description,
+            gpt_type: dbGPT.category,
             framework: 'Gemini 1.5 Flash',
-            tags: predefinedGPT.tags,
-            accuracy: 85 + Math.floor(Math.random() * 15),
-            file_size: Math.floor(Math.random() * 500000000) + 50000000, // 50MB to 550MB
-            is_verified: true,
-            download_count: Math.floor(Math.random() * 1000) + 100,
-            created_at: new Date(Date.now() - Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000).toISOString(),
-            updated_at: new Date(Date.now() - Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000).toISOString(),
-            uploader: { display_name: 'AI GPT Hub' },
+            tags: dbGPT.tags,
+            accuracy: dbGPT.accuracy_score,
+            file_size: Math.floor(Math.random() * 500000000) + 50000000, // Mock file size
+            is_verified: dbGPT.validation_status === 'approved',
+            download_count: dbGPT.download_count,
+            created_at: dbGPT.created_at,
+            updated_at: dbGPT.updated_at,
+            uploader: { display_name: dbGPT.publisher_name },
             // Chat interface fields
-            system_prompt: predefinedGPT.systemPrompt,
-            default_temperature: predefinedGPT.defaultConfig.temperature,
-            default_top_p: predefinedGPT.defaultConfig.topP,
-            default_max_tokens: predefinedGPT.defaultConfig.maxTokens,
-            knowledge_context: 'This GPT has been optimized for specific use cases and provides contextual responses based on its specialized training.'
+            system_prompt: dbGPT.system_prompt,
+            default_temperature: dbGPT.default_temperature,
+            default_top_p: dbGPT.default_top_p,
+            default_max_tokens: dbGPT.default_max_tokens,
+            knowledge_context: dbGPT.knowledge_context
           };
           setGPT(gptDetail);
+          
+          // Log interaction
+          await DatabaseService.logInteraction(id, 'view');
         } else {
-          // Handle community GPTs with comprehensive data
-          const communityGPTs: { [key: string]: GPTDetail } = {
-            'community-1': {
-              id: 'community-1',
-              title: 'Advanced Image Classifier',
-              description: 'A state-of-the-art image classification GPT trained on ImageNet with 95% accuracy. This GPT uses a ResNet-50 architecture with custom modifications for improved performance on edge devices. The GPT has been fine-tuned on a diverse dataset of over 1 million images across 1000 categories.',
-              gpt_type: 'Computer Vision',
-              framework: 'TensorFlow',
-              tags: ['image-classification', 'cnn', 'imagenet', 'resnet'],
-              accuracy: 95.2,
-              file_size: 102400000, // 100MB
-              is_verified: true,
-              download_count: 1250,
-              created_at: '2024-01-15T10:30:00Z',
-              updated_at: '2024-01-15T10:30:00Z',
-              uploader: { display_name: 'AI Researcher' },
-              system_prompt: 'You are an expert computer vision assistant specialized in image classification and analysis. Help users understand image content, classify objects, and provide detailed visual analysis.',
-              default_temperature: 0.3,
-              default_top_p: 0.8,
-              default_max_tokens: 1024,
-              knowledge_context: 'Trained on ImageNet dataset with 1000+ object categories. Optimized for accuracy and edge device deployment.'
-            },
-            'community-2': {
-              id: 'community-2',
-              title: 'Sentiment Analysis BERT',
-              description: 'Fine-tuned BERT GPT for sentiment analysis on social media text. Trained on a diverse dataset of tweets and social media posts from multiple platforms. Achieves state-of-the-art performance on sentiment classification tasks.',
-              gpt_type: 'Natural Language Processing',
-              framework: 'PyTorch',
-              tags: ['sentiment-analysis', 'bert', 'nlp', 'social-media'],
-              accuracy: 92.8,
-              file_size: 438000000, // 438MB
-              is_verified: true,
-              download_count: 890,
-              created_at: '2024-01-10T14:20:00Z',
-              updated_at: '2024-01-10T14:20:00Z',
-              uploader: { display_name: 'NLP Expert' },
-              system_prompt: 'You are a sentiment analysis expert specializing in understanding emotions and opinions in text. Analyze sentiment, detect emotional nuances, and provide insights about textual content.',
-              default_temperature: 0.4,
-              default_top_p: 0.85,
-              default_max_tokens: 1280,
-              knowledge_context: 'Fine-tuned on diverse social media datasets including Twitter, Reddit, and Facebook posts. Specialized in detecting subtle emotional cues.'
-            },
-            'community-3': {
-              id: 'community-3',
-              title: 'Speech Recognition GPT',
-              description: 'Real-time speech recognition GPT optimized for mobile devices. Supports multiple languages and accents with low latency processing. Perfect for voice-controlled applications and transcription services.',
-              gpt_type: 'Speech',
-              framework: 'TensorFlow.js',
-              tags: ['speech-recognition', 'mobile', 'real-time', 'multilingual'],
-              accuracy: 88.5,
-              file_size: 25600000, // 25MB
-              is_verified: false,
-              download_count: 567,
-              created_at: '2024-01-08T09:15:00Z',
-              updated_at: '2024-01-08T09:15:00Z',
-              uploader: { display_name: 'Mobile Dev' },
-              system_prompt: 'You are a speech recognition and audio processing expert. Help users with speech-to-text conversion, audio analysis, and voice-related applications.',
-              default_temperature: 0.2,
-              default_top_p: 0.7,
-              default_max_tokens: 1024,
-              knowledge_context: 'Optimized for real-time processing on mobile devices. Supports multiple languages and accent variations.'
-            },
-            'community-4': {
-              id: 'community-4',
-              title: 'Object Detection YOLO',
-              description: 'Fast and accurate object detection GPT for real-time applications. Based on YOLOv8 architecture with custom optimizations for speed and accuracy. Detects 80+ object classes with high precision.',
-              gpt_type: 'Computer Vision',
-              framework: 'PyTorch',
-              tags: ['object-detection', 'yolo', 'real-time'],
-              accuracy: 89.3,
-              file_size: 67108864, // 64MB
-              is_verified: true,
-              download_count: 743,
-              created_at: '2024-01-12T16:45:00Z',
-              updated_at: '2024-01-12T16:45:00Z',
-              uploader: { display_name: 'Vision Expert' },
-              system_prompt: 'You are an object detection specialist using YOLO architecture. Help users identify and locate objects in images, provide bounding box coordinates, and explain detection confidence scores.',
-              default_temperature: 0.3,
-              default_top_p: 0.8,
-              default_max_tokens: 1536,
-              knowledge_context: 'Based on YOLOv8 architecture, trained on COCO dataset with 80+ object classes. Optimized for real-time detection applications.'
-            },
-            'community-5': {
-              id: 'community-5',
-              title: 'Text Summarization GPT',
-              description: 'Transformer-based GPT for automatic text summarization. Capable of generating concise and coherent summaries from long documents. Trained on news articles, research papers, and web content.',
-              gpt_type: 'Natural Language Processing',
-              framework: 'TensorFlow',
-              tags: ['text-summarization', 'transformer', 'nlp'],
-              accuracy: 91.7,
-              file_size: 512000000, // 512MB
-              is_verified: true,
-              download_count: 456,
-              created_at: '2024-01-05T11:30:00Z',
-              updated_at: '2024-01-05T11:30:00Z',
-              uploader: { display_name: 'NLP Researcher' },
-              system_prompt: 'You are a text summarization expert. Help users create concise, coherent summaries of long documents while preserving key information and maintaining readability.',
-              default_temperature: 0.5,
-              default_top_p: 0.9,
-              default_max_tokens: 2048,
-              knowledge_context: 'Trained on diverse text sources including news articles, research papers, and web content. Specialized in extractive and abstractive summarization techniques.'
-            }
-          };
-
-          if (communityGPTs[id]) {
-            setGPT(communityGPTs[id]);
-          } else {
-            setError('GPT not found');
-          }
+          setError('GPT not found');
         }
+      } else {
+        // ID is not a valid UUID and not found in predefined/community models
+        setError('GPT not found');
       }
     } catch (error) {
       setError('GPT not found');
