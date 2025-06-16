@@ -201,41 +201,49 @@ export function MarketplacePage() {
     setLoading(true);
     
     try {
+      // Simulate loading delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       // Use marketplace models
-      let allModels = [...MARKETPLACE_MODELS];
+      let filteredModels = [...MARKETPLACE_MODELS];
 
-      // Apply filters
-      if (searchTerm) {
-        allModels = allModels.filter(model => 
-          model.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          model.description?.toLowerCase().includes(searchTerm.toLowerCase())
+      // Apply search filter
+      if (searchTerm.trim()) {
+        const searchLower = searchTerm.toLowerCase();
+        filteredModels = filteredModels.filter(model => 
+          model.title.toLowerCase().includes(searchLower) ||
+          model.description.toLowerCase().includes(searchLower) ||
+          model.tags.some(tag => tag.toLowerCase().includes(searchLower))
         );
       }
       
+      // Apply type filter
       if (selectedType) {
-        allModels = allModels.filter(model => model.model_type === selectedType);
+        filteredModels = filteredModels.filter(model => model.model_type === selectedType);
       }
       
+      // Apply framework filter
       if (selectedFramework) {
-        allModels = allModels.filter(model => model.framework === selectedFramework);
+        filteredModels = filteredModels.filter(model => model.framework === selectedFramework);
       }
 
       // Apply sorting
-      allModels.sort((a, b) => {
+      filteredModels.sort((a, b) => {
         switch (sortBy) {
           case 'title':
             return a.title.localeCompare(b.title);
           case 'download_count':
-            return (b.download_count || 0) - (a.download_count || 0);
+            return b.download_count - a.download_count;
           case 'created_at':
           default:
             return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
         }
       });
 
-      setModels(allModels);
+      setModels(filteredModels);
     } catch (error) {
       console.error('Error fetching models:', error);
+      setModels([]);
     } finally {
       setLoading(false);
     }
@@ -269,7 +277,7 @@ export function MarketplacePage() {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/40 w-5 h-5" />
                 <input
                   type="text"
-                  placeholder="Search models by title or description..."
+                  placeholder="Search models by title, description, or tags..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="glass-input w-full pl-10 pr-4 py-3 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
@@ -359,97 +367,100 @@ export function MarketplacePage() {
             <p className="text-white/60">Try adjusting your search criteria or filters.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {models.map((model, index) => (
-              <Link
-                key={model.id}
-                to={`/models/${model.id}`}
-                className="scroll-reveal glass-card rounded-2xl hover:scale-105 transition-all duration-300 overflow-hidden group grain-texture"
-                style={{ transitionDelay: `${index * 0.1}s` }}
-              >
-                <div className="p-6">
-                  {/* Header */}
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-xs font-medium px-3 py-1 rounded-full glass-subtle text-white/80">
-                      {model.model_type}
-                    </span>
-                    {model.is_verified && (
-                      <div className="flex items-center text-green-400">
-                        <Shield className="w-4 h-4 mr-1" />
-                        <span className="text-xs">Verified</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Title */}
-                  <h3 className="font-semibold gradient-text mb-2 group-hover:gradient-text-primary transition-all duration-300 line-clamp-1">
-                    {model.title}
-                  </h3>
-
-                  {/* Description */}
-                  <p className="text-white/60 text-sm mb-4 line-clamp-2">
-                    {model.description || 'No description available.'}
-                  </p>
-
-                  {/* Tags */}
-                  {model.tags && model.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mb-4">
-                      {model.tags.slice(0, 3).map((tag, index) => (
-                        <span
-                          key={index}
-                          className="text-xs px-2 py-1 glass-subtle text-white/60 rounded-full"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                      {model.tags.length > 3 && (
-                        <span className="text-xs px-2 py-1 glass-subtle text-white/60 rounded-full">
-                          +{model.tags.length - 3}
-                        </span>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Meta Info */}
-                  <div className="flex items-center justify-between text-sm text-white/50 mb-4">
-                    <span className="flex items-center">
-                      <Calendar className="w-4 h-4 mr-1" />
-                      {formatDate(model.created_at)}
-                    </span>
-                    <span className="glass-subtle px-2 py-1 rounded-lg text-xs">{model.framework}</span>
-                  </div>
-
-                  {/* Stats */}
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-white/60">
-                      by {model.uploader?.display_name || 'Anonymous'}
-                    </span>
-                    <div className="flex items-center space-x-4 text-white/50">
-                      {model.accuracy && (
-                        <div className="flex items-center">
-                          <Star className="w-4 h-4 mr-1 text-yellow-400" />
-                          <span>{model.accuracy}%</span>
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {models.map((model, index) => (
+                <Link
+                  key={model.id}
+                  to={`/models/${model.id}`}
+                  className="scroll-reveal glass-card rounded-2xl hover:scale-105 transition-all duration-300 overflow-hidden group grain-texture"
+                  style={{ transitionDelay: `${index * 0.1}s` }}
+                >
+                  <div className="p-6">
+                    {/* Header */}
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-xs font-medium px-3 py-1 rounded-full glass-subtle text-white/80">
+                        {model.model_type}
+                      </span>
+                      {model.is_verified && (
+                        <div className="flex items-center text-green-400">
+                          <Shield className="w-4 h-4 mr-1" />
+                          <span className="text-xs">Verified</span>
                         </div>
                       )}
-                      <div className="flex items-center">
-                        <Download className="w-4 h-4 mr-1" />
-                        <span>{model.download_count || 0}</span>
+                    </div>
+
+                    {/* Title */}
+                    <h3 className="font-semibold gradient-text mb-2 group-hover:gradient-text-primary transition-all duration-300 line-clamp-1">
+                      {model.title}
+                    </h3>
+
+                    {/* Description */}
+                    <p className="text-white/60 text-sm mb-4 line-clamp-2">
+                      {model.description || 'No description available.'}
+                    </p>
+
+                    {/* Tags */}
+                    {model.tags && model.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mb-4">
+                        {model.tags.slice(0, 3).map((tag, tagIndex) => (
+                          <span
+                            key={tagIndex}
+                            className="text-xs px-2 py-1 glass-subtle text-white/60 rounded-full"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                        {model.tags.length > 3 && (
+                          <span className="text-xs px-2 py-1 glass-subtle text-white/60 rounded-full">
+                            +{model.tags.length - 3}
+                          </span>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Meta Info */}
+                    <div className="flex items-center justify-between text-sm text-white/50 mb-4">
+                      <span className="flex items-center">
+                        <Calendar className="w-4 h-4 mr-1" />
+                        {formatDate(model.created_at)}
+                      </span>
+                      <span className="glass-subtle px-2 py-1 rounded-lg text-xs">{model.framework}</span>
+                    </div>
+
+                    {/* Stats */}
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-white/60">
+                        by {model.uploader?.display_name || 'Anonymous'}
+                      </span>
+                      <div className="flex items-center space-x-4 text-white/50">
+                        {model.accuracy && (
+                          <div className="flex items-center">
+                            <Star className="w-4 h-4 mr-1 text-yellow-400" />
+                            <span>{model.accuracy}%</span>
+                          </div>
+                        )}
+                        <div className="flex items-center">
+                          <Download className="w-4 h-4 mr-1" />
+                          <span>{model.download_count}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
+                </Link>
+              ))}
+            </div>
 
-        {/* Load More or Pagination could be added here */}
-        {models.length > 0 && (
-          <div className="text-center mt-12">
-            <p className="text-white/60">
-              Showing {models.length} model{models.length !== 1 ? 's' : ''}
-            </p>
-          </div>
+            {/* Results Summary */}
+            <div className="text-center mt-12">
+              <p className="text-white/60">
+                Showing {models.length} model{models.length !== 1 ? 's' : ''}
+                {searchTerm && ` matching "${searchTerm}"`}
+                {selectedType && ` in ${selectedType}`}
+                {selectedFramework && ` using ${selectedFramework}`}
+              </p>
+            </div>
+          </>
         )}
       </div>
     </div>
