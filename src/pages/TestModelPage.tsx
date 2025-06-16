@@ -76,7 +76,7 @@ const LICENSE_TYPES = [
 ];
 
 // Fixed API key for the application
-const FIXED_API_KEY = 'AIzaSyBqJzQvzKZJzQvzKZJzQvzKZJzQvzKZJzQvzKZ'; // Replace with your actual API key
+const FIXED_API_KEY = 'AIzaSyCza_BCXf0cQyYTlgOMEG0t2SmhawS3xMQ'; // Replace with your actual API key
 
 export function TestModelPage() {
   const navigate = useNavigate();
