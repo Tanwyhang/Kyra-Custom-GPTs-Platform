@@ -537,7 +537,6 @@ export function TestModelPage() {
                   {(knowledgeText.trim() || uploadedFiles.length > 0) && (
                     <div className="flex items-center space-x-2 glass-subtle px-3 py-2 rounded-xl">
                       <Database className="w-4 h-4 text-green-400" />
-                      <span className="text-sm text-green-400">KB Active</span>
                     </div>
                   )}
                 </div>
