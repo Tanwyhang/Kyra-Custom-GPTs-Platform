@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { Navbar } from './components/Layout/Navbar';
 import { Footer } from './components/Layout/Footer';
@@ -11,6 +11,11 @@ import { ModelDetailPage } from './pages/ModelDetailPage';
 function AppContent() {
   const location = useLocation();
   const isHomePage = location.pathname === '/';
+
+  // Ensure page starts from top on route changes
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
 
   return (
     <>

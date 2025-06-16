@@ -50,12 +50,7 @@ export function ChatInterface({ model }: ChatInterfaceProps) {
   });
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   
-  const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
 
   useEffect(() => {
     // Add welcome message
@@ -67,10 +62,6 @@ export function ChatInterface({ model }: ChatInterfaceProps) {
     };
     setMessages([welcomeMessage]);
   }, [model.name]);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
 
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;
@@ -334,7 +325,6 @@ export function ChatInterface({ model }: ChatInterfaceProps) {
             </div>
           </div>
         ))}
-        <div ref={messagesEndRef} />
       </div>
 
       {/* Input */}
