@@ -3,13 +3,12 @@ import {
   Send, 
   RotateCcw, 
   Settings, 
-  MessageSquare, 
   Bot, 
   User as UserIcon, 
   Copy, 
   Check, 
-  Zap, 
-  Database
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -79,12 +78,26 @@ export function ChatInterface({ model }: ChatInterfaceProps) {
   const [showConfig, setShowConfig] = useState(false);
 
   // Refs
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to bottom
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   // Focus input on mount
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
+
+  // Auto-resize textarea
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.style.height = 'auto';
+      inputRef.current.style.height = Math.min(inputRef.current.scrollHeight, 200) + 'px';
+    }
+  }, [inputMessage]);
 
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;
@@ -180,249 +193,201 @@ export function ChatInterface({ model }: ChatInterfaceProps) {
   };
 
   return (
-    <div className="glass-strong rounded-2xl overflow-hidden grain-texture">
-      {/* Header - Exact same as TestGPT */}
-      <div className="flex items-center justify-between p-6 border-b border-white/10">
-        <div className="flex items-center">
-          <div className="w-10 h-10 rounded-xl icon-bg-primary flex items-center justify-center mr-3 glow-effect">
-            <Bot className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h3 className="font-semibold gradient-text">{model.title}</h3>
-            <p className="text-sm text-white/60">Powered by Gemini 1.5 Flash</p>
-          </div>
-        </div>
-
-        {/* Center - Status indicators */}
-        <div className="hidden md:flex items-center space-x-2">
-          <div className="flex items-center space-x-1 glass-subtle px-2 py-1 rounded-lg">
-            <MessageSquare className="w-3 h-3 text-white/60" />
-            <span className="text-xs text-white/80">{messages.length}</span>
-          </div>
-          {model.knowledge_context && (
-            <div className="flex items-center glass-subtle px-2 py-1 rounded-lg">
-              <Database className="w-3 h-3 text-green-400" />
-            </div>
-          )}
-        </div>
-
-        {/* Right side - Action buttons */}
+    <div className="flex flex-col h-screen bg-gray-50">
+      {/* Header - Minimal like ChatGPT */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-white">
         <div className="flex items-center space-x-3">
-          <button
-            onClick={resetConversation}
-            className="flex items-center px-3 py-2 glass-subtle rounded-xl hover:glass transition-all duration-300 text-white/80 hover:text-white"
-            title="Reset conversation"
-          >
-            <RotateCcw className="w-4 h-4 mr-2" />
-            <span className="hidden sm:inline">Reset</span>
-          </button>
-          
+          <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 flex items-center justify-center">
+            <Bot className="w-4 h-4 text-white" />
+          </div>
+          <h1 className="text-lg font-semibold text-gray-900">{model.title}</h1>
+        </div>
+
+        <div className="flex items-center space-x-2">
           <button
             onClick={() => setShowConfig(!showConfig)}
-            className={`flex items-center px-3 py-2 rounded-xl transition-all duration-300 ${
-              showConfig ? 'button-primary' : 'glass-subtle hover:glass'
-            } text-white`}
-            title="Configure GPT"
+            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+            title="Settings"
           >
-            <Settings className="w-4 h-4 mr-2" />
-            <span className="hidden sm:inline">Configure</span>
+            <Settings className="w-5 h-5" />
+          </button>
+          <button
+            onClick={resetConversation}
+            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+            title="New chat"
+          >
+            <RotateCcw className="w-5 h-5" />
           </button>
         </div>
       </div>
 
-      {/* Mobile status indicators */}
-      <div className="md:hidden flex items-center justify-center space-x-4 px-6 py-3 border-b border-white/10">
-        <div className="flex items-center space-x-2 glass-subtle px-3 py-1 rounded-lg">
-          <MessageSquare className="w-3 h-3 text-white/60" />
-          <span className="text-xs text-white/80">{messages.length} messages</span>
-        </div>
-        {model.knowledge_context && (
-          <div className="flex items-center space-x-2 glass-subtle px-3 py-1 rounded-lg">
-            <Database className="w-3 h-3 text-green-400" />
-            <span className="text-xs text-green-400">KB</span>
-          </div>
-        )}
-      </div>
-
-      {/* Configuration Panel - Same as TestGPT */}
+      {/* Configuration Panel - Collapsible */}
       {showConfig && (
-        <div className="p-6 border-b border-white/10 glass-subtle">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-white/80 mb-2">
-                Temperature: {config.temperature}
-              </label>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.1"
-                value={config.temperature}
-                onChange={(e) => setConfig(prev => ({ ...prev, temperature: parseFloat(e.target.value) }))}
-                className="w-full"
-              />
-              <div className="flex justify-between text-xs text-white/50 mt-1">
-                <span>Focused</span>
-                <span>Creative</span>
+        <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
+          <div className="max-w-4xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Temperature: {config.temperature}
+                </label>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.1"
+                  value={config.temperature}
+                  onChange={(e) => setConfig(prev => ({ ...prev, temperature: parseFloat(e.target.value) }))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                />
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>Precise</span>
+                  <span>Creative</span>
+                </div>
               </div>
-            </div>
 
-            <div>
-              <label className="block text-sm font-medium text-white/80 mb-2">
-                Top-p: {config.topP}
-              </label>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.1"
-                value={config.topP}
-                onChange={(e) => setConfig(prev => ({ ...prev, topP: parseFloat(e.target.value) }))}
-                className="w-full"
-              />
-            </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Top-p: {config.topP}
+                </label>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.1"
+                  value={config.topP}
+                  onChange={(e) => setConfig(prev => ({ ...prev, topP: parseFloat(e.target.value) }))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                />
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-white/80 mb-2">
-                Max Tokens
-              </label>
-              <input
-                type="number"
-                min="1"
-                max="4096"
-                value={config.maxTokens}
-                onChange={(e) => setConfig(prev => ({ ...prev, maxTokens: parseInt(e.target.value) }))}
-                className="glass-input w-full px-3 py-2 rounded-xl text-sm"
-              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Max Tokens
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="4096"
+                  value={config.maxTokens}
+                  onChange={(e) => setConfig(prev => ({ ...prev, maxTokens: parseInt(e.target.value) }))}
+                  className="w-full px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Messages - Fixed height container exactly like TestGPT */}
-      <div 
-        className="overflow-y-auto p-6 space-y-4"
-        style={{ 
-          height: '500px',
-          maxHeight: '500px'
-        }}
-      >
-        {messages.length === 0 ? (
-          <div className="text-center py-12">
-            <MessageSquare className="w-12 h-12 mx-auto mb-4 text-white/30" />
-            <p className="text-white/60">Start a conversation to test your AI GPT</p>
-            <p className="text-white/40 text-sm mt-2">
-              Currently using: <span className="text-purple-400">{model.title}</span>
-            </p>
-            {model.knowledge_context && (
-              <div className="mt-4 flex items-center justify-center text-green-400">
-                <Database className="w-4 h-4 mr-2" />
-                <span className="text-sm">Knowledge base is active</span>
-              </div>
-            )}
-          </div>
-        ) : (
-          messages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-            >
-              <div className={`max-w-3xl ${message.role === 'user' ? 'order-2' : 'order-1'}`}>
-                <div className="flex items-start space-x-3">
-                  {message.role === 'assistant' && (
-                    <div className="w-8 h-8 rounded-lg icon-bg-primary flex items-center justify-center flex-shrink-0">
-                      <Bot className="w-4 h-4 text-white" />
-                    </div>
+      {/* Messages - Full height with scroll */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-4xl mx-auto px-4 py-6">
+          {messages.map((message) => (
+            <div key={message.id} className="mb-8">
+              <div className={`flex items-start space-x-4 ${message.role === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
+                {/* Avatar */}
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                  message.role === 'user' 
+                    ? 'bg-gray-700' 
+                    : 'bg-gradient-to-r from-purple-500 to-blue-500'
+                }`}>
+                  {message.role === 'user' ? (
+                    <UserIcon className="w-4 h-4 text-white" />
+                  ) : (
+                    <Bot className="w-4 h-4 text-white" />
                   )}
-                  <div className={`rounded-2xl p-4 ${
+                </div>
+
+                {/* Message Content */}
+                <div className={`flex-1 ${message.role === 'user' ? 'text-right' : ''}`}>
+                  <div className={`inline-block max-w-full ${
                     message.role === 'user' 
-                      ? 'button-primary text-white' 
-                      : 'glass-subtle text-white/90'
+                      ? 'bg-blue-500 text-white rounded-2xl rounded-tr-md px-4 py-2' 
+                      : 'text-gray-900'
                   }`}>
                     {message.role === 'user' ? (
-                      <p className="whitespace-pre-wrap">{message.content}</p>
+                      <p className="whitespace-pre-wrap break-words">{message.content}</p>
                     ) : (
-                      <div className="prose prose-invert prose-base max-w-none">
+                      <div className="prose prose-gray max-w-none">
                         <ReactMarkdown 
                           remarkPlugins={[remarkGfm]}
                           components={{
                             code: ({ node, inline, className, children, ...props }) => {
                               return inline ? (
-                                <code className="bg-white/10 px-1 py-0.5 rounded text-sm font-mono" {...props}>
+                                <code className="bg-gray-100 px-1 py-0.5 rounded text-sm font-mono text-gray-800" {...props}>
                                   {children}
                                 </code>
                               ) : (
-                                <pre className="bg-white/5 p-4 rounded-lg overflow-x-auto">
-                                  <code className="text-sm font-mono" {...props}>
+                                <pre className="bg-gray-100 p-4 rounded-lg overflow-x-auto border">
+                                  <code className="text-sm font-mono text-gray-800" {...props}>
                                     {children}
                                   </code>
                                 </pre>
                               );
                             },
                             blockquote: ({ children }) => (
-                              <blockquote className="border-l-4 border-purple-400 pl-4 italic text-white/80">
+                              <blockquote className="border-l-4 border-blue-500 pl-4 italic text-gray-600 my-4">
                                 {children}
                               </blockquote>
                             ),
                             table: ({ children }) => (
-                              <div className="overflow-x-auto">
-                                <table className="min-w-full border-collapse border border-white/20">
+                              <div className="overflow-x-auto my-4">
+                                <table className="min-w-full border-collapse border border-gray-300">
                                   {children}
                                 </table>
                               </div>
                             ),
                             th: ({ children }) => (
-                              <th className="border border-white/20 px-3 py-2 bg-white/10 font-semibold text-left">
+                              <th className="border border-gray-300 px-4 py-2 bg-gray-50 font-semibold text-left">
                                 {children}
                               </th>
                             ),
                             td: ({ children }) => (
-                              <td className="border border-white/20 px-3 py-2">
+                              <td className="border border-gray-300 px-4 py-2">
                                 {children}
                               </td>
                             ),
                             ul: ({ children }) => (
-                              <ul className="list-disc list-inside space-y-2">
+                              <ul className="list-disc list-inside space-y-1 my-4">
                                 {children}
                               </ul>
                             ),
                             ol: ({ children }) => (
-                              <ol className="list-decimal list-inside space-y-2">
+                              <ol className="list-decimal list-inside space-y-1 my-4">
                                 {children}
                               </ol>
                             ),
                             h1: ({ children }) => (
-                              <h1 className="text-xl font-bold gradient-text mb-3">
+                              <h1 className="text-2xl font-bold text-gray-900 mb-4 mt-6">
                                 {children}
                               </h1>
                             ),
                             h2: ({ children }) => (
-                              <h2 className="text-lg font-bold gradient-text mb-3">
+                              <h2 className="text-xl font-bold text-gray-900 mb-3 mt-5">
                                 {children}
                               </h2>
                             ),
                             h3: ({ children }) => (
-                              <h3 className="text-base font-bold gradient-text mb-2">
+                              <h3 className="text-lg font-bold text-gray-900 mb-2 mt-4">
                                 {children}
                               </h3>
                             ),
                             p: ({ children }) => (
-                              <p className="mb-3 last:mb-0 break-words leading-relaxed">
+                              <p className="mb-4 last:mb-0 break-words leading-relaxed text-gray-900">
                                 {children}
                               </p>
                             ),
                             strong: ({ children }) => (
-                              <strong className="font-bold text-white">
+                              <strong className="font-bold text-gray-900">
                                 {children}
                               </strong>
                             ),
                             em: ({ children }) => (
-                              <em className="italic text-white/90">
+                              <em className="italic text-gray-700">
                                 {children}
                               </em>
                             ),
                             hr: () => (
-                              <hr className="border-white/20 my-6" />
+                              <hr className="border-gray-300 my-6" />
                             )
                           }}
                         >
@@ -430,73 +395,83 @@ export function ChatInterface({ model }: ChatInterfaceProps) {
                         </ReactMarkdown>
                       </div>
                     )}
-                    <div className="flex items-center justify-between mt-3">
-                      <p className="text-xs opacity-60">
-                        {message.timestamp.toLocaleTimeString()}
-                      </p>
-                      {message.role === 'assistant' && (
-                        <button
-                          onClick={() => copyMessage(message.id, message.content)}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-white/10 rounded"
-                          title="Copy message"
-                        >
-                          {copiedMessageId === message.id ? (
-                            <Check className="w-3 h-3 text-green-400" />
-                          ) : (
-                            <Copy className="w-3 h-3" />
-                          )}
-                        </button>
-                      )}
-                    </div>
                   </div>
-                  {message.role === 'user' && (
-                    <div className="w-8 h-8 rounded-lg glass-subtle flex items-center justify-center flex-shrink-0">
-                      <UserIcon className="w-4 h-4 text-white" />
+
+                  {/* Message Actions */}
+                  {message.role === 'assistant' && (
+                    <div className="flex items-center mt-2 space-x-2">
+                      <button
+                        onClick={() => copyMessage(message.id, message.content)}
+                        className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors"
+                        title="Copy message"
+                      >
+                        {copiedMessageId === message.id ? (
+                          <Check className="w-4 h-4 text-green-500" />
+                        ) : (
+                          <Copy className="w-4 h-4" />
+                        )}
+                      </button>
+                      <span className="text-xs text-gray-400">
+                        {message.timestamp.toLocaleTimeString()}
+                      </span>
                     </div>
                   )}
                 </div>
               </div>
             </div>
-          ))
-        )}
-        {isLoading && (
-          <div className="flex justify-start">
-            <div className="flex items-start space-x-3">
-              <div className="w-8 h-8 rounded-lg icon-bg-primary flex items-center justify-center">
-                <Bot className="w-4 h-4 text-white" />
-              </div>
-              <div className="glass-subtle rounded-2xl p-4">
-                <div className="flex space-x-2">
-                  <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                  <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+          ))}
+
+          {/* Loading indicator */}
+          {isLoading && (
+            <div className="mb-8">
+              <div className="flex items-start space-x-4">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 flex items-center justify-center">
+                  <Bot className="w-4 h-4 text-white" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex space-x-1">
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
+
+          <div ref={messagesEndRef} />
+        </div>
       </div>
 
-      {/* Input - Fixed at bottom exactly like TestGPT */}
-      <div className="p-6 border-t border-white/10">
-        <div className="flex space-x-4">
-          <input
-            ref={inputRef}
-            type="text"
-            value={inputMessage}
-            onChange={(e) => setInputMessage(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Type your message..."
-            className="flex-1 glass-input px-4 py-3 rounded-xl focus:ring-2 focus:ring-purple-500"
-            disabled={isLoading}
-          />
-          <button
-            onClick={handleSendMessage}
-            disabled={!inputMessage.trim() || isLoading}
-            className="button-primary px-6 py-3 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
-          >
-            <Send className="w-5 h-5" />
-          </button>
+      {/* Input Area - Fixed at bottom like ChatGPT */}
+      <div className="border-t border-gray-200 bg-white">
+        <div className="max-w-4xl mx-auto px-4 py-4">
+          <div className="relative">
+            <textarea
+              ref={inputRef}
+              value={inputMessage}
+              onChange={(e) => setInputMessage(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder={`Message ${model.title}...`}
+              className="w-full resize-none border border-gray-300 rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
+              style={{ minHeight: '52px', maxHeight: '200px' }}
+              disabled={isLoading}
+              rows={1}
+            />
+            <button
+              onClick={handleSendMessage}
+              disabled={!inputMessage.trim() || isLoading}
+              className="absolute right-2 bottom-2 p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <Send className="w-4 h-4" />
+            </button>
+          </div>
+          
+          <div className="flex items-center justify-center mt-2">
+            <p className="text-xs text-gray-500">
+              Press Enter to send, Shift+Enter for new line
+            </p>
+          </div>
         </div>
       </div>
     </div>
