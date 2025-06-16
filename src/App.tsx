@@ -13,19 +13,21 @@ function AppContent() {
   const isHomePage = location.pathname === '/';
 
   return (
-    <div className="min-h-screen flex flex-col relative">
+    <>
       <InteractiveDots />
-      <Navbar />
-      <main className="flex-1 relative z-10">
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/marketplace" element={<MarketplacePage />} />
-          <Route path="/test" element={<TestModelPage />} />
-          <Route path="/models/:id" element={<ModelDetailPage />} />
-        </Routes>
-      </main>
-      {isHomePage && <Footer />}
-    </div>
+      <div className="min-h-screen flex flex-col relative z-10">
+        <Navbar />
+        <main className="flex-1 relative">
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/marketplace" element={<MarketplacePage />} />
+            <Route path="/test" element={<TestModelPage />} />
+            <Route path="/models/:id" element={<ModelDetailPage />} />
+          </Routes>
+        </main>
+        {isHomePage && <Footer />}
+      </div>
+    </>
   );
 }
 
