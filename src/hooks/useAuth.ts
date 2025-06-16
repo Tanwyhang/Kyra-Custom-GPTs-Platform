@@ -8,7 +8,11 @@ export function useAuth() {
 
   useEffect(() => {
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        console.error('Error getting initial session:', error);
+      }
+      console.log('Initial session:', session?.user?.email || 'No user');
       setUser(session?.user ?? null);
       setLoading(false);
     });
@@ -16,7 +20,7 @@ export function useAuth() {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.id);
+        console.log('Auth state changed:', event, session?.user?.email || 'No user');
         setUser(session?.user ?? null);
         setLoading(false);
 
@@ -32,7 +36,9 @@ export function useAuth() {
 
   const ensureUserProfile = async (user: User) => {
     try {
-      // Check if user profile exists - use regular select instead of single
+      console.log('Ensuring user profile for:', user.email);
+      
+      // Check if user profile exists
       const { data: existingUserArray, error: selectError } = await supabase
         .from('users')
         .select('id')
@@ -45,6 +51,8 @@ export function useAuth() {
 
       // Check if user profile doesn't exist
       if (!existingUserArray || existingUserArray.length === 0) {
+        console.log('Creating user profile...');
+        
         // Create user profile if it doesn't exist
         const { error } = await supabase.from('users').insert({
           id: user.id,
@@ -55,7 +63,11 @@ export function useAuth() {
 
         if (error) {
           console.error('Error creating user profile:', error);
+        } else {
+          console.log('User profile created successfully');
         }
+      } else {
+        console.log('User profile already exists');
       }
     } catch (error) {
       console.error('Error ensuring user profile:', error);
@@ -64,6 +76,8 @@ export function useAuth() {
 
   const signIn = async (email: string, password: string) => {
     try {
+      console.log('Attempting to sign in with email:', email);
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -73,6 +87,8 @@ export function useAuth() {
         console.error('Sign in error:', error);
         return { error };
       }
+
+      console.log('Sign in successful for:', data.user?.email);
 
       // Ensure user profile exists after successful sign in
       if (data.user) {
@@ -88,6 +104,8 @@ export function useAuth() {
 
   const signInWithGoogle = async () => {
     try {
+      console.log('Attempting Google sign in...');
+      
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -100,6 +118,7 @@ export function useAuth() {
         return { data, error };
       }
 
+      console.log('Google sign in initiated');
       return { data, error: null };
     } catch (error) {
       console.error('Unexpected Google sign in error:', error);
@@ -109,6 +128,8 @@ export function useAuth() {
 
   const signUp = async (email: string, password: string, displayName?: string) => {
     try {
+      console.log('Attempting to sign up with email:', email);
+      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -124,8 +145,12 @@ export function useAuth() {
         return { data, error };
       }
 
+      console.log('Sign up successful for:', data.user?.email);
+
       if (data.user && !error) {
         // Create user profile
+        console.log('Creating user profile after signup...');
+        
         const { error: profileError } = await supabase.from('users').insert({
           id: data.user.id,
           email: data.user.email!,
@@ -135,6 +160,8 @@ export function useAuth() {
         if (profileError) {
           console.error('Error creating user profile:', profileError);
           // Don't return the profile error as the main error since auth was successful
+        } else {
+          console.log('User profile created successfully after signup');
         }
       }
 

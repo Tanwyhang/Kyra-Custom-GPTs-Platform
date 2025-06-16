@@ -28,21 +28,35 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: true
+    detectSessionInUrl: true,
+    flowType: 'pkce'
   }
 });
 
-// Test connection
-supabase.from('users').select('count', { count: 'exact', head: true })
-  .then(({ error, count }) => {
+// Test connection and auth
+supabase.auth.getSession()
+  .then(({ data: { session }, error }) => {
     if (error) {
-      console.error('Supabase connection test failed:', error);
+      console.error('Auth session check failed:', error);
     } else {
-      console.log('Supabase connection test successful, user count:', count);
+      console.log('Auth session check successful, user:', session?.user?.email || 'No user');
     }
   })
   .catch(error => {
-    console.error('Supabase connection test error:', error);
+    console.error('Auth session check error:', error);
+  });
+
+// Test database connection
+supabase.from('users').select('count', { count: 'exact', head: true })
+  .then(({ error, count }) => {
+    if (error) {
+      console.error('Database connection test failed:', error);
+    } else {
+      console.log('Database connection test successful, user count:', count);
+    }
+  })
+  .catch(error => {
+    console.error('Database connection test error:', error);
   });
 
 export type Database = {
