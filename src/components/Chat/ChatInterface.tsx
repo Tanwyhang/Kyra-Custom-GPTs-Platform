@@ -6,9 +6,7 @@ import {
   Bot, 
   User as UserIcon, 
   Copy, 
-  Check, 
-  ChevronDown,
-  ChevronUp
+  Check
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -95,7 +93,7 @@ export function ChatInterface({ model }: ChatInterfaceProps) {
   useEffect(() => {
     if (inputRef.current) {
       inputRef.current.style.height = 'auto';
-      inputRef.current.style.height = Math.min(inputRef.current.scrollHeight, 200) + 'px';
+      inputRef.current.style.height = Math.min(inputRef.current.scrollHeight, 120) + 'px';
     }
   }, [inputMessage]);
 
@@ -193,247 +191,228 @@ export function ChatInterface({ model }: ChatInterfaceProps) {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
-      {/* Header - Minimal like ChatGPT */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-white">
+    <div className="h-full flex flex-col bg-white">
+      {/* Header - Minimal */}
+      <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-white flex-shrink-0">
         <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center">
             <Bot className="w-4 h-4 text-white" />
           </div>
-          <h1 className="text-lg font-semibold text-gray-900">{model.title}</h1>
+          <h1 className="text-lg font-medium text-gray-900">{model.title}</h1>
         </div>
 
         <div className="flex items-center space-x-2">
           <button
             onClick={() => setShowConfig(!showConfig)}
-            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-            title="Settings"
+            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
           >
             <Settings className="w-5 h-5" />
           </button>
           <button
             onClick={resetConversation}
-            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-            title="New chat"
+            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
           >
             <RotateCcw className="w-5 h-5" />
           </button>
         </div>
       </div>
 
-      {/* Configuration Panel - Collapsible */}
+      {/* Configuration Panel */}
       {showConfig && (
-        <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
-          <div className="max-w-4xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Temperature: {config.temperature}
-                </label>
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.1"
-                  value={config.temperature}
-                  onChange={(e) => setConfig(prev => ({ ...prev, temperature: parseFloat(e.target.value) }))}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-                />
-                <div className="flex justify-between text-xs text-gray-500 mt-1">
-                  <span>Precise</span>
-                  <span>Creative</span>
-                </div>
-              </div>
+        <div className="px-6 py-4 bg-gray-50 border-b border-gray-200 flex-shrink-0">
+          <div className="grid grid-cols-3 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Temperature: {config.temperature}
+              </label>
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.1"
+                value={config.temperature}
+                onChange={(e) => setConfig(prev => ({ ...prev, temperature: parseFloat(e.target.value) }))}
+                className="w-full"
+              />
+            </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Top-p: {config.topP}
-                </label>
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.1"
-                  value={config.topP}
-                  onChange={(e) => setConfig(prev => ({ ...prev, topP: parseFloat(e.target.value) }))}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-                />
-              </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Top-p: {config.topP}
+              </label>
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.1"
+                value={config.topP}
+                onChange={(e) => setConfig(prev => ({ ...prev, topP: parseFloat(e.target.value) }))}
+                className="w-full"
+              />
+            </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Max Tokens
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  max="4096"
-                  value={config.maxTokens}
-                  onChange={(e) => setConfig(prev => ({ ...prev, maxTokens: parseInt(e.target.value) }))}
-                  className="w-full px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Max Tokens
+              </label>
+              <input
+                type="number"
+                min="1"
+                max="4096"
+                value={config.maxTokens}
+                onChange={(e) => setConfig(prev => ({ ...prev, maxTokens: parseInt(e.target.value) }))}
+                className="w-full px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-gray-500"
+              />
             </div>
           </div>
         </div>
       )}
 
-      {/* Messages - Full height with scroll */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="max-w-4xl mx-auto px-4 py-6">
+      {/* Messages - Scrollable container */}
+      <div className="flex-1 overflow-y-auto px-6 py-4">
+        <div className="max-w-4xl mx-auto space-y-6">
           {messages.map((message) => (
-            <div key={message.id} className="mb-8">
-              <div className={`flex items-start space-x-4 ${message.role === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
-                {/* Avatar */}
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                  message.role === 'user' 
-                    ? 'bg-gray-700' 
-                    : 'bg-gradient-to-r from-purple-500 to-blue-500'
-                }`}>
-                  {message.role === 'user' ? (
-                    <UserIcon className="w-4 h-4 text-white" />
-                  ) : (
-                    <Bot className="w-4 h-4 text-white" />
-                  )}
-                </div>
+            <div key={message.id} className="flex items-start space-x-4">
+              {/* Avatar */}
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                message.role === 'user' ? 'bg-gray-600' : 'bg-gray-800'
+              }`}>
+                {message.role === 'user' ? (
+                  <UserIcon className="w-4 h-4 text-white" />
+                ) : (
+                  <Bot className="w-4 h-4 text-white" />
+                )}
+              </div>
 
-                {/* Message Content */}
-                <div className={`flex-1 ${message.role === 'user' ? 'text-right' : ''}`}>
-                  <div className={`inline-block max-w-full ${
-                    message.role === 'user' 
-                      ? 'bg-blue-500 text-white rounded-2xl rounded-tr-md px-4 py-2' 
-                      : 'text-gray-900'
-                  }`}>
-                    {message.role === 'user' ? (
-                      <p className="whitespace-pre-wrap break-words">{message.content}</p>
-                    ) : (
-                      <div className="prose prose-gray max-w-none">
-                        <ReactMarkdown 
-                          remarkPlugins={[remarkGfm]}
-                          components={{
-                            code: ({ node, inline, className, children, ...props }) => {
-                              return inline ? (
-                                <code className="bg-gray-100 px-1 py-0.5 rounded text-sm font-mono text-gray-800" {...props}>
+              {/* Message Content */}
+              <div className="flex-1 min-w-0">
+                <div className="text-gray-900">
+                  {message.role === 'user' ? (
+                    <p className="whitespace-pre-wrap break-words">{message.content}</p>
+                  ) : (
+                    <div className="prose prose-gray max-w-none">
+                      <ReactMarkdown 
+                        remarkPlugins={[remarkGfm]}
+                        components={{
+                          code: ({ node, inline, className, children, ...props }) => {
+                            return inline ? (
+                              <code className="bg-gray-100 px-1 py-0.5 rounded text-sm font-mono" {...props}>
+                                {children}
+                              </code>
+                            ) : (
+                              <pre className="bg-gray-100 p-3 rounded-md overflow-x-auto border">
+                                <code className="text-sm font-mono" {...props}>
                                   {children}
                                 </code>
-                              ) : (
-                                <pre className="bg-gray-100 p-4 rounded-lg overflow-x-auto border">
-                                  <code className="text-sm font-mono text-gray-800" {...props}>
-                                    {children}
-                                  </code>
-                                </pre>
-                              );
-                            },
-                            blockquote: ({ children }) => (
-                              <blockquote className="border-l-4 border-blue-500 pl-4 italic text-gray-600 my-4">
+                              </pre>
+                            );
+                          },
+                          blockquote: ({ children }) => (
+                            <blockquote className="border-l-4 border-gray-300 pl-4 italic text-gray-600">
+                              {children}
+                            </blockquote>
+                          ),
+                          table: ({ children }) => (
+                            <div className="overflow-x-auto">
+                              <table className="min-w-full border-collapse border border-gray-300">
                                 {children}
-                              </blockquote>
-                            ),
-                            table: ({ children }) => (
-                              <div className="overflow-x-auto my-4">
-                                <table className="min-w-full border-collapse border border-gray-300">
-                                  {children}
-                                </table>
-                              </div>
-                            ),
-                            th: ({ children }) => (
-                              <th className="border border-gray-300 px-4 py-2 bg-gray-50 font-semibold text-left">
-                                {children}
-                              </th>
-                            ),
-                            td: ({ children }) => (
-                              <td className="border border-gray-300 px-4 py-2">
-                                {children}
-                              </td>
-                            ),
-                            ul: ({ children }) => (
-                              <ul className="list-disc list-inside space-y-1 my-4">
-                                {children}
-                              </ul>
-                            ),
-                            ol: ({ children }) => (
-                              <ol className="list-decimal list-inside space-y-1 my-4">
-                                {children}
-                              </ol>
-                            ),
-                            h1: ({ children }) => (
-                              <h1 className="text-2xl font-bold text-gray-900 mb-4 mt-6">
-                                {children}
-                              </h1>
-                            ),
-                            h2: ({ children }) => (
-                              <h2 className="text-xl font-bold text-gray-900 mb-3 mt-5">
-                                {children}
-                              </h2>
-                            ),
-                            h3: ({ children }) => (
-                              <h3 className="text-lg font-bold text-gray-900 mb-2 mt-4">
-                                {children}
-                              </h3>
-                            ),
-                            p: ({ children }) => (
-                              <p className="mb-4 last:mb-0 break-words leading-relaxed text-gray-900">
-                                {children}
-                              </p>
-                            ),
-                            strong: ({ children }) => (
-                              <strong className="font-bold text-gray-900">
-                                {children}
-                              </strong>
-                            ),
-                            em: ({ children }) => (
-                              <em className="italic text-gray-700">
-                                {children}
-                              </em>
-                            ),
-                            hr: () => (
-                              <hr className="border-gray-300 my-6" />
-                            )
-                          }}
-                        >
-                          {message.content}
-                        </ReactMarkdown>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Message Actions */}
-                  {message.role === 'assistant' && (
-                    <div className="flex items-center mt-2 space-x-2">
-                      <button
-                        onClick={() => copyMessage(message.id, message.content)}
-                        className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors"
-                        title="Copy message"
+                              </table>
+                            </div>
+                          ),
+                          th: ({ children }) => (
+                            <th className="border border-gray-300 px-3 py-2 bg-gray-50 font-medium text-left">
+                              {children}
+                            </th>
+                          ),
+                          td: ({ children }) => (
+                            <td className="border border-gray-300 px-3 py-2">
+                              {children}
+                            </td>
+                          ),
+                          ul: ({ children }) => (
+                            <ul className="list-disc list-inside space-y-1">
+                              {children}
+                            </ul>
+                          ),
+                          ol: ({ children }) => (
+                            <ol className="list-decimal list-inside space-y-1">
+                              {children}
+                            </ol>
+                          ),
+                          h1: ({ children }) => (
+                            <h1 className="text-xl font-bold text-gray-900 mb-3">
+                              {children}
+                            </h1>
+                          ),
+                          h2: ({ children }) => (
+                            <h2 className="text-lg font-bold text-gray-900 mb-2">
+                              {children}
+                            </h2>
+                          ),
+                          h3: ({ children }) => (
+                            <h3 className="text-base font-bold text-gray-900 mb-2">
+                              {children}
+                            </h3>
+                          ),
+                          p: ({ children }) => (
+                            <p className="mb-3 last:mb-0 break-words leading-relaxed">
+                              {children}
+                            </p>
+                          ),
+                          strong: ({ children }) => (
+                            <strong className="font-bold">
+                              {children}
+                            </strong>
+                          ),
+                          em: ({ children }) => (
+                            <em className="italic">
+                              {children}
+                            </em>
+                          ),
+                          hr: () => (
+                            <hr className="border-gray-300 my-4" />
+                          )
+                        }}
                       >
-                        {copiedMessageId === message.id ? (
-                          <Check className="w-4 h-4 text-green-500" />
-                        ) : (
-                          <Copy className="w-4 h-4" />
-                        )}
-                      </button>
-                      <span className="text-xs text-gray-400">
-                        {message.timestamp.toLocaleTimeString()}
-                      </span>
+                        {message.content}
+                      </ReactMarkdown>
                     </div>
                   )}
                 </div>
+
+                {/* Message Actions */}
+                {message.role === 'assistant' && (
+                  <div className="flex items-center mt-2 space-x-2">
+                    <button
+                      onClick={() => copyMessage(message.id, message.content)}
+                      className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors"
+                    >
+                      {copiedMessageId === message.id ? (
+                        <Check className="w-4 h-4 text-green-600" />
+                      ) : (
+                        <Copy className="w-4 h-4" />
+                      )}
+                    </button>
+                    <span className="text-xs text-gray-400">
+                      {message.timestamp.toLocaleTimeString()}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           ))}
 
           {/* Loading indicator */}
           {isLoading && (
-            <div className="mb-8">
-              <div className="flex items-start space-x-4">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 flex items-center justify-center">
-                  <Bot className="w-4 h-4 text-white" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                  </div>
+            <div className="flex items-start space-x-4">
+              <div className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center">
+                <Bot className="w-4 h-4 text-white" />
+              </div>
+              <div className="flex-1">
+                <div className="flex space-x-1">
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                 </div>
               </div>
             </div>
@@ -443,9 +422,9 @@ export function ChatInterface({ model }: ChatInterfaceProps) {
         </div>
       </div>
 
-      {/* Input Area - Fixed at bottom like ChatGPT */}
-      <div className="border-t border-gray-200 bg-white">
-        <div className="max-w-4xl mx-auto px-4 py-4">
+      {/* Input Area - Fixed at bottom */}
+      <div className="border-t border-gray-200 bg-white px-6 py-4 flex-shrink-0">
+        <div className="max-w-4xl mx-auto">
           <div className="relative">
             <textarea
               ref={inputRef}
@@ -453,15 +432,15 @@ export function ChatInterface({ model }: ChatInterfaceProps) {
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder={`Message ${model.title}...`}
-              className="w-full resize-none border border-gray-300 rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
-              style={{ minHeight: '52px', maxHeight: '200px' }}
+              className="w-full resize-none border border-gray-300 rounded-lg px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent text-gray-900 placeholder-gray-500"
+              style={{ minHeight: '52px', maxHeight: '120px' }}
               disabled={isLoading}
               rows={1}
             />
             <button
               onClick={handleSendMessage}
               disabled={!inputMessage.trim() || isLoading}
-              className="absolute right-2 bottom-2 p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="absolute right-2 bottom-2 p-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <Send className="w-4 h-4" />
             </button>
