@@ -374,53 +374,47 @@ export function TestModelPage() {
       <div className="flex-1 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-full py-6">
-            {/* Optimized Configuration Panel */}
+            {/* Ultra-Compact Configuration Panel */}
             {showConfig && (
               <div className="lg:col-span-1">
-                <div className="glass-strong rounded-2xl grain-texture h-full flex flex-col">
-                  {/* Configuration Header */}
-                  <div className="flex items-center justify-between p-4 border-b border-white/10 flex-shrink-0">
-                    <h3 className="text-lg font-semibold gradient-text">Configuration</h3>
+                <div className="glass-strong rounded-2xl grain-texture h-full flex flex-col max-h-[calc(100vh-8rem)]">
+                  {/* Compact Header */}
+                  <div className="flex items-center justify-between p-3 border-b border-white/10 flex-shrink-0">
+                    <h3 className="text-base font-semibold gradient-text">Config</h3>
                     <button
                       onClick={handleResetToDefaults}
-                      className="text-sm text-white/60 hover:text-white transition-colors flex items-center"
-                      title="Reset to model defaults"
+                      className="text-xs text-white/60 hover:text-white transition-colors flex items-center"
+                      title="Reset to defaults"
                     >
-                      <Reset className="w-4 h-4 mr-1" />
+                      <Reset className="w-3 h-3 mr-1" />
                       Reset
                     </button>
                   </div>
 
-                  {/* Scrollable Content */}
-                  <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                    {/* Model Selection */}
+                  {/* Scrollable Content - Ultra Compact */}
+                  <div className="flex-1 overflow-y-auto p-3 space-y-3 text-sm">
+                    {/* Model Selection - Compact */}
                     <div>
-                      <label className="block text-sm font-medium text-white/80 mb-2">
-                        AI Model
-                      </label>
+                      <label className="block text-xs font-medium text-white/80 mb-1">Model</label>
                       <button
                         onClick={() => setShowModelSelector(true)}
-                        className="w-full glass-input px-3 py-2 rounded-xl text-left flex items-center justify-between text-sm"
+                        className="w-full glass-input px-2 py-1.5 rounded-lg text-left flex items-center justify-between text-xs"
                       >
-                        <span className="truncate">{selectedModel?.name || 'Select Model'}</span>
-                        <Zap className="w-4 h-4 text-white/50 flex-shrink-0" />
+                        <span className="truncate">{selectedModel?.name || 'Select'}</span>
+                        <Zap className="w-3 h-3 text-white/50 flex-shrink-0" />
                       </button>
-                      {selectedModel && (
-                        <p className="text-xs text-white/60 mt-1 line-clamp-2">{selectedModel.description}</p>
-                      )}
                     </div>
 
-                    {/* Model Parameters */}
-                    <div className="space-y-4">
-                      <h4 className="text-sm font-semibold text-white/80 border-b border-white/10 pb-2">
-                        Model Parameters
-                      </h4>
+                    {/* Model Parameters - Ultra Compact */}
+                    <div className="space-y-2">
+                      <h4 className="text-xs font-semibold text-white/80 border-b border-white/10 pb-1">Parameters</h4>
                       
                       {/* Temperature */}
                       <div>
-                        <label className="block text-sm font-medium text-white/80 mb-2">
-                          Temperature: {config.temperature}
-                        </label>
+                        <div className="flex justify-between items-center mb-1">
+                          <label className="text-xs text-white/70">Temperature</label>
+                          <span className="text-xs text-white/90 font-mono">{config.temperature}</span>
+                        </div>
                         <input
                           type="range"
                           min="0"
@@ -428,19 +422,16 @@ export function TestModelPage() {
                           step="0.1"
                           value={config.temperature}
                           onChange={(e) => setConfig(prev => ({ ...prev, temperature: parseFloat(e.target.value) }))}
-                          className="w-full"
+                          className="w-full h-1"
                         />
-                        <div className="flex justify-between text-xs text-white/50 mt-1">
-                          <span>Focused</span>
-                          <span>Creative</span>
-                        </div>
                       </div>
 
                       {/* Top-p */}
                       <div>
-                        <label className="block text-sm font-medium text-white/80 mb-2">
-                          Top-p: {config.topP}
-                        </label>
+                        <div className="flex justify-between items-center mb-1">
+                          <label className="text-xs text-white/70">Top-p</label>
+                          <span className="text-xs text-white/90 font-mono">{config.topP}</span>
+                        </div>
                         <input
                           type="range"
                           min="0"
@@ -448,86 +439,78 @@ export function TestModelPage() {
                           step="0.1"
                           value={config.topP}
                           onChange={(e) => setConfig(prev => ({ ...prev, topP: parseFloat(e.target.value) }))}
-                          className="w-full"
+                          className="w-full h-1"
                         />
                       </div>
 
                       {/* Max Tokens */}
                       <div>
-                        <label className="block text-sm font-medium text-white/80 mb-2">
-                          Max Tokens
-                        </label>
+                        <label className="block text-xs text-white/70 mb-1">Max Tokens</label>
                         <input
                           type="number"
                           min="1"
                           max="4096"
                           value={config.maxTokens}
                           onChange={(e) => setConfig(prev => ({ ...prev, maxTokens: parseInt(e.target.value) }))}
-                          className="glass-input w-full px-3 py-2 rounded-xl text-sm"
+                          className="glass-input w-full px-2 py-1 rounded-lg text-xs"
                         />
                       </div>
                     </div>
 
-                    {/* Knowledge Base Section */}
-                    <div className="space-y-4">
-                      <div className="flex items-center border-b border-white/10 pb-2">
-                        <Database className="w-4 h-4 mr-2 text-white/80" />
-                        <h4 className="text-sm font-semibold text-white/80">Knowledge Base</h4>
+                    {/* Knowledge Base - Ultra Compact */}
+                    <div className="space-y-2">
+                      <div className="flex items-center border-b border-white/10 pb-1">
+                        <Database className="w-3 h-3 mr-1 text-white/80" />
+                        <h4 className="text-xs font-semibold text-white/80">Knowledge</h4>
                       </div>
                       
-                      {/* Knowledge Base Title */}
+                      {/* Title */}
                       <div>
-                        <label className="block text-sm font-medium text-white/70 mb-2">
-                          Title
-                        </label>
+                        <label className="block text-xs text-white/70 mb-1">Title</label>
                         <input
                           type="text"
                           value={knowledgeTitle}
                           onChange={(e) => setKnowledgeTitle(e.target.value)}
-                          className="glass-input w-full px-3 py-2 rounded-xl text-sm"
-                          placeholder="Knowledge base name"
+                          className="glass-input w-full px-2 py-1 rounded-lg text-xs"
+                          placeholder="KB name"
                         />
                       </div>
 
-                      {/* Knowledge Base Description */}
+                      {/* Description */}
                       <div>
-                        <label className="block text-sm font-medium text-white/70 mb-2">
-                          Description
-                        </label>
+                        <label className="block text-xs text-white/70 mb-1">Description</label>
                         <textarea
                           value={knowledgeDescription}
                           onChange={(e) => setKnowledgeDescription(e.target.value)}
                           rows={2}
-                          className="glass-input w-full px-3 py-2 rounded-xl resize-none text-sm"
+                          className="glass-input w-full px-2 py-1 rounded-lg resize-none text-xs"
                           placeholder="Brief description"
                         />
                       </div>
 
-                      {/* Knowledge Text Content */}
+                      {/* Content */}
                       <div>
-                        <label className="block text-sm font-medium text-white/70 mb-2">
-                          Content ({knowledgeText.length}/10,000)
+                        <label className="block text-xs text-white/70 mb-1">
+                          Content ({knowledgeText.length}/5000)
                         </label>
                         <textarea
                           value={knowledgeText}
                           onChange={(e) => {
-                            if (e.target.value.length <= 10000) {
+                            if (e.target.value.length <= 5000) {
                               setKnowledgeText(e.target.value);
                             }
                           }}
-                          rows={4}
-                          className="glass-input w-full px-3 py-2 rounded-xl resize-none text-sm"
-                          placeholder="Paste your knowledge content here..."
+                          rows={3}
+                          className="glass-input w-full px-2 py-1 rounded-lg resize-none text-xs"
+                          placeholder="Knowledge content..."
                         />
                       </div>
                       
-                      {/* Compact File Upload */}
+                      {/* Ultra Compact File Upload */}
                       <div>
-                        <label className="block text-sm font-medium text-white/70 mb-2">
-                          Files
-                        </label>
+                        <label className="block text-xs text-white/70 mb-1">Files</label>
                         <div
-                          className={`border-2 border-dashed rounded-xl p-3 text-center cursor-pointer transition-colors text-sm ${
+                          className={`border border-dashed rounded-lg p-2 text-center cursor-pointer transition-colors text-xs ${
                             dragActive ? 'border-purple-400 bg-purple-400/10' : 'border-white/20 hover:border-white/30'
                           }`}
                           onDragEnter={handleDrag}
@@ -544,23 +527,19 @@ export function TestModelPage() {
                             onChange={(e) => handleFileUpload(e.target.files)}
                             className="hidden"
                           />
-                          <Upload className="w-5 h-5 mx-auto mb-1 text-white/50" />
-                          <p className="text-xs text-white/70">Drop files or click</p>
-                          <p className="text-xs text-white/50">PDF, TXT, CSV (max 10)</p>
+                          <Upload className="w-3 h-3 mx-auto mb-1 text-white/50" />
+                          <p className="text-xs text-white/70">Drop or click</p>
                         </div>
 
-                        {/* Uploaded Files - Compact List */}
+                        {/* File List - Ultra Compact */}
                         {uploadedFiles.length > 0 && (
-                          <div className="mt-2 space-y-1">
+                          <div className="mt-1 space-y-1 max-h-16 overflow-y-auto">
                             {uploadedFiles.map((file, index) => (
-                              <div key={index} className="flex items-center justify-between glass-subtle rounded-lg p-2 text-xs">
-                                <div className="flex items-center min-w-0">
-                                  <FileText className="w-3 h-3 mr-2 text-white/50 flex-shrink-0" />
-                                  <span className="text-white/80 truncate">{file.name}</span>
-                                </div>
+                              <div key={index} className="flex items-center justify-between glass-subtle rounded p-1 text-xs">
+                                <span className="text-white/80 truncate flex-1 mr-1">{file.name}</span>
                                 <button
                                   onClick={() => removeFile(index)}
-                                  className="text-white/50 hover:text-red-400 transition-colors flex-shrink-0 ml-2"
+                                  className="text-white/50 hover:text-red-400 transition-colors flex-shrink-0"
                                 >
                                   <X className="w-3 h-3" />
                                 </button>
@@ -570,43 +549,46 @@ export function TestModelPage() {
                         )}
                       </div>
 
-                      {/* Knowledge Base Summary */}
+                      {/* Knowledge Status */}
                       {(knowledgeText.trim() || uploadedFiles.length > 0 || knowledgeTitle.trim()) && (
-                        <div className="glass-subtle rounded-lg p-3">
-                          <div className="flex items-center mb-2">
-                            <BookOpen className="w-4 h-4 mr-2 text-green-400" />
-                            <span className="text-sm font-medium text-green-400">Knowledge Base Active</span>
+                        <div className="glass-subtle rounded-lg p-2">
+                          <div className="flex items-center mb-1">
+                            <BookOpen className="w-3 h-3 mr-1 text-green-400" />
+                            <span className="text-xs font-medium text-green-400">Active</span>
                           </div>
-                          <div className="text-xs text-white/60 space-y-1">
-                            {knowledgeTitle.trim() && <p>Title: {knowledgeTitle}</p>}
-                            {knowledgeText.trim() && <p>Content: {knowledgeText.length} characters</p>}
-                            {uploadedFiles.length > 0 && <p>Files: {uploadedFiles.length} uploaded</p>}
+                          <div className="text-xs text-white/60">
+                            {knowledgeTitle.trim() && <div>• {knowledgeTitle}</div>}
+                            {knowledgeText.trim() && <div>• {knowledgeText.length} chars</div>}
+                            {uploadedFiles.length > 0 && <div>• {uploadedFiles.length} files</div>}
                           </div>
                         </div>
                       )}
                     </div>
                   </div>
 
-                  {/* Configuration Actions */}
-                  {configChanged && (
-                    <div className="p-4 border-t border-white/10 flex-shrink-0">
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={handleCancelConfig}
-                          className="flex-1 glass-subtle px-3 py-2 rounded-xl hover:glass transition-colors text-white/80 text-sm"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          onClick={handleSaveConfig}
-                          className="flex-1 button-primary px-3 py-2 rounded-xl text-white text-sm flex items-center justify-center"
-                        >
-                          <Check className="w-4 h-4 mr-1" />
-                          Save
-                        </button>
-                      </div>
+                  {/* Save/Cancel Actions - Always Visible */}
+                  <div className="p-3 border-t border-white/10 flex-shrink-0">
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={handleCancelConfig}
+                        disabled={!configChanged}
+                        className="flex-1 glass-subtle px-2 py-1.5 rounded-lg hover:glass transition-colors text-white/80 text-xs disabled:opacity-50"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleSaveConfig}
+                        disabled={!configChanged}
+                        className="flex-1 button-primary px-2 py-1.5 rounded-lg text-white text-xs flex items-center justify-center disabled:opacity-50"
+                      >
+                        <Check className="w-3 h-3 mr-1" />
+                        Save
+                      </button>
                     </div>
-                  )}
+                    {configChanged && (
+                      <p className="text-xs text-orange-400 mt-1 text-center">Unsaved changes</p>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
