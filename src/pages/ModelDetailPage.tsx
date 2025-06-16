@@ -367,12 +367,6 @@ export function ModelDetailPage() {
           <div className="h-[70vh] flex flex-col">
             {activeTab === 'chat' ? (
               <div className="flex flex-col h-full p-6">
-                <div className="mb-4 flex-shrink-0">
-                  <h3 className="text-lg font-semibold gradient-text mb-2">Chat with {gpt.title}</h3>
-                  <p className="text-white/70">
-                    Interact directly with this AI GPT. No downloads required - start chatting immediately!
-                  </p>
-                </div>
                 <div className="flex-1 min-h-0">
                   <ChatInterface model={gpt} />
                 </div>
