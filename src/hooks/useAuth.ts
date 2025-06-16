@@ -16,6 +16,7 @@ export function useAuth() {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.id);
         setUser(session?.user ?? null);
         setLoading(false);
 
@@ -146,13 +147,32 @@ export function useAuth() {
 
   const signOut = async () => {
     try {
+      console.log('Attempting to sign out...');
+      
+      // Clear user state immediately for better UX
+      setUser(null);
+      
       const { error } = await supabase.auth.signOut();
+      
       if (error) {
         console.error('Sign out error:', error);
+        // Restore user state if sign out failed
+        const { data: { session } } = await supabase.auth.getSession();
+        setUser(session?.user ?? null);
+        return { error };
       }
-      return { error };
+      
+      console.log('Sign out successful');
+      
+      // Redirect to home page after successful sign out
+      window.location.href = '/';
+      
+      return { error: null };
     } catch (error) {
       console.error('Unexpected sign out error:', error);
+      // Restore user state if sign out failed
+      const { data: { session } } = await supabase.auth.getSession();
+      setUser(session?.user ?? null);
       return { error };
     }
   };

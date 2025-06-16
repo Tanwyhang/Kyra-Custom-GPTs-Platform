@@ -7,12 +7,32 @@ export function Navbar() {
   const { user, signOut } = useAuthContext();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
 
   const isActive = (path: string) => location.pathname === path;
 
-  const handleSignOut = async () => {
-    await signOut();
+  const handleSignOut = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    
+    if (isSigningOut) return; // Prevent multiple clicks
+    
+    setIsSigningOut(true);
     setIsMenuOpen(false);
+    
+    try {
+      console.log('Sign out button clicked');
+      const { error } = await signOut();
+      
+      if (error) {
+        console.error('Sign out failed:', error);
+        alert('Failed to sign out. Please try again.');
+      }
+    } catch (error) {
+      console.error('Sign out error:', error);
+      alert('Failed to sign out. Please try again.');
+    } finally {
+      setIsSigningOut(false);
+    }
   };
 
   return (
@@ -73,10 +93,11 @@ export function Navbar() {
                 </Link>
                 <button
                   onClick={handleSignOut}
-                  className="flex items-center space-x-2 px-5 py-3 rounded-2xl text-sm font-semibold text-white/90 hover:text-red-300 glass-subtle hover:glass transition-all duration-300"
+                  disabled={isSigningOut}
+                  className="flex items-center space-x-2 px-5 py-3 rounded-2xl text-sm font-semibold text-white/90 hover:text-red-300 glass-subtle hover:glass transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <LogOut className="w-4 h-4" />
-                  <span>Sign Out</span>
+                  <span>{isSigningOut ? 'Signing Out...' : 'Sign Out'}</span>
                 </button>
               </div>
             ) : (
@@ -142,10 +163,11 @@ export function Navbar() {
                   </Link>
                   <button
                     onClick={handleSignOut}
-                    className="flex items-center space-x-3 px-4 py-3 rounded-2xl text-sm font-semibold text-white/90 hover:text-red-300 glass-subtle hover:glass transition-all duration-300 w-full text-left"
+                    disabled={isSigningOut}
+                    className="flex items-center space-x-3 px-4 py-3 rounded-2xl text-sm font-semibold text-white/90 hover:text-red-300 glass-subtle hover:glass transition-all duration-300 w-full text-left disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <LogOut className="w-4 h-4" />
-                    <span>Sign Out</span>
+                    <span>{isSigningOut ? 'Signing Out...' : 'Sign Out'}</span>
                   </button>
                 </>
               ) : (
