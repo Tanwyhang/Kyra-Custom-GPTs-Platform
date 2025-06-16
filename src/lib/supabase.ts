@@ -3,11 +3,47 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+// Debug logging
+console.log('Supabase URL:', supabaseUrl);
+console.log('Supabase Anon Key exists:', !!supabaseAnonKey);
+console.log('Supabase Anon Key length:', supabaseAnonKey?.length);
+
 if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('Missing Supabase environment variables');
+  console.error('URL:', supabaseUrl);
+  console.error('Key exists:', !!supabaseAnonKey);
   throw new Error('Missing Supabase environment variables');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Test URL validity
+try {
+  new URL(supabaseUrl);
+  console.log('Supabase URL is valid');
+} catch (error) {
+  console.error('Invalid Supabase URL:', error);
+  throw new Error(`Invalid Supabase URL: ${supabaseUrl}`);
+}
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true
+  }
+});
+
+// Test connection
+supabase.from('users').select('count', { count: 'exact', head: true })
+  .then(({ error, count }) => {
+    if (error) {
+      console.error('Supabase connection test failed:', error);
+    } else {
+      console.log('Supabase connection test successful, user count:', count);
+    }
+  })
+  .catch(error => {
+    console.error('Supabase connection test error:', error);
+  });
 
 export type Database = {
   public: {
