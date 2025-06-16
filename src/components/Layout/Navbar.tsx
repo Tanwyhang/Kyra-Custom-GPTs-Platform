@@ -1,39 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Brain, Search, TestTube, User, LogOut, Menu, X } from 'lucide-react';
-import { useAuthContext } from '../../contexts/AuthContext';
+import { Brain, Search, TestTube, Upload, BarChart3, Menu, X } from 'lucide-react';
 
 export function Navbar() {
-  const { user, signOut } = useAuthContext();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isSigningOut, setIsSigningOut] = useState(false);
 
   const isActive = (path: string) => location.pathname === path;
-
-  const handleSignOut = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    
-    if (isSigningOut) return; // Prevent multiple clicks
-    
-    setIsSigningOut(true);
-    setIsMenuOpen(false);
-    
-    try {
-      console.log('Sign out button clicked');
-      const { error } = await signOut();
-      
-      if (error) {
-        console.error('Sign out failed:', error);
-        alert('Failed to sign out. Please try again.');
-      }
-    } catch (error) {
-      console.error('Sign out error:', error);
-      alert('Failed to sign out. Please try again.');
-    } finally {
-      setIsSigningOut(false);
-    }
-  };
 
   return (
     <nav className="glass-dark grain-texture sticky top-0 z-50 border-b border-white/10">
@@ -74,48 +47,30 @@ export function Navbar() {
               <Search className="w-4 h-4" />
               <span>Marketplace</span>
             </Link>
-          </div>
 
-          {/* User Menu */}
-          <div className="hidden md:flex items-center space-x-3">
-            {user ? (
-              <div className="flex items-center space-x-3">
-                <Link
-                  to="/dashboard"
-                  className={`flex items-center space-x-2 px-5 py-3 rounded-2xl text-sm font-semibold transition-all duration-300 ${
-                    isActive('/dashboard')
-                      ? 'glass-strong text-white glow-effect'
-                      : 'glass-subtle text-white/90 hover:text-white hover:glass'
-                  }`}
-                >
-                  <User className="w-4 h-4" />
-                  <span>Dashboard</span>
-                </Link>
-                <button
-                  onClick={handleSignOut}
-                  disabled={isSigningOut}
-                  className="flex items-center space-x-2 px-5 py-3 rounded-2xl text-sm font-semibold text-white/90 hover:text-red-300 glass-subtle hover:glass transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <LogOut className="w-4 h-4" />
-                  <span>{isSigningOut ? 'Signing Out...' : 'Sign Out'}</span>
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center space-x-4">
-                <Link
-                  to="/signin"
-                  className="text-sm font-semibold text-white/90 hover:text-white transition-colors px-5 py-3 rounded-2xl glass-subtle hover:glass"
-                >
-                  Sign In
-                </Link>
-                <Link
-                  to="/signup"
-                  className="button-primary text-white px-6 py-3 rounded-2xl text-sm font-semibold hover:scale-105 transition-all duration-300"
-                >
-                  Sign Up
-                </Link>
-              </div>
-            )}
+            <Link
+              to="/upload"
+              className={`flex items-center space-x-2 px-5 py-3 rounded-2xl text-sm font-semibold transition-all duration-300 ${
+                isActive('/upload')
+                  ? 'glass-strong text-white glow-effect'
+                  : 'glass-subtle text-white/90 hover:text-white hover:glass'
+              }`}
+            >
+              <Upload className="w-4 h-4" />
+              <span>Upload</span>
+            </Link>
+
+            <Link
+              to="/dashboard"
+              className={`flex items-center space-x-2 px-5 py-3 rounded-2xl text-sm font-semibold transition-all duration-300 ${
+                isActive('/dashboard')
+                  ? 'glass-strong text-white glow-effect'
+                  : 'glass-subtle text-white/90 hover:text-white hover:glass'
+              }`}
+            >
+              <BarChart3 className="w-4 h-4" />
+              <span>Dashboard</span>
+            </Link>
           </div>
 
           {/* Mobile menu button */}
@@ -151,43 +106,23 @@ export function Navbar() {
                 <span>Marketplace</span>
               </Link>
 
-              {user ? (
-                <>
-                  <Link
-                    to="/dashboard"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="flex items-center space-x-3 px-4 py-3 rounded-2xl text-sm font-semibold text-white/90 hover:text-white glass-subtle hover:glass transition-all duration-300"
-                  >
-                    <User className="w-4 h-4" />
-                    <span>Dashboard</span>
-                  </Link>
-                  <button
-                    onClick={handleSignOut}
-                    disabled={isSigningOut}
-                    className="flex items-center space-x-3 px-4 py-3 rounded-2xl text-sm font-semibold text-white/90 hover:text-red-300 glass-subtle hover:glass transition-all duration-300 w-full text-left disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <LogOut className="w-4 h-4" />
-                    <span>{isSigningOut ? 'Signing Out...' : 'Sign Out'}</span>
-                  </button>
-                </>
-              ) : (
-                <div className="flex flex-col space-y-3 pt-3 border-t border-white/10">
-                  <Link
-                    to="/signin"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="text-sm font-semibold text-white/90 hover:text-white px-4 py-3 rounded-2xl glass-subtle hover:glass transition-all duration-300"
-                  >
-                    Sign In
-                  </Link>
-                  <Link
-                    to="/signup"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="button-primary text-white px-4 py-3 rounded-2xl text-sm font-semibold text-center transition-all duration-300"
-                  >
-                    Sign Up
-                  </Link>
-                </div>
-              )}
+              <Link
+                to="/upload"
+                onClick={() => setIsMenuOpen(false)}
+                className="flex items-center space-x-3 px-4 py-3 rounded-2xl text-sm font-semibold text-white/90 hover:text-white glass-subtle hover:glass transition-all duration-300"
+              >
+                <Upload className="w-4 h-4" />
+                <span>Upload</span>
+              </Link>
+
+              <Link
+                to="/dashboard"
+                onClick={() => setIsMenuOpen(false)}
+                className="flex items-center space-x-3 px-4 py-3 rounded-2xl text-sm font-semibold text-white/90 hover:text-white glass-subtle hover:glass transition-all duration-300"
+              >
+                <BarChart3 className="w-4 h-4" />
+                <span>Dashboard</span>
+              </Link>
             </div>
           </div>
         )}

@@ -1,6 +1,5 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthContext';
 import { Navbar } from './components/Layout/Navbar';
 import { Footer } from './components/Layout/Footer';
 import { InteractiveDots } from './components/Background/InteractiveDots';
@@ -10,8 +9,6 @@ import { UploadPage } from './pages/UploadPage';
 import { TestModelPage } from './pages/TestModelPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { ModelDetailPage } from './pages/ModelDetailPage';
-import { SignInForm } from './components/Auth/SignInForm';
-import { SignUpForm } from './components/Auth/SignUpForm';
 
 function AppContent() {
   const location = useLocation();
@@ -29,8 +26,6 @@ function AppContent() {
           <Route path="/test" element={<TestModelPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/models/:id" element={<ModelDetailPage />} />
-          <Route path="/signin" element={<SignInForm />} />
-          <Route path="/signup" element={<SignUpForm />} />
         </Routes>
       </main>
       {isHomePage && <Footer />}
@@ -40,11 +35,9 @@ function AppContent() {
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <AppContent />
-      </Router>
-    </AuthProvider>
+    <Router>
+      <AppContent />
+    </Router>
   );
 }
 

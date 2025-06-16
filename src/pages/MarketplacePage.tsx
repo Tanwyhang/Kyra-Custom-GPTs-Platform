@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, Filter, Download, Shield, Star, Calendar } from 'lucide-react';
-import { supabase } from '../lib/supabase';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 
 interface Model {
@@ -15,13 +14,56 @@ interface Model {
   download_count: number;
   is_verified: boolean;
   created_at: string;
-  uploader: {
+  uploader?: {
     display_name: string;
   };
 }
 
 const MODEL_TYPES = ['Computer Vision', 'Natural Language Processing', 'Speech', 'Reinforcement Learning', 'Other'];
 const FRAMEWORKS = ['TensorFlow', 'PyTorch', 'Keras', 'Scikit-learn', 'ONNX', 'TensorFlow.js', 'Other'];
+
+// Mock data for demonstration
+const MOCK_MODELS: Model[] = [
+  {
+    id: '1',
+    title: 'Advanced Image Classifier',
+    description: 'A state-of-the-art image classification model trained on ImageNet with 95% accuracy.',
+    model_type: 'Computer Vision',
+    framework: 'TensorFlow',
+    tags: ['image-classification', 'cnn', 'imagenet'],
+    accuracy: 95.2,
+    download_count: 1250,
+    is_verified: true,
+    created_at: '2024-01-15T10:30:00Z',
+    uploader: { display_name: 'AI Researcher' }
+  },
+  {
+    id: '2',
+    title: 'Sentiment Analysis BERT',
+    description: 'Fine-tuned BERT model for sentiment analysis on social media text.',
+    model_type: 'Natural Language Processing',
+    framework: 'PyTorch',
+    tags: ['sentiment-analysis', 'bert', 'nlp'],
+    accuracy: 92.8,
+    download_count: 890,
+    is_verified: true,
+    created_at: '2024-01-10T14:20:00Z',
+    uploader: { display_name: 'NLP Expert' }
+  },
+  {
+    id: '3',
+    title: 'Speech Recognition Model',
+    description: 'Real-time speech recognition model optimized for mobile devices.',
+    model_type: 'Speech',
+    framework: 'TensorFlow.js',
+    tags: ['speech-recognition', 'mobile', 'real-time'],
+    accuracy: 88.5,
+    download_count: 567,
+    is_verified: false,
+    created_at: '2024-01-08T09:15:00Z',
+    uploader: { display_name: 'Mobile Dev' }
+  }
+];
 
 export function MarketplacePage() {
   const [models, setModels] = useState<Model[]>([]);
@@ -41,40 +83,48 @@ export function MarketplacePage() {
   const fetchModels = async () => {
     setLoading(true);
     
-    let query = supabase
-      .from('models')
-      .select(`
-        *,
-        uploader:users(display_name)
-      `)
-      .eq('is_verified', true);
+    try {
+      // Get uploaded models from localStorage
+      const uploadedModels = JSON.parse(localStorage.getItem('uploaded_models') || '[]');
+      
+      // Combine with mock models
+      let allModels = [...MOCK_MODELS, ...uploadedModels];
 
-    // Apply filters
-    if (searchTerm) {
-      query = query.or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`);
-    }
-    
-    if (selectedType) {
-      query = query.eq('model_type', selectedType);
-    }
-    
-    if (selectedFramework) {
-      query = query.eq('framework', selectedFramework);
-    }
+      // Apply filters
+      if (searchTerm) {
+        allModels = allModels.filter(model => 
+          model.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          model.description?.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      }
+      
+      if (selectedType) {
+        allModels = allModels.filter(model => model.model_type === selectedType);
+      }
+      
+      if (selectedFramework) {
+        allModels = allModels.filter(model => model.framework === selectedFramework);
+      }
 
-    // Apply sorting
-    const ascending = sortBy === 'title';
-    query = query.order(sortBy, { ascending });
+      // Apply sorting
+      allModels.sort((a, b) => {
+        switch (sortBy) {
+          case 'title':
+            return a.title.localeCompare(b.title);
+          case 'download_count':
+            return (b.download_count || 0) - (a.download_count || 0);
+          case 'created_at':
+          default:
+            return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        }
+      });
 
-    const { data, error } = await query;
-
-    if (error) {
+      setModels(allModels);
+    } catch (error) {
       console.error('Error fetching models:', error);
-    } else {
-      setModels(data || []);
+    } finally {
+      setLoading(false);
     }
-    
-    setLoading(false);
   };
 
   const formatDate = (dateString: string) => {
@@ -92,7 +142,7 @@ export function MarketplacePage() {
         <div className="mb-8">
           <h1 className="scroll-reveal text-3xl font-bold gradient-text mb-4">AI Model Marketplace</h1>
           <p className="scroll-reveal text-lg text-white/70">
-            Discover verified AI models from the community
+            Discover and download AI models from the community
           </p>
         </div>
 
@@ -269,7 +319,7 @@ export function MarketplacePage() {
                       )}
                       <div className="flex items-center">
                         <Download className="w-4 h-4 mr-1" />
-                        <span>{model.download_count}</span>
+                        <span>{model.download_count || 0}</span>
                       </div>
                     </div>
                   </div>

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Search, Shield, TrendingUp, Users, Star, Sparkles, Zap, Brain, TestTube } from 'lucide-react';
-import { supabase } from '../lib/supabase';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 
 interface FeaturedModel {
@@ -17,6 +16,43 @@ interface FeaturedModel {
     display_name: string;
   };
 }
+
+// Mock featured models
+const FEATURED_MODELS: FeaturedModel[] = [
+  {
+    id: '1',
+    title: 'Advanced Image Classifier',
+    description: 'A state-of-the-art image classification model trained on ImageNet with 95% accuracy.',
+    model_type: 'Computer Vision',
+    framework: 'TensorFlow',
+    accuracy: 95.2,
+    download_count: 1250,
+    is_verified: true,
+    uploader: { display_name: 'AI Researcher' }
+  },
+  {
+    id: '2',
+    title: 'Sentiment Analysis BERT',
+    description: 'Fine-tuned BERT model for sentiment analysis on social media text.',
+    model_type: 'Natural Language Processing',
+    framework: 'PyTorch',
+    accuracy: 92.8,
+    download_count: 890,
+    is_verified: true,
+    uploader: { display_name: 'NLP Expert' }
+  },
+  {
+    id: '3',
+    title: 'Speech Recognition Model',
+    description: 'Real-time speech recognition model optimized for mobile devices.',
+    model_type: 'Speech',
+    framework: 'TensorFlow.js',
+    accuracy: 88.5,
+    download_count: 567,
+    is_verified: false,
+    uploader: { display_name: 'Mobile Dev' }
+  }
+];
 
 export function HomePage() {
   const [featuredModels, setFeaturedModels] = useState<FeaturedModel[]>([]);
@@ -34,30 +70,20 @@ export function HomePage() {
   }, []);
 
   const fetchFeaturedModels = async () => {
-    const { data } = await supabase
-      .from('models')
-      .select(`
-        *,
-        uploader:users(display_name)
-      `)
-      .eq('is_verified', true)
-      .order('download_count', { ascending: false })
-      .limit(6);
-
-    if (data) {
-      setFeaturedModels(data);
-    }
+    // Get uploaded models from localStorage and combine with mock data
+    const uploadedModels = JSON.parse(localStorage.getItem('uploaded_models') || '[]');
+    const allModels = [...FEATURED_MODELS, ...uploadedModels.slice(0, 3)]; // Show max 6 models
+    setFeaturedModels(allModels.slice(0, 6));
   };
 
   const fetchStats = async () => {
-    const [modelsResult, usersResult] = await Promise.all([
-      supabase.from('models').select('id, download_count').eq('is_verified', true),
-      supabase.from('users').select('id'),
-    ]);
-
-    const totalModels = modelsResult.data?.length || 0;
-    const totalDownloads = modelsResult.data?.reduce((sum, model) => sum + model.download_count, 0) || 0;
-    const totalUsers = usersResult.data?.length || 0;
+    // Get uploaded models from localStorage
+    const uploadedModels = JSON.parse(localStorage.getItem('uploaded_models') || '[]');
+    
+    const totalModels = FEATURED_MODELS.length + uploadedModels.length;
+    const totalDownloads = FEATURED_MODELS.reduce((sum, model) => sum + model.download_count, 0) + 
+                          uploadedModels.reduce((sum: number, model: any) => sum + (model.download_count || 0), 0);
+    const totalUsers = 150; // Mock user count
 
     setStats({ totalModels, totalDownloads, totalUsers });
   };

@@ -6,12 +6,9 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 // Debug logging
 console.log('Supabase URL:', supabaseUrl);
 console.log('Supabase Anon Key exists:', !!supabaseAnonKey);
-console.log('Supabase Anon Key length:', supabaseAnonKey?.length);
 
 if (!supabaseUrl || !supabaseAnonKey) {
   console.error('Missing Supabase environment variables');
-  console.error('URL:', supabaseUrl);
-  console.error('Key exists:', !!supabaseAnonKey);
   throw new Error('Missing Supabase environment variables');
 }
 
@@ -26,13 +23,9 @@ try {
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true,
-    flowType: 'pkce',
-    storage: window.localStorage,
-    storageKey: 'supabase.auth.token',
-    debug: false, // Disable debug to prevent encoding issues
+    autoRefreshToken: false,
+    persistSession: false,
+    detectSessionInUrl: false,
   },
   global: {
     headers: {
@@ -41,26 +34,13 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   },
 });
 
-// Test connection and auth
-supabase.auth.getSession()
-  .then(({ data: { session }, error }) => {
-    if (error) {
-      console.error('Auth session check failed:', error);
-    } else {
-      console.log('Auth session check successful, user:', session?.user?.email || 'No user');
-    }
-  })
-  .catch(error => {
-    console.error('Auth session check error:', error);
-  });
-
 // Test database connection
-supabase.from('users').select('count', { count: 'exact', head: true })
-  .then(({ error, count }) => {
+supabase.from('models').select('count', { count: 'exact', head: true })
+  .then(({ error, count })  => {
     if (error) {
       console.error('Database connection test failed:', error);
     } else {
-      console.log('Database connection test successful, user count:', count);
+      console.log('Database connection test successful, model count:', count);
     }
   })
   .catch(error => {
@@ -99,7 +79,7 @@ export type Database = {
       models: {
         Row: {
           id: string;
-          uploader_id: string;
+          uploader_id: string | null;
           title: string;
           description: string | null;
           model_type: string;
@@ -115,7 +95,7 @@ export type Database = {
         };
         Insert: {
           id?: string;
-          uploader_id: string;
+          uploader_id?: string | null;
           title: string;
           description?: string | null;
           model_type: string;
@@ -131,7 +111,7 @@ export type Database = {
         };
         Update: {
           id?: string;
-          uploader_id?: string;
+          uploader_id?: string | null;
           title?: string;
           description?: string | null;
           model_type?: string;
@@ -144,6 +124,26 @@ export type Database = {
           download_count?: number;
           created_at?: string;
           updated_at?: string;
+        };
+      };
+      model_downloads: {
+        Row: {
+          id: string;
+          model_id: string | null;
+          user_id: string | null;
+          downloaded_at: string;
+        };
+        Insert: {
+          id?: string;
+          model_id?: string | null;
+          user_id?: string | null;
+          downloaded_at?: string;
+        };
+        Update: {
+          id?: string;
+          model_id?: string | null;
+          user_id?: string | null;
+          downloaded_at?: string;
         };
       };
     };

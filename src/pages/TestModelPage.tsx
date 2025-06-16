@@ -18,7 +18,6 @@ import {
   User as UserIcon,
   Sparkles
 } from 'lucide-react';
-import { useAuthContext } from '../contexts/AuthContext';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 
 interface Message {
@@ -56,7 +55,6 @@ const CATEGORIES = [
 ];
 
 export function TestModelPage() {
-  const { user } = useAuthContext();
   const navigate = useNavigate();
   useScrollReveal();
 
@@ -247,13 +245,13 @@ export function TestModelPage() {
       // Simulate publishing process
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // In a real implementation, this would save to Supabase
+      // In a real implementation, this would save to local storage or a simple database
       console.log('Publishing model:', {
         ...publicationData,
         config,
         knowledgeFiles: uploadedFiles.map(f => f.name),
         knowledgeText,
-        userId: user?.id
+        publishedAt: new Date().toISOString()
       });
 
       // Show success and redirect
@@ -267,17 +265,6 @@ export function TestModelPage() {
       setShowPublish(false);
     }
   };
-
-  if (!user) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold gradient-text mb-4">Authentication Required</h2>
-          <p className="text-white/70">Please sign in to test AI models.</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="fixed inset-0 flex flex-col pt-16">

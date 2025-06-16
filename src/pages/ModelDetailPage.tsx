@@ -13,8 +13,6 @@ import {
   TrendingUp,
   CheckCircle
 } from 'lucide-react';
-import { useAuthContext } from '../contexts/AuthContext';
-import { supabase } from '../lib/supabase';
 
 interface ModelDetail {
   id: string;
@@ -24,21 +22,70 @@ interface ModelDetail {
   framework: string;
   tags: string[];
   accuracy: number | null;
-  file_url: string | null;
-  file_size: number | null;
+  file_url?: string | null;
+  file_size?: number | null;
+  file_name?: string;
   is_verified: boolean;
   download_count: number;
   created_at: string;
-  updated_at: string;
-  uploader: {
-    id: string;
+  updated_at?: string;
+  uploader?: {
+    id?: string;
     display_name: string | null;
   };
 }
 
+// Mock data for demonstration
+const MOCK_MODELS: { [key: string]: ModelDetail } = {
+  '1': {
+    id: '1',
+    title: 'Advanced Image Classifier',
+    description: 'A state-of-the-art image classification model trained on ImageNet with 95% accuracy. This model uses a ResNet-50 architecture with custom modifications for improved performance on edge devices.',
+    model_type: 'Computer Vision',
+    framework: 'TensorFlow',
+    tags: ['image-classification', 'cnn', 'imagenet', 'resnet'],
+    accuracy: 95.2,
+    file_size: 102400000, // 100MB
+    is_verified: true,
+    download_count: 1250,
+    created_at: '2024-01-15T10:30:00Z',
+    updated_at: '2024-01-15T10:30:00Z',
+    uploader: { display_name: 'AI Researcher' }
+  },
+  '2': {
+    id: '2',
+    title: 'Sentiment Analysis BERT',
+    description: 'Fine-tuned BERT model for sentiment analysis on social media text. Trained on a diverse dataset of tweets and social media posts.',
+    model_type: 'Natural Language Processing',
+    framework: 'PyTorch',
+    tags: ['sentiment-analysis', 'bert', 'nlp', 'social-media'],
+    accuracy: 92.8,
+    file_size: 438000000, // 438MB
+    is_verified: true,
+    download_count: 890,
+    created_at: '2024-01-10T14:20:00Z',
+    updated_at: '2024-01-10T14:20:00Z',
+    uploader: { display_name: 'NLP Expert' }
+  },
+  '3': {
+    id: '3',
+    title: 'Speech Recognition Model',
+    description: 'Real-time speech recognition model optimized for mobile devices. Supports multiple languages and accents.',
+    model_type: 'Speech',
+    framework: 'TensorFlow.js',
+    tags: ['speech-recognition', 'mobile', 'real-time', 'multilingual'],
+    accuracy: 88.5,
+    file_size: 25600000, // 25MB
+    is_verified: false,
+    download_count: 567,
+    created_at: '2024-01-08T09:15:00Z',
+    updated_at: '2024-01-08T09:15:00Z',
+    uploader: { display_name: 'Mobile Dev' }
+  }
+};
+
 export function ModelDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const { user } = useAuthContext();
   const [model, setModel] = useState<ModelDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState(false);
@@ -53,52 +100,62 @@ export function ModelDetailPage() {
   const fetchModel = async () => {
     if (!id) return;
 
-    const { data, error } = await supabase
-      .from('models')
-      .select(`
-        *,
-        uploader:users(id, display_name)
-      `)
-      .eq('id', id)
-      .single();
+    try {
+      // First check mock models
+      if (MOCK_MODELS[id]) {
+        setModel(MOCK_MODELS[id]);
+        setLoading(false);
+        return;
+      }
 
-    if (error) {
+      // Then check uploaded models from localStorage
+      const uploadedModels = JSON.parse(localStorage.getItem('uploaded_models') || '[]');
+      const uploadedModel = uploadedModels.find((m: any) => m.id === id);
+      
+      if (uploadedModel) {
+        setModel({
+          ...uploadedModel,
+          uploader: { display_name: 'You' }
+        });
+      } else {
+        setError('Model not found');
+      }
+    } catch (error) {
       setError('Model not found');
       console.error('Error fetching model:', error);
-    } else {
-      setModel(data);
+    } finally {
+      setLoading(false);
     }
-    
-    setLoading(false);
   };
 
   const handleDownload = async () => {
-    if (!model || !model.file_url) return;
+    if (!model) return;
 
     setDownloading(true);
 
     try {
-      // Record the download
-      if (user) {
-        await supabase.from('model_downloads').insert({
-          model_id: model.id,
-          user_id: user.id,
-        });
+      // Simulate download process
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
-        // Update download count
-        await supabase
-          .from('models')
-          .update({ download_count: model.download_count + 1 })
-          .eq('id', model.id);
+      // Update download count in localStorage if it's an uploaded model
+      const uploadedModels = JSON.parse(localStorage.getItem('uploaded_models') || '[]');
+      const modelIndex = uploadedModels.findIndex((m: any) => m.id === model.id);
+      
+      if (modelIndex !== -1) {
+        uploadedModels[modelIndex].download_count = (uploadedModels[modelIndex].download_count || 0) + 1;
+        localStorage.setItem('uploaded_models', JSON.stringify(uploadedModels));
       }
 
-      // Trigger download
+      // Simulate file download
+      const blob = new Blob(['Mock model file content'], { type: 'application/octet-stream' });
+      const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
-      link.href = model.file_url;
-      link.download = `${model.title}.model`;
+      link.href = url;
+      link.download = `${model.title.replace(/\s+/g, '_')}.model`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      URL.revokeObjectURL(url);
 
       // Update local state
       setModel(prev => prev ? { ...prev, download_count: prev.download_count + 1 } : null);
@@ -119,10 +176,10 @@ export function ModelDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading model details...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
+          <p className="text-white/60">Loading model details...</p>
         </div>
       </div>
     );
@@ -130,13 +187,13 @@ export function ModelDetailPage() {
 
   if (error || !model) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Model Not Found</h2>
-          <p className="text-gray-600 mb-4">{error || 'The requested model could not be found.'}</p>
+          <h2 className="text-2xl font-bold gradient-text mb-4">Model Not Found</h2>
+          <p className="text-white/60 mb-4">{error || 'The requested model could not be found.'}</p>
           <Link
             to="/marketplace"
-            className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
+            className="inline-flex items-center px-4 py-2 button-primary text-white rounded-xl hover:scale-105 transition-all duration-300"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Marketplace
@@ -147,13 +204,13 @@ export function ModelDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Breadcrumb */}
         <div className="mb-6">
           <Link
             to="/marketplace"
-            className="inline-flex items-center text-purple-600 hover:text-purple-700 transition-colors"
+            className="inline-flex items-center text-purple-400 hover:text-purple-300 transition-colors"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Marketplace
@@ -161,12 +218,12 @@ export function ModelDetailPage() {
         </div>
 
         {/* Header */}
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
-          <div className="bg-gradient-to-r from-purple-600 to-blue-600 px-8 py-6 text-white">
+        <div className="glass-strong rounded-2xl overflow-hidden mb-6 grain-texture">
+          <div className="bg-gradient-to-r from-purple-600/20 to-blue-600/20 px-8 py-6 border-b border-white/10">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-2xl font-bold mb-2">{model.title}</h1>
-                <div className="flex items-center space-x-4 text-purple-100">
+                <h1 className="text-2xl font-bold gradient-text mb-2">{model.title}</h1>
+                <div className="flex items-center space-x-4 text-white/70">
                   <span className="flex items-center">
                     <User className="w-4 h-4 mr-1" />
                     {model.uploader?.display_name || 'Anonymous'}
@@ -180,12 +237,12 @@ export function ModelDetailPage() {
               
               <div className="text-right">
                 {model.is_verified && (
-                  <div className="flex items-center text-green-300 mb-2">
+                  <div className="flex items-center text-green-400 mb-2">
                     <Shield className="w-5 h-5 mr-2" />
                     <span className="font-medium">Verified Model</span>
                   </div>
                 )}
-                <div className="flex items-center text-purple-100">
+                <div className="flex items-center text-white/70">
                   <Download className="w-4 h-4 mr-1" />
                   <span>{model.download_count} downloads</span>
                 </div>
@@ -197,38 +254,38 @@ export function ModelDetailPage() {
             {/* Quick Stats */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
               <div className="text-center">
-                <div className="bg-purple-100 rounded-lg p-3 w-12 h-12 flex items-center justify-center mx-auto mb-2">
-                  <Tag className="w-6 h-6 text-purple-600" />
+                <div className="w-12 h-12 rounded-xl glass-subtle flex items-center justify-center mx-auto mb-2">
+                  <Tag className="w-6 h-6 text-purple-400" />
                 </div>
-                <p className="text-sm text-gray-600">Type</p>
-                <p className="font-semibold">{model.model_type}</p>
+                <p className="text-sm text-white/60">Type</p>
+                <p className="font-semibold text-white">{model.model_type}</p>
               </div>
 
               <div className="text-center">
-                <div className="bg-blue-100 rounded-lg p-3 w-12 h-12 flex items-center justify-center mx-auto mb-2">
-                  <FileText className="w-6 h-6 text-blue-600" />
+                <div className="w-12 h-12 rounded-xl glass-subtle flex items-center justify-center mx-auto mb-2">
+                  <FileText className="w-6 h-6 text-blue-400" />
                 </div>
-                <p className="text-sm text-gray-600">Framework</p>
-                <p className="font-semibold">{model.framework}</p>
+                <p className="text-sm text-white/60">Framework</p>
+                <p className="font-semibold text-white">{model.framework}</p>
               </div>
 
               {model.accuracy && (
                 <div className="text-center">
-                  <div className="bg-green-100 rounded-lg p-3 w-12 h-12 flex items-center justify-center mx-auto mb-2">
-                    <Star className="w-6 h-6 text-green-600" />
+                  <div className="w-12 h-12 rounded-xl glass-subtle flex items-center justify-center mx-auto mb-2">
+                    <Star className="w-6 h-6 text-green-400" />
                   </div>
-                  <p className="text-sm text-gray-600">Accuracy</p>
-                  <p className="font-semibold">{model.accuracy}%</p>
+                  <p className="text-sm text-white/60">Accuracy</p>
+                  <p className="font-semibold text-white">{model.accuracy}%</p>
                 </div>
               )}
 
               {model.file_size && (
                 <div className="text-center">
-                  <div className="bg-orange-100 rounded-lg p-3 w-12 h-12 flex items-center justify-center mx-auto mb-2">
-                    <BarChart3 className="w-6 h-6 text-orange-600" />
+                  <div className="w-12 h-12 rounded-xl glass-subtle flex items-center justify-center mx-auto mb-2">
+                    <BarChart3 className="w-6 h-6 text-orange-400" />
                   </div>
-                  <p className="text-sm text-gray-600">File Size</p>
-                  <p className="font-semibold">{formatFileSize(model.file_size)}</p>
+                  <p className="text-sm text-white/60">File Size</p>
+                  <p className="font-semibold text-white">{formatFileSize(model.file_size)}</p>
                 </div>
               )}
             </div>
@@ -236,9 +293,9 @@ export function ModelDetailPage() {
             {/* Description */}
             {model.description && (
               <div className="mb-8">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Description</h3>
+                <h3 className="text-lg font-semibold gradient-text mb-4">Description</h3>
                 <div className="prose prose-gray max-w-none">
-                  <p className="text-gray-700 whitespace-pre-wrap">{model.description}</p>
+                  <p className="text-white/80 whitespace-pre-wrap">{model.description}</p>
                 </div>
               </div>
             )}
@@ -246,12 +303,12 @@ export function ModelDetailPage() {
             {/* Tags */}
             {model.tags && model.tags.length > 0 && (
               <div className="mb-8">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Tags</h3>
+                <h3 className="text-lg font-semibold gradient-text mb-4">Tags</h3>
                 <div className="flex flex-wrap gap-2">
                   {model.tags.map((tag, index) => (
                     <span
                       key={index}
-                      className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800"
+                      className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium glass-subtle text-purple-300"
                     >
                       <Tag className="w-3 h-3 mr-1" />
                       {tag}
@@ -262,19 +319,19 @@ export function ModelDetailPage() {
             )}
 
             {/* Download Section */}
-            <div className="border-t border-gray-200 pt-8">
+            <div className="border-t border-white/10 pt-8">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Download Model</h3>
-                  <p className="text-gray-600">
+                  <h3 className="text-lg font-semibold gradient-text mb-2">Download Model</h3>
+                  <p className="text-white/60">
                     Download this model to use in your projects. Make sure to review the documentation and licensing terms.
                   </p>
                 </div>
                 
                 <button
                   onClick={handleDownload}
-                  disabled={downloading || !model.file_url}
-                  className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:from-purple-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center"
+                  disabled={downloading}
+                  className="button-primary text-white px-6 py-3 rounded-xl font-medium hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex items-center"
                 >
                   {downloading ? (
                     <>
@@ -292,44 +349,46 @@ export function ModelDetailPage() {
             </div>
 
             {/* Model Info */}
-            <div className="mt-8 pt-8 border-t border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Model Information</h3>
+            <div className="mt-8 pt-8 border-t border-white/10">
+              <h3 className="text-lg font-semibold gradient-text mb-4">Model Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <h4 className="font-medium text-gray-900 mb-2">Model Details</h4>
+                  <h4 className="font-medium text-white mb-2">Model Details</h4>
                   <dl className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <dt className="text-gray-600">ID:</dt>
-                      <dd className="text-gray-900 font-mono text-xs">{model.id}</dd>
+                      <dt className="text-white/60">ID:</dt>
+                      <dd className="text-white font-mono text-xs">{model.id}</dd>
                     </div>
                     <div className="flex justify-between">
-                      <dt className="text-gray-600">Created:</dt>
-                      <dd className="text-gray-900">{new Date(model.created_at).toLocaleString()}</dd>
+                      <dt className="text-white/60">Created:</dt>
+                      <dd className="text-white">{new Date(model.created_at).toLocaleString()}</dd>
                     </div>
-                    <div className="flex justify-between">
-                      <dt className="text-gray-600">Updated:</dt>
-                      <dd className="text-gray-900">{new Date(model.updated_at).toLocaleString()}</dd>
-                    </div>
+                    {model.updated_at && (
+                      <div className="flex justify-between">
+                        <dt className="text-white/60">Updated:</dt>
+                        <dd className="text-white">{new Date(model.updated_at).toLocaleString()}</dd>
+                      </div>
+                    )}
                   </dl>
                 </div>
 
                 <div>
-                  <h4 className="font-medium text-gray-900 mb-2">Usage Statistics</h4>
+                  <h4 className="font-medium text-white mb-2">Usage Statistics</h4>
                   <dl className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <dt className="text-gray-600">Total Downloads:</dt>
-                      <dd className="text-gray-900">{model.download_count}</dd>
+                      <dt className="text-white/60">Total Downloads:</dt>
+                      <dd className="text-white">{model.download_count}</dd>
                     </div>
                     <div className="flex justify-between">
-                      <dt className="text-gray-600">Verification Status:</dt>
-                      <dd className="text-gray-900">
+                      <dt className="text-white/60">Verification Status:</dt>
+                      <dd className="text-white">
                         {model.is_verified ? (
-                          <span className="inline-flex items-center text-green-600">
+                          <span className="inline-flex items-center text-green-400">
                             <CheckCircle className="w-3 h-3 mr-1" />
                             Verified
                           </span>
                         ) : (
-                          <span className="text-yellow-600">Pending Review</span>
+                          <span className="text-yellow-400">Pending Review</span>
                         )}
                       </dd>
                     </div>
