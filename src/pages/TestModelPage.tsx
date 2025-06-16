@@ -280,8 +280,8 @@ export function TestModelPage() {
   }
 
   return (
-    <div className="fixed inset-0 flex flex-col">
-      {/* Main Content - Fills entire space */}
+    <div className="fixed inset-0 flex flex-col pt-16">
+      {/* Main Content - Fills remaining space below navbar */}
       <div className="flex-1 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 h-full py-6">
@@ -442,7 +442,7 @@ export function TestModelPage() {
 
             {/* Chat Interface */}
             <div className={`${showConfig ? 'lg:col-span-3' : 'lg:col-span-4'}`}>
-              <div className="glass-strong rounded-2xl overflow-hidden grain-texture h-50vh flex flex-col">
+              <div className="glass-strong rounded-2xl overflow-hidden grain-texture h-full flex flex-col">
                 {/* Integrated Header - Now part of chat interface */}
                 <div className="flex items-center justify-between p-6 border-b border-white/10 flex-shrink-0">
                   {/* Left side - AI Assistant info */}
