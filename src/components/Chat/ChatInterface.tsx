@@ -11,7 +11,8 @@ import {
   Clock,
   Zap,
   Copy,
-  Check
+  Check,
+  Database
 } from 'lucide-react';
 
 interface Message {
@@ -286,7 +287,7 @@ ${model.knowledge_context}`;
     <div className="h-full flex flex-col">
       <div className="glass-strong rounded-2xl overflow-hidden grain-texture h-full flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-white/10 flex-shrink-0">
+        <div className="flex items-center justify-between p-6 border-b border-white/10 flex-shrink-0">
           <div className="flex items-center">
             <div className="w-10 h-10 rounded-xl icon-bg-primary flex items-center justify-center mr-3 glow-effect">
               <Bot className="w-5 h-5 text-white" />
@@ -297,10 +298,19 @@ ${model.knowledge_context}`;
             </div>
           </div>
 
-          <div className="flex items-center space-x-2">
-            <div className="hidden sm:flex items-center space-x-2 glass-subtle px-3 py-2 rounded-xl">
-              <MessageSquare className="w-4 h-4 text-white/60" />
-              <span className="text-sm text-white/80">{messages.filter(m => !m.isLoading).length} messages</span>
+          <div className="flex items-center space-x-3">
+            <div className="hidden sm:flex items-center space-x-3">
+              <div className="flex items-center space-x-2 glass-subtle px-3 py-2 rounded-xl">
+                <MessageSquare className="w-4 h-4 text-white/60" />
+                <span className="text-sm text-white/80">{messages.filter(m => !m.isLoading).length} messages</span>
+              </div>
+              
+              {model.knowledge_context && (
+                <div className="flex items-center space-x-2 glass-subtle px-3 py-2 rounded-xl">
+                  <Database className="w-4 h-4 text-green-400" />
+                  <span className="text-sm text-green-400">KB Active</span>
+                </div>
+              )}
             </div>
             
             <button
@@ -327,8 +337,8 @@ ${model.knowledge_context}`;
 
         {/* Configuration Panel */}
         {showConfig && (
-          <div className="p-4 border-b border-white/10 glass-subtle flex-shrink-0">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="p-6 border-b border-white/10 glass-subtle flex-shrink-0">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
                 <label className="block text-sm font-medium text-white/80 mb-2">
                   Temperature: {config.temperature}
@@ -380,10 +390,10 @@ ${model.knowledge_context}`;
           </div>
         )}
 
-        {/* Messages Container - This is the key fix */}
+        {/* Messages Container - Increased height and spacing */}
         <div 
           ref={messagesContainerRef}
-          className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0"
+          className="flex-1 overflow-y-auto p-6 space-y-6 min-h-0"
           style={{ 
             scrollBehavior: 'smooth',
             overscrollBehavior: 'contain'
@@ -395,30 +405,30 @@ ${model.knowledge_context}`;
               className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <div className={`max-w-[85%] ${message.role === 'user' ? 'order-2' : 'order-1'}`}>
-                <div className="flex items-start space-x-3">
+                <div className="flex items-start space-x-4">
                   {message.role === 'assistant' && (
-                    <div className="w-8 h-8 rounded-lg icon-bg-primary flex items-center justify-center flex-shrink-0">
-                      <Bot className="w-4 h-4 text-white" />
+                    <div className="w-10 h-10 rounded-xl icon-bg-primary flex items-center justify-center flex-shrink-0">
+                      <Bot className="w-5 h-5 text-white" />
                     </div>
                   )}
                   
-                  <div className={`rounded-2xl p-4 relative group ${
+                  <div className={`rounded-2xl p-6 relative group ${
                     message.role === 'user' 
                       ? 'button-primary text-white' 
                       : 'glass-subtle text-white/90'
                   }`}>
                     {message.isLoading ? (
                       <div className="flex space-x-2">
-                        <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce"></div>
-                        <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                        <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                        <div className="w-3 h-3 bg-white/50 rounded-full animate-bounce"></div>
+                        <div className="w-3 h-3 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                        <div className="w-3 h-3 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                       </div>
                     ) : (
                       <>
                         {message.role === 'user' ? (
-                          <p className="whitespace-pre-wrap break-words">{message.content}</p>
+                          <p className="whitespace-pre-wrap break-words leading-relaxed text-base">{message.content}</p>
                         ) : (
-                          <div className="prose prose-invert prose-sm max-w-none">
+                          <div className="prose prose-invert prose-base max-w-none">
                             <ReactMarkdown 
                               remarkPlugins={[remarkGfm]}
                               components={{
@@ -429,7 +439,7 @@ ${model.knowledge_context}`;
                                       {children}
                                     </code>
                                   ) : (
-                                    <pre className="bg-white/5 p-3 rounded-lg overflow-x-auto">
+                                    <pre className="bg-white/5 p-4 rounded-lg overflow-x-auto">
                                       <code className="text-sm font-mono" {...props}>
                                         {children}
                                       </code>
@@ -459,32 +469,32 @@ ${model.knowledge_context}`;
                                   </td>
                                 ),
                                 ul: ({ children }) => (
-                                  <ul className="list-disc list-inside space-y-1">
+                                  <ul className="list-disc list-inside space-y-2">
                                     {children}
                                   </ul>
                                 ),
                                 ol: ({ children }) => (
-                                  <ol className="list-decimal list-inside space-y-1">
+                                  <ol className="list-decimal list-inside space-y-2">
                                     {children}
                                   </ol>
                                 ),
                                 h1: ({ children }) => (
-                                  <h1 className="text-xl font-bold gradient-text mb-2">
+                                  <h1 className="text-xl font-bold gradient-text mb-3">
                                     {children}
                                   </h1>
                                 ),
                                 h2: ({ children }) => (
-                                  <h2 className="text-lg font-bold gradient-text mb-2">
+                                  <h2 className="text-lg font-bold gradient-text mb-3">
                                     {children}
                                   </h2>
                                 ),
                                 h3: ({ children }) => (
-                                  <h3 className="text-base font-bold gradient-text mb-1">
+                                  <h3 className="text-base font-bold gradient-text mb-2">
                                     {children}
                                   </h3>
                                 ),
                                 p: ({ children }) => (
-                                  <p className="mb-2 last:mb-0 break-words">
+                                  <p className="mb-3 last:mb-0 break-words leading-relaxed">
                                     {children}
                                   </p>
                                 ),
@@ -499,7 +509,7 @@ ${model.knowledge_context}`;
                                   </em>
                                 ),
                                 hr: () => (
-                                  <hr className="border-white/20 my-4" />
+                                  <hr className="border-white/20 my-6" />
                                 )
                               }}
                             >
@@ -507,7 +517,7 @@ ${model.knowledge_context}`;
                             </ReactMarkdown>
                           </div>
                         )}
-                        <div className="flex items-center justify-between mt-2">
+                        <div className="flex items-center justify-between mt-3">
                           <p className="text-xs opacity-60">
                             {message.timestamp.toLocaleTimeString()}
                           </p>
@@ -530,8 +540,8 @@ ${model.knowledge_context}`;
                   </div>
                   
                   {message.role === 'user' && (
-                    <div className="w-8 h-8 rounded-lg glass-subtle flex items-center justify-center flex-shrink-0">
-                      <UserIcon className="w-4 h-4 text-white" />
+                    <div className="w-10 h-10 rounded-xl glass-subtle flex items-center justify-center flex-shrink-0">
+                      <UserIcon className="w-5 h-5 text-white" />
                     </div>
                   )}
                 </div>
@@ -542,9 +552,9 @@ ${model.knowledge_context}`;
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input */}
-        <div className="p-4 border-t border-white/10 flex-shrink-0">
-          <div className="flex space-x-3">
+        {/* Input - Enhanced spacing */}
+        <div className="p-6 border-t border-white/10 flex-shrink-0">
+          <div className="flex space-x-4">
             <input
               ref={inputRef}
               type="text"
@@ -552,19 +562,19 @@ ${model.knowledge_context}`;
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder={`Chat with ${model.title}...`}
-              className="flex-1 glass-input px-4 py-3 rounded-xl focus:ring-2 focus:ring-purple-500"
+              className="flex-1 glass-input px-6 py-4 rounded-xl focus:ring-2 focus:ring-purple-500 text-base"
               disabled={isLoading}
             />
             <button
               onClick={handleSendMessage}
               disabled={!inputMessage.trim() || isLoading}
-              className="button-primary px-6 py-3 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105"
+              className="button-primary px-8 py-4 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105"
             >
               <Send className="w-5 h-5" />
             </button>
           </div>
           
-          <div className="flex items-center justify-between mt-2 text-xs text-white/50">
+          <div className="flex items-center justify-between mt-3 text-xs text-white/50">
             <span>Press Enter to send, Shift+Enter for new line</span>
             <div className="flex items-center space-x-2">
               <Zap className="w-3 h-3" />

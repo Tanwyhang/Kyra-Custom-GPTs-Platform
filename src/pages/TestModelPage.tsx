@@ -17,7 +17,9 @@ import {
   Bot,
   User as UserIcon,
   Sparkles,
-  Zap
+  Zap,
+  BookOpen,
+  Database
 } from 'lucide-react';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import { MockModelManager, PREDEFINED_MODELS, type ModelDefinition } from '../lib/gemini';
@@ -79,9 +81,11 @@ export function TestModelPage() {
     maxTokens: 1024
   });
 
-  // Knowledge enhancement state
+  // Enhanced knowledge enhancement state
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [knowledgeText, setKnowledgeText] = useState('');
+  const [knowledgeTitle, setKnowledgeTitle] = useState('');
+  const [knowledgeDescription, setKnowledgeDescription] = useState('');
   const [dragActive, setDragActive] = useState(false);
 
   // UI state
@@ -138,11 +142,21 @@ export function TestModelPage() {
     setIsLoading(true);
 
     try {
-      // Prepare knowledge context
+      // Prepare enhanced knowledge context
       let knowledgeContext = '';
-      if (knowledgeText.trim()) {
-        knowledgeContext += knowledgeText.trim();
+      
+      if (knowledgeTitle.trim()) {
+        knowledgeContext += `Knowledge Base: ${knowledgeTitle.trim()}\n`;
       }
+      
+      if (knowledgeDescription.trim()) {
+        knowledgeContext += `Description: ${knowledgeDescription.trim()}\n`;
+      }
+      
+      if (knowledgeText.trim()) {
+        knowledgeContext += `\nContent:\n${knowledgeText.trim()}`;
+      }
+      
       if (uploadedFiles.length > 0) {
         knowledgeContext += '\n\nUploaded files: ' + uploadedFiles.map(f => f.name).join(', ');
       }
@@ -273,6 +287,8 @@ export function TestModelPage() {
         config,
         knowledgeFiles: uploadedFiles.map(f => f.name),
         knowledgeText,
+        knowledgeTitle,
+        knowledgeDescription,
         publishedAt: new Date().toISOString()
       });
 
@@ -294,7 +310,7 @@ export function TestModelPage() {
       <div className="flex-1 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 h-full py-6">
-            {/* Configuration Panel */}
+            {/* Enhanced Configuration Panel */}
             {showConfig && (
               <div className="lg:col-span-1">
                 <div className="glass-strong rounded-2xl p-6 grain-texture space-y-6 h-full overflow-y-auto">
@@ -380,9 +396,61 @@ export function TestModelPage() {
                     />
                   </div>
 
-                  {/* Knowledge Enhancement */}
+                  {/* Enhanced Knowledge Enhancement */}
                   <div className="border-t border-white/10 pt-6">
-                    <h4 className="text-sm font-semibold text-white/80 mb-4">Knowledge Enhancement</h4>
+                    <div className="flex items-center mb-4">
+                      <Database className="w-5 h-5 mr-2 text-white/80" />
+                      <h4 className="text-sm font-semibold text-white/80">Knowledge Base</h4>
+                    </div>
+                    
+                    {/* Knowledge Base Title */}
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-white/70 mb-2">
+                        Knowledge Base Title
+                      </label>
+                      <input
+                        type="text"
+                        value={knowledgeTitle}
+                        onChange={(e) => setKnowledgeTitle(e.target.value)}
+                        className="glass-input w-full px-3 py-2 rounded-xl"
+                        placeholder="e.g., Company Documentation, Product Manual"
+                      />
+                    </div>
+
+                    {/* Knowledge Base Description */}
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-white/70 mb-2">
+                        Description
+                      </label>
+                      <textarea
+                        value={knowledgeDescription}
+                        onChange={(e) => setKnowledgeDescription(e.target.value)}
+                        rows={2}
+                        className="glass-input w-full px-3 py-2 rounded-xl resize-none"
+                        placeholder="Brief description of the knowledge base content"
+                      />
+                    </div>
+
+                    {/* Knowledge Text Content */}
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-white/70 mb-2">
+                        Knowledge Content ({knowledgeText.length}/10,000 characters)
+                      </label>
+                      <textarea
+                        value={knowledgeText}
+                        onChange={(e) => {
+                          if (e.target.value.length <= 10000) {
+                            setKnowledgeText(e.target.value);
+                          }
+                        }}
+                        rows={6}
+                        className="glass-input w-full px-3 py-2 rounded-xl resize-none"
+                        placeholder="Paste your knowledge base content here. This will be used to enhance the AI's responses with your specific information..."
+                      />
+                      <p className="text-xs text-white/50 mt-1">
+                        Add specific information, documentation, or context that you want the AI to reference
+                      </p>
+                    </div>
                     
                     {/* File Upload */}
                     <div
@@ -432,20 +500,26 @@ export function TestModelPage() {
                       </div>
                     )}
 
-                    {/* Text Input */}
-                    <textarea
-                      value={knowledgeText}
-                      onChange={(e) => setKnowledgeText(e.target.value)}
-                      rows={3}
-                      className="glass-input w-full px-3 py-2 rounded-xl resize-none"
-                      placeholder="Or paste text directly here..."
-                    />
+                    {/* Knowledge Base Summary */}
+                    {(knowledgeText.trim() || uploadedFiles.length > 0 || knowledgeTitle.trim()) && (
+                      <div className="glass-subtle rounded-lg p-3">
+                        <div className="flex items-center mb-2">
+                          <BookOpen className="w-4 h-4 mr-2 text-green-400" />
+                          <span className="text-sm font-medium text-green-400">Knowledge Base Active</span>
+                        </div>
+                        <div className="text-xs text-white/60 space-y-1">
+                          {knowledgeTitle.trim() && <p>Title: {knowledgeTitle}</p>}
+                          {knowledgeText.trim() && <p>Text content: {knowledgeText.length} characters</p>}
+                          {uploadedFiles.length > 0 && <p>Files: {uploadedFiles.length} uploaded</p>}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Chat Interface */}
+            {/* Chat Interface - Increased height */}
             <div className={`${showConfig ? 'lg:col-span-3' : 'lg:col-span-4'}`}>
               <div className="glass-strong rounded-2xl overflow-hidden grain-texture h-full flex flex-col">
                 {/* Integrated Header */}
@@ -471,6 +545,12 @@ export function TestModelPage() {
                       <MessageSquare className="w-4 h-4 text-white/60" />
                       <span className="text-sm text-white/80">{messages.length} messages</span>
                     </div>
+                    {(knowledgeText.trim() || uploadedFiles.length > 0) && (
+                      <div className="flex items-center space-x-2 glass-subtle px-3 py-2 rounded-xl">
+                        <Database className="w-4 h-4 text-green-400" />
+                        <span className="text-sm text-green-400">KB Active</span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Right side - Action buttons */}
@@ -516,17 +596,29 @@ export function TestModelPage() {
                     <MessageSquare className="w-3 h-3 text-white/60" />
                     <span className="text-xs text-white/80">{messages.length} messages</span>
                   </div>
+                  {(knowledgeText.trim() || uploadedFiles.length > 0) && (
+                    <div className="flex items-center space-x-2 glass-subtle px-3 py-1 rounded-lg">
+                      <Database className="w-3 h-3 text-green-400" />
+                      <span className="text-xs text-green-400">KB</span>
+                    </div>
+                  )}
                 </div>
 
-                {/* Messages */}
-                <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                {/* Messages - Increased height */}
+                <div className="flex-1 overflow-y-auto p-6 space-y-6">
                   {messages.length === 0 ? (
-                    <div className="text-center py-12">
-                      <MessageSquare className="w-12 h-12 mx-auto mb-4 text-white/30" />
-                      <p className="text-white/60">Start a conversation to test your AI model</p>
-                      <p className="text-white/40 text-sm mt-2">
-                        Currently using: <span className="text-purple-400">{selectedModel?.name}</span>
+                    <div className="text-center py-16">
+                      <MessageSquare className="w-16 h-16 mx-auto mb-6 text-white/30" />
+                      <h3 className="text-xl font-semibold gradient-text mb-4">Start Testing Your AI Model</h3>
+                      <p className="text-white/60 mb-2">
+                        Currently using: <span className="text-purple-400 font-medium">{selectedModel?.name}</span>
                       </p>
+                      {(knowledgeText.trim() || uploadedFiles.length > 0) && (
+                        <div className="inline-flex items-center px-4 py-2 glass-subtle rounded-xl mt-4">
+                          <Database className="w-4 h-4 mr-2 text-green-400" />
+                          <span className="text-sm text-green-400">Knowledge Base is active and ready</span>
+                        </div>
+                      )}
                     </div>
                   ) : (
                     messages.map((message) => (
@@ -534,26 +626,26 @@ export function TestModelPage() {
                         key={message.id}
                         className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                       >
-                        <div className={`max-w-3xl ${message.role === 'user' ? 'order-2' : 'order-1'}`}>
-                          <div className="flex items-start space-x-3">
+                        <div className={`max-w-4xl ${message.role === 'user' ? 'order-2' : 'order-1'}`}>
+                          <div className="flex items-start space-x-4">
                             {message.role === 'assistant' && (
-                              <div className="w-8 h-8 rounded-lg icon-bg-primary flex items-center justify-center flex-shrink-0">
-                                <Bot className="w-4 h-4 text-white" />
+                              <div className="w-10 h-10 rounded-xl icon-bg-primary flex items-center justify-center flex-shrink-0">
+                                <Bot className="w-5 h-5 text-white" />
                               </div>
                             )}
-                            <div className={`rounded-2xl p-4 ${
+                            <div className={`rounded-2xl p-6 ${
                               message.role === 'user' 
                                 ? 'button-primary text-white' 
                                 : 'glass-subtle text-white/90'
                             }`}>
-                              <p className="whitespace-pre-wrap">{message.content}</p>
-                              <p className="text-xs opacity-60 mt-2">
+                              <p className="whitespace-pre-wrap leading-relaxed text-base">{message.content}</p>
+                              <p className="text-xs opacity-60 mt-3">
                                 {message.timestamp.toLocaleTimeString()}
                               </p>
                             </div>
                             {message.role === 'user' && (
-                              <div className="w-8 h-8 rounded-lg glass-subtle flex items-center justify-center flex-shrink-0">
-                                <UserIcon className="w-4 h-4 text-white" />
+                              <div className="w-10 h-10 rounded-xl glass-subtle flex items-center justify-center flex-shrink-0">
+                                <UserIcon className="w-5 h-5 text-white" />
                               </div>
                             )}
                           </div>
@@ -563,15 +655,15 @@ export function TestModelPage() {
                   )}
                   {isLoading && (
                     <div className="flex justify-start">
-                      <div className="flex items-start space-x-3">
-                        <div className="w-8 h-8 rounded-lg icon-bg-primary flex items-center justify-center">
-                          <Bot className="w-4 h-4 text-white" />
+                      <div className="flex items-start space-x-4">
+                        <div className="w-10 h-10 rounded-xl icon-bg-primary flex items-center justify-center">
+                          <Bot className="w-5 h-5 text-white" />
                         </div>
-                        <div className="glass-subtle rounded-2xl p-4">
+                        <div className="glass-subtle rounded-2xl p-6">
                           <div className="flex space-x-2">
-                            <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce"></div>
-                            <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                            <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                            <div className="w-3 h-3 bg-white/50 rounded-full animate-bounce"></div>
+                            <div className="w-3 h-3 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                            <div className="w-3 h-3 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                           </div>
                         </div>
                       </div>
@@ -579,7 +671,7 @@ export function TestModelPage() {
                   )}
                 </div>
 
-                {/* Input */}
+                {/* Input - Enhanced spacing */}
                 <div className="p-6 border-t border-white/10 flex-shrink-0">
                   <div className="flex space-x-4">
                     <input
@@ -588,13 +680,13 @@ export function TestModelPage() {
                       onChange={(e) => setInputMessage(e.target.value)}
                       onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                       placeholder="Type your message..."
-                      className="flex-1 glass-input px-4 py-3 rounded-xl focus:ring-2 focus:ring-purple-500"
+                      className="flex-1 glass-input px-6 py-4 rounded-xl focus:ring-2 focus:ring-purple-500 text-base"
                       disabled={isLoading}
                     />
                     <button
                       onClick={handleSendMessage}
                       disabled={!inputMessage.trim() || isLoading}
-                      className="button-primary px-6 py-3 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
+                      className="button-primary px-8 py-4 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
                     >
                       <Send className="w-5 h-5" />
                     </button>
