@@ -31,12 +31,15 @@ interface ModelConfig {
 interface ChatInterfaceProps {
   model: {
     id: string;
-    name: string;
+    title: string;
     system_prompt: string;
     default_temperature: number;
     default_top_p: number;
     default_max_tokens: number;
     knowledge_context?: string;
+    model_type: string;
+    tags: string[];
+    description: string;
   };
 }
 
@@ -60,22 +63,116 @@ export function ChatInterface({ model }: ChatInterfaceProps) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // Generate personalized introduction based on model's knowledge base
+  const generateIntroduction = (model: ChatInterfaceProps['model']) => {
+    const capabilities = [];
+    
+    // Add capabilities based on model type
+    switch (model.model_type) {
+      case 'Code Assistant':
+        capabilities.push(
+          '💻 **Code Generation & Debugging** - Write, review, and optimize code across multiple programming languages',
+          '📚 **Technical Documentation** - Create clear documentation and explain complex concepts',
+          '🔧 **Best Practices** - Suggest improvements and industry-standard approaches'
+        );
+        break;
+      case 'Creative Writing':
+        capabilities.push(
+          '✍️ **Creative Storytelling** - Craft engaging narratives, characters, and plot development',
+          '🎭 **Multiple Genres** - From fiction to poetry, screenwriting to creative non-fiction',
+          '💡 **Creative Inspiration** - Help overcome writer\'s block and explore new ideas'
+        );
+        break;
+      case 'Business Assistant':
+        capabilities.push(
+          '📊 **Strategic Analysis** - Market research, competitive analysis, and business planning',
+          '💼 **Professional Communication** - Emails, proposals, and presentation content',
+          '📈 **Data-Driven Insights** - Help interpret trends and make informed decisions'
+        );
+        break;
+      case 'Educational':
+        capabilities.push(
+          '🎓 **Personalized Learning** - Adapt explanations to your learning style and pace',
+          '📖 **Subject Expertise** - Cover topics from basic concepts to advanced theories',
+          '🧠 **Study Support** - Create summaries, practice questions, and learning strategies'
+        );
+        break;
+      case 'Conversational AI':
+        capabilities.push(
+          '💬 **Natural Conversation** - Engage in meaningful discussions on diverse topics',
+          '🤔 **Problem Solving** - Help analyze situations and explore solutions',
+          '🌟 **Knowledge Sharing** - Provide information and insights across various domains'
+        );
+        break;
+      case 'Technical Support':
+        capabilities.push(
+          '🔧 **Troubleshooting** - Step-by-step problem diagnosis and resolution',
+          '⚙️ **System Optimization** - Performance tuning and configuration guidance',
+          '📋 **Documentation** - Clear instructions and technical explanations'
+        );
+        break;
+      default:
+        capabilities.push(
+          '🎯 **Specialized Assistance** - Tailored help based on my training and expertise',
+          '💡 **Problem Solving** - Analytical thinking and creative solutions',
+          '📚 **Knowledge Application** - Apply domain-specific knowledge to your needs'
+        );
+    }
+
+    // Add tag-based capabilities
+    const tagCapabilities = model.tags.map(tag => {
+      switch (tag.toLowerCase()) {
+        case 'programming': return '⌨️ Programming expertise';
+        case 'debugging': return '🐛 Code debugging';
+        case 'creative': return '🎨 Creative thinking';
+        case 'writing': return '✏️ Writing assistance';
+        case 'storytelling': return '📖 Storytelling';
+        case 'business': return '💼 Business insights';
+        case 'strategy': return '🎯 Strategic planning';
+        case 'education': return '🎓 Educational support';
+        case 'learning': return '📚 Learning facilitation';
+        case 'technical': return '⚙️ Technical expertise';
+        case 'analysis': return '📊 Data analysis';
+        default: return null;
+      }
+    }).filter(Boolean);
+
+    let introduction = `Hello! I'm **${model.title}**, your specialized AI assistant.
+
+${model.description}
+
+## What I Can Help You With:
+
+${capabilities.join('\n')}`;
+
+    if (tagCapabilities.length > 0) {
+      introduction += `\n\n**Additional Expertise:** ${tagCapabilities.join(' • ')}`;
+    }
+
+    if (model.knowledge_context) {
+      introduction += `\n\n## My Knowledge Base:
+${model.knowledge_context}`;
+    }
+
+    introduction += `\n\n---
+
+**Ready to get started?** Feel free to ask me anything related to my expertise, or just say hello! I'm here to provide helpful, detailed responses tailored to your needs.
+
+*Tip: I can format responses with markdown, including **bold text**, \`code snippets\`, lists, tables, and more!*`;
+
+    return introduction;
+  };
+
   useEffect(() => {
-    // Add welcome message
+    // Add personalized welcome message
     const welcomeMessage: Message = {
       id: 'welcome',
       role: 'assistant',
-      content: `Hello! I'm **${model.name}**. I'm ready to help you with whatever you need. Feel free to ask me anything!
-
-I can understand and respond with:
-- **Formatted text** and *emphasis*
-- Code blocks and \`inline code\`
-- Lists and tables
-- And much more!`,
+      content: generateIntroduction(model),
       timestamp: new Date()
     };
     setMessages([welcomeMessage]);
-  }, [model.name]);
+  }, [model]);
 
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;
@@ -118,7 +215,7 @@ I can understand and respond with:
             systemPrompt: model.system_prompt
           },
           knowledgeContext: model.knowledge_context,
-          conversationHistory: messages.filter(m => !m.isLoading).map(m => ({
+          conversationHistory: messages.filter(m => !m.isLoading && m.id !== 'welcome').map(m => ({
             role: m.role,
             content: m.content
           }))
@@ -159,13 +256,7 @@ I can understand and respond with:
     const welcomeMessage: Message = {
       id: 'welcome-' + Date.now(),
       role: 'assistant',
-      content: `Hello! I'm **${model.name}**. I'm ready to help you with whatever you need. Feel free to ask me anything!
-
-I can understand and respond with:
-- **Formatted text** and *emphasis*
-- Code blocks and \`inline code\`
-- Lists and tables
-- And much more!`,
+      content: generateIntroduction(model),
       timestamp: new Date()
     };
     setMessages([welcomeMessage]);
@@ -198,7 +289,7 @@ I can understand and respond with:
               <Bot className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="font-semibold gradient-text">{model.name}</h3>
+              <h3 className="font-semibold gradient-text">{model.title}</h3>
               <p className="text-sm text-white/60">Interactive Chat</p>
             </div>
           </div>
@@ -396,6 +487,9 @@ I can understand and respond with:
                                   <em className="italic text-white/90">
                                     {children}
                                   </em>
+                                ),
+                                hr: () => (
+                                  <hr className="border-white/20 my-4" />
                                 )
                               }}
                             >
@@ -447,7 +541,7 @@ I can understand and respond with:
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder={`Chat with ${model.name}...`}
+              placeholder={`Chat with ${model.title}...`}
               className="flex-1 glass-input px-4 py-3 rounded-xl focus:ring-2 focus:ring-purple-500"
               disabled={isLoading}
             />
