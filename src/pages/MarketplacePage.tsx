@@ -23,63 +23,6 @@ interface Model {
 const MODEL_TYPES = ['Conversational AI', 'Content Generation', 'Code Assistant', 'Educational', 'Creative Writing', 'Business Assistant', 'Technical Support', 'Other'];
 const FRAMEWORKS = ['Gemini 1.5 Flash', 'TensorFlow', 'PyTorch', 'Keras', 'Scikit-learn', 'ONNX', 'TensorFlow.js', 'Other'];
 
-// Convert predefined models to marketplace format with additional models
-const MARKETPLACE_MODELS: Model[] = [
-  ...PREDEFINED_MODELS.map((model, index) => ({
-    id: model.id,
-    title: model.name,
-    description: model.description,
-    model_type: model.category,
-    framework: 'Gemini 1.5 Flash',
-    tags: model.tags,
-    accuracy: 85 + Math.floor(Math.random() * 15), // Random accuracy between 85-99%
-    download_count: Math.floor(Math.random() * 1000) + 100,
-    is_verified: true,
-    created_at: new Date(Date.now() - Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000).toISOString(),
-    uploader: { display_name: 'AI Model Hub' }
-  })),
-  // Additional community models
-  {
-    id: 'community-1',
-    title: 'Advanced Image Classifier',
-    description: 'A state-of-the-art image classification model trained on ImageNet with 95% accuracy.',
-    model_type: 'Computer Vision',
-    framework: 'TensorFlow',
-    tags: ['image-classification', 'cnn', 'imagenet'],
-    accuracy: 95.2,
-    download_count: 1250,
-    is_verified: true,
-    created_at: '2024-01-15T10:30:00Z',
-    uploader: { display_name: 'AI Researcher' }
-  },
-  {
-    id: 'community-2',
-    title: 'Sentiment Analysis BERT',
-    description: 'Fine-tuned BERT model for sentiment analysis on social media text.',
-    model_type: 'Natural Language Processing',
-    framework: 'PyTorch',
-    tags: ['sentiment-analysis', 'bert', 'nlp'],
-    accuracy: 92.8,
-    download_count: 890,
-    is_verified: true,
-    created_at: '2024-01-10T14:20:00Z',
-    uploader: { display_name: 'NLP Expert' }
-  },
-  {
-    id: 'community-3',
-    title: 'Speech Recognition Model',
-    description: 'Real-time speech recognition model optimized for mobile devices.',
-    model_type: 'Speech',
-    framework: 'TensorFlow.js',
-    tags: ['speech-recognition', 'mobile', 'real-time'],
-    accuracy: 88.5,
-    download_count: 567,
-    is_verified: false,
-    created_at: '2024-01-08T09:15:00Z',
-    uploader: { display_name: 'Mobile Dev' }
-  }
-];
-
 export function MarketplacePage() {
   const [models, setModels] = useState<Model[]>([]);
   const [loading, setLoading] = useState(true);
@@ -102,10 +45,92 @@ export function MarketplacePage() {
       // Simulate loading delay
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      // Use marketplace models
-      let filteredModels = [...MARKETPLACE_MODELS];
+      // Create marketplace models from predefined models + additional community models
+      const marketplaceModels: Model[] = [
+        // Convert predefined models
+        ...PREDEFINED_MODELS.map((model, index) => ({
+          id: model.id,
+          title: model.name,
+          description: model.description,
+          model_type: model.category,
+          framework: 'Gemini 1.5 Flash',
+          tags: model.tags,
+          accuracy: 85 + Math.floor(Math.random() * 15), // Random accuracy between 85-99%
+          download_count: Math.floor(Math.random() * 1000) + 100,
+          is_verified: true,
+          created_at: new Date(Date.now() - Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000).toISOString(),
+          uploader: { display_name: 'AI Model Hub' }
+        })),
+        // Additional community models
+        {
+          id: 'community-1',
+          title: 'Advanced Image Classifier',
+          description: 'A state-of-the-art image classification model trained on ImageNet with 95% accuracy.',
+          model_type: 'Computer Vision',
+          framework: 'TensorFlow',
+          tags: ['image-classification', 'cnn', 'imagenet'],
+          accuracy: 95.2,
+          download_count: 1250,
+          is_verified: true,
+          created_at: '2024-01-15T10:30:00Z',
+          uploader: { display_name: 'AI Researcher' }
+        },
+        {
+          id: 'community-2',
+          title: 'Sentiment Analysis BERT',
+          description: 'Fine-tuned BERT model for sentiment analysis on social media text.',
+          model_type: 'Natural Language Processing',
+          framework: 'PyTorch',
+          tags: ['sentiment-analysis', 'bert', 'nlp'],
+          accuracy: 92.8,
+          download_count: 890,
+          is_verified: true,
+          created_at: '2024-01-10T14:20:00Z',
+          uploader: { display_name: 'NLP Expert' }
+        },
+        {
+          id: 'community-3',
+          title: 'Speech Recognition Model',
+          description: 'Real-time speech recognition model optimized for mobile devices.',
+          model_type: 'Speech',
+          framework: 'TensorFlow.js',
+          tags: ['speech-recognition', 'mobile', 'real-time'],
+          accuracy: 88.5,
+          download_count: 567,
+          is_verified: false,
+          created_at: '2024-01-08T09:15:00Z',
+          uploader: { display_name: 'Mobile Dev' }
+        },
+        {
+          id: 'community-4',
+          title: 'Object Detection YOLO',
+          description: 'Fast and accurate object detection model for real-time applications.',
+          model_type: 'Computer Vision',
+          framework: 'PyTorch',
+          tags: ['object-detection', 'yolo', 'real-time'],
+          accuracy: 89.3,
+          download_count: 743,
+          is_verified: true,
+          created_at: '2024-01-12T16:45:00Z',
+          uploader: { display_name: 'Vision Expert' }
+        },
+        {
+          id: 'community-5',
+          title: 'Text Summarization Model',
+          description: 'Transformer-based model for automatic text summarization.',
+          model_type: 'Natural Language Processing',
+          framework: 'TensorFlow',
+          tags: ['text-summarization', 'transformer', 'nlp'],
+          accuracy: 91.7,
+          download_count: 456,
+          is_verified: true,
+          created_at: '2024-01-05T11:30:00Z',
+          uploader: { display_name: 'NLP Researcher' }
+        }
+      ];
 
       // Apply search filter
+      let filteredModels = [...marketplaceModels];
       if (searchTerm.trim()) {
         const searchLower = searchTerm.toLowerCase();
         filteredModels = filteredModels.filter(model => 

@@ -13,6 +13,7 @@ import {
   TrendingUp,
   CheckCircle
 } from 'lucide-react';
+import { PREDEFINED_MODELS } from '../lib/gemini';
 
 interface ModelDetail {
   id: string;
@@ -35,190 +36,6 @@ interface ModelDetail {
   };
 }
 
-// Comprehensive model data for demonstration
-const MODEL_DETAILS: { [key: string]: ModelDetail } = {
-  '1': {
-    id: '1',
-    title: 'Advanced Image Classifier',
-    description: 'A state-of-the-art image classification model trained on ImageNet with 95% accuracy. This model uses a ResNet-50 architecture with custom modifications for improved performance on edge devices. The model has been fine-tuned on a diverse dataset of over 1 million images across 1000 categories.',
-    model_type: 'Computer Vision',
-    framework: 'TensorFlow',
-    tags: ['image-classification', 'cnn', 'imagenet', 'resnet'],
-    accuracy: 95.2,
-    file_size: 102400000, // 100MB
-    is_verified: true,
-    download_count: 1250,
-    created_at: '2024-01-15T10:30:00Z',
-    updated_at: '2024-01-15T10:30:00Z',
-    uploader: { display_name: 'AI Researcher' }
-  },
-  '2': {
-    id: '2',
-    title: 'Sentiment Analysis BERT',
-    description: 'Fine-tuned BERT model for sentiment analysis on social media text. Trained on a diverse dataset of tweets and social media posts from multiple platforms. Achieves state-of-the-art performance on sentiment classification tasks.',
-    model_type: 'Natural Language Processing',
-    framework: 'PyTorch',
-    tags: ['sentiment-analysis', 'bert', 'nlp', 'social-media'],
-    accuracy: 92.8,
-    file_size: 438000000, // 438MB
-    is_verified: true,
-    download_count: 890,
-    created_at: '2024-01-10T14:20:00Z',
-    updated_at: '2024-01-10T14:20:00Z',
-    uploader: { display_name: 'NLP Expert' }
-  },
-  '3': {
-    id: '3',
-    title: 'Speech Recognition Model',
-    description: 'Real-time speech recognition model optimized for mobile devices. Supports multiple languages and accents with low latency processing. Perfect for voice-controlled applications and transcription services.',
-    model_type: 'Speech',
-    framework: 'TensorFlow.js',
-    tags: ['speech-recognition', 'mobile', 'real-time', 'multilingual'],
-    accuracy: 88.5,
-    file_size: 25600000, // 25MB
-    is_verified: false,
-    download_count: 567,
-    created_at: '2024-01-08T09:15:00Z',
-    updated_at: '2024-01-08T09:15:00Z',
-    uploader: { display_name: 'Mobile Dev' }
-  },
-  '4': {
-    id: '4',
-    title: 'Object Detection YOLO',
-    description: 'Fast and accurate object detection model for real-time applications. Based on YOLOv8 architecture with custom optimizations for speed and accuracy. Detects 80+ object classes with high precision.',
-    model_type: 'Computer Vision',
-    framework: 'PyTorch',
-    tags: ['object-detection', 'yolo', 'real-time'],
-    accuracy: 89.3,
-    file_size: 67108864, // 64MB
-    is_verified: true,
-    download_count: 743,
-    created_at: '2024-01-12T16:45:00Z',
-    updated_at: '2024-01-12T16:45:00Z',
-    uploader: { display_name: 'Vision Expert' }
-  },
-  '5': {
-    id: '5',
-    title: 'Text Summarization Model',
-    description: 'Transformer-based model for automatic text summarization. Capable of generating concise and coherent summaries from long documents. Trained on news articles, research papers, and web content.',
-    model_type: 'Natural Language Processing',
-    framework: 'TensorFlow',
-    tags: ['text-summarization', 'transformer', 'nlp'],
-    accuracy: 91.7,
-    file_size: 512000000, // 512MB
-    is_verified: true,
-    download_count: 456,
-    created_at: '2024-01-05T11:30:00Z',
-    updated_at: '2024-01-05T11:30:00Z',
-    uploader: { display_name: 'NLP Researcher' }
-  },
-  '6': {
-    id: '6',
-    title: 'Recommendation Engine',
-    description: 'Collaborative filtering model for personalized recommendations. Uses matrix factorization and deep learning techniques to provide accurate user preferences. Suitable for e-commerce and content platforms.',
-    model_type: 'Reinforcement Learning',
-    framework: 'Scikit-learn',
-    tags: ['recommendation', 'collaborative-filtering', 'ml'],
-    accuracy: 87.2,
-    file_size: 15728640, // 15MB
-    is_verified: false,
-    download_count: 321,
-    created_at: '2024-01-03T13:20:00Z',
-    updated_at: '2024-01-03T13:20:00Z',
-    uploader: { display_name: 'ML Engineer' }
-  },
-  '7': {
-    id: '7',
-    title: 'Face Recognition CNN',
-    description: 'Convolutional neural network for accurate face recognition and verification. Trained on diverse facial datasets with robust performance across different ethnicities, ages, and lighting conditions.',
-    model_type: 'Computer Vision',
-    framework: 'Keras',
-    tags: ['face-recognition', 'cnn', 'biometrics'],
-    accuracy: 96.8,
-    file_size: 89128960, // 85MB
-    is_verified: true,
-    download_count: 1089,
-    created_at: '2024-01-18T08:15:00Z',
-    updated_at: '2024-01-18T08:15:00Z',
-    uploader: { display_name: 'Computer Vision Lab' }
-  },
-  '8': {
-    id: '8',
-    title: 'Language Translation Model',
-    description: 'Neural machine translation model supporting 50+ languages. Based on transformer architecture with attention mechanisms for high-quality translations. Optimized for both accuracy and speed.',
-    model_type: 'Natural Language Processing',
-    framework: 'TensorFlow',
-    tags: ['translation', 'multilingual', 'seq2seq'],
-    accuracy: 94.1,
-    file_size: 734003200, // 700MB
-    is_verified: true,
-    download_count: 678,
-    created_at: '2024-01-20T14:30:00Z',
-    updated_at: '2024-01-20T14:30:00Z',
-    uploader: { display_name: 'Translation Team' }
-  },
-  '9': {
-    id: '9',
-    title: 'Anomaly Detection Model',
-    description: 'Unsupervised learning model for detecting anomalies in time series data. Uses autoencoders and statistical methods to identify unusual patterns in sensor data, financial transactions, and system logs.',
-    model_type: 'Other',
-    framework: 'Scikit-learn',
-    tags: ['anomaly-detection', 'time-series', 'unsupervised'],
-    accuracy: 85.6,
-    file_size: 8388608, // 8MB
-    is_verified: false,
-    download_count: 234,
-    created_at: '2024-01-22T10:45:00Z',
-    updated_at: '2024-01-22T10:45:00Z',
-    uploader: { display_name: 'Data Scientist' }
-  },
-  '10': {
-    id: '10',
-    title: 'Chatbot Intent Classifier',
-    description: 'Intent classification model for chatbot applications. Trained on conversational data to understand user intents and route queries appropriately. Supports multiple domains and languages.',
-    model_type: 'Natural Language Processing',
-    framework: 'PyTorch',
-    tags: ['intent-classification', 'chatbot', 'nlp'],
-    accuracy: 93.4,
-    file_size: 125829120, // 120MB
-    is_verified: true,
-    download_count: 512,
-    created_at: '2024-01-25T09:20:00Z',
-    updated_at: '2024-01-25T09:20:00Z',
-    uploader: { display_name: 'Conversational AI' }
-  },
-  '11': {
-    id: '11',
-    title: 'Medical Image Segmentation',
-    description: 'U-Net model for medical image segmentation tasks. Specialized for analyzing medical scans including MRI, CT, and X-ray images. Provides precise segmentation for diagnostic assistance.',
-    model_type: 'Computer Vision',
-    framework: 'TensorFlow',
-    tags: ['medical-imaging', 'segmentation', 'unet'],
-    accuracy: 91.9,
-    file_size: 157286400, // 150MB
-    is_verified: true,
-    download_count: 387,
-    created_at: '2024-01-28T15:10:00Z',
-    updated_at: '2024-01-28T15:10:00Z',
-    uploader: { display_name: 'Medical AI Lab' }
-  },
-  '12': {
-    id: '12',
-    title: 'Stock Price Predictor',
-    description: 'LSTM model for predicting stock price movements. Analyzes historical price data, trading volumes, and market indicators to forecast short-term price trends. Includes risk assessment features.',
-    model_type: 'Other',
-    framework: 'Keras',
-    tags: ['stock-prediction', 'lstm', 'finance'],
-    accuracy: 78.3,
-    file_size: 41943040, // 40MB
-    is_verified: false,
-    download_count: 445,
-    created_at: '2024-01-30T12:00:00Z',
-    updated_at: '2024-01-30T12:00:00Z',
-    uploader: { display_name: 'FinTech Developer' }
-  }
-};
-
 export function ModelDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [model, setModel] = useState<ModelDetail | null>(null);
@@ -236,11 +53,110 @@ export function ModelDetailPage() {
     if (!id) return;
 
     try {
-      // Check model details
-      if (MODEL_DETAILS[id]) {
-        setModel(MODEL_DETAILS[id]);
+      // Check if it's a predefined model
+      const predefinedModel = PREDEFINED_MODELS.find(m => m.id === id);
+      if (predefinedModel) {
+        const modelDetail: ModelDetail = {
+          id: predefinedModel.id,
+          title: predefinedModel.name,
+          description: predefinedModel.description + '\n\nThis is a context-based AI model powered by Gemini 1.5 Flash. It uses specialized prompting to provide responses tailored to specific use cases and domains.',
+          model_type: predefinedModel.category,
+          framework: 'Gemini 1.5 Flash',
+          tags: predefinedModel.tags,
+          accuracy: 85 + Math.floor(Math.random() * 15),
+          file_size: Math.floor(Math.random() * 500000000) + 50000000, // 50MB to 550MB
+          is_verified: true,
+          download_count: Math.floor(Math.random() * 1000) + 100,
+          created_at: new Date(Date.now() - Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000).toISOString(),
+          updated_at: new Date(Date.now() - Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000).toISOString(),
+          uploader: { display_name: 'AI Model Hub' }
+        };
+        setModel(modelDetail);
       } else {
-        setError('Model not found');
+        // Handle community models with comprehensive data
+        const communityModels: { [key: string]: ModelDetail } = {
+          'community-1': {
+            id: 'community-1',
+            title: 'Advanced Image Classifier',
+            description: 'A state-of-the-art image classification model trained on ImageNet with 95% accuracy. This model uses a ResNet-50 architecture with custom modifications for improved performance on edge devices. The model has been fine-tuned on a diverse dataset of over 1 million images across 1000 categories.',
+            model_type: 'Computer Vision',
+            framework: 'TensorFlow',
+            tags: ['image-classification', 'cnn', 'imagenet', 'resnet'],
+            accuracy: 95.2,
+            file_size: 102400000, // 100MB
+            is_verified: true,
+            download_count: 1250,
+            created_at: '2024-01-15T10:30:00Z',
+            updated_at: '2024-01-15T10:30:00Z',
+            uploader: { display_name: 'AI Researcher' }
+          },
+          'community-2': {
+            id: 'community-2',
+            title: 'Sentiment Analysis BERT',
+            description: 'Fine-tuned BERT model for sentiment analysis on social media text. Trained on a diverse dataset of tweets and social media posts from multiple platforms. Achieves state-of-the-art performance on sentiment classification tasks.',
+            model_type: 'Natural Language Processing',
+            framework: 'PyTorch',
+            tags: ['sentiment-analysis', 'bert', 'nlp', 'social-media'],
+            accuracy: 92.8,
+            file_size: 438000000, // 438MB
+            is_verified: true,
+            download_count: 890,
+            created_at: '2024-01-10T14:20:00Z',
+            updated_at: '2024-01-10T14:20:00Z',
+            uploader: { display_name: 'NLP Expert' }
+          },
+          'community-3': {
+            id: 'community-3',
+            title: 'Speech Recognition Model',
+            description: 'Real-time speech recognition model optimized for mobile devices. Supports multiple languages and accents with low latency processing. Perfect for voice-controlled applications and transcription services.',
+            model_type: 'Speech',
+            framework: 'TensorFlow.js',
+            tags: ['speech-recognition', 'mobile', 'real-time', 'multilingual'],
+            accuracy: 88.5,
+            file_size: 25600000, // 25MB
+            is_verified: false,
+            download_count: 567,
+            created_at: '2024-01-08T09:15:00Z',
+            updated_at: '2024-01-08T09:15:00Z',
+            uploader: { display_name: 'Mobile Dev' }
+          },
+          'community-4': {
+            id: 'community-4',
+            title: 'Object Detection YOLO',
+            description: 'Fast and accurate object detection model for real-time applications. Based on YOLOv8 architecture with custom optimizations for speed and accuracy. Detects 80+ object classes with high precision.',
+            model_type: 'Computer Vision',
+            framework: 'PyTorch',
+            tags: ['object-detection', 'yolo', 'real-time'],
+            accuracy: 89.3,
+            file_size: 67108864, // 64MB
+            is_verified: true,
+            download_count: 743,
+            created_at: '2024-01-12T16:45:00Z',
+            updated_at: '2024-01-12T16:45:00Z',
+            uploader: { display_name: 'Vision Expert' }
+          },
+          'community-5': {
+            id: 'community-5',
+            title: 'Text Summarization Model',
+            description: 'Transformer-based model for automatic text summarization. Capable of generating concise and coherent summaries from long documents. Trained on news articles, research papers, and web content.',
+            model_type: 'Natural Language Processing',
+            framework: 'TensorFlow',
+            tags: ['text-summarization', 'transformer', 'nlp'],
+            accuracy: 91.7,
+            file_size: 512000000, // 512MB
+            is_verified: true,
+            download_count: 456,
+            created_at: '2024-01-05T11:30:00Z',
+            updated_at: '2024-01-05T11:30:00Z',
+            uploader: { display_name: 'NLP Researcher' }
+          }
+        };
+
+        if (communityModels[id]) {
+          setModel(communityModels[id]);
+        } else {
+          setError('Model not found');
+        }
       }
     } catch (error) {
       setError('Model not found');

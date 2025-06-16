@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Search, Shield, TrendingUp, Users, Star, Sparkles, Zap, Brain, TestTube } from 'lucide-react';
 import { useScrollReveal } from '../hooks/useScrollReveal';
@@ -18,19 +18,6 @@ interface FeaturedModel {
   };
 }
 
-// Convert predefined models to featured models format
-const FEATURED_MODELS: FeaturedModel[] = PREDEFINED_MODELS.map((model, index) => ({
-  id: model.id,
-  title: model.name,
-  description: model.description,
-  model_type: model.category,
-  framework: 'Gemini 1.5 Flash',
-  accuracy: 85 + Math.floor(Math.random() * 15), // Random accuracy between 85-99%
-  download_count: Math.floor(Math.random() * 1000) + 100,
-  is_verified: true,
-  uploader: { display_name: 'AI Model Hub' }
-}));
-
 export function HomePage() {
   const [featuredModels, setFeaturedModels] = useState<FeaturedModel[]>([]);
   const [stats, setStats] = useState({
@@ -47,13 +34,25 @@ export function HomePage() {
   }, []);
 
   const fetchFeaturedModels = async () => {
-    // Show featured models
-    setFeaturedModels(FEATURED_MODELS.slice(0, 6));
+    // Convert predefined models to featured models format
+    const featuredModels: FeaturedModel[] = PREDEFINED_MODELS.map((model, index) => ({
+      id: model.id,
+      title: model.name,
+      description: model.description,
+      model_type: model.category,
+      framework: 'Gemini 1.5 Flash',
+      accuracy: 85 + Math.floor(Math.random() * 15), // Random accuracy between 85-99%
+      download_count: Math.floor(Math.random() * 1000) + 100,
+      is_verified: true,
+      uploader: { display_name: 'AI Model Hub' }
+    }));
+
+    setFeaturedModels(featuredModels.slice(0, 6));
   };
 
   const fetchStats = async () => {
-    const totalModels = FEATURED_MODELS.length;
-    const totalDownloads = FEATURED_MODELS.reduce((sum, model) => sum + model.download_count, 0);
+    const totalModels = PREDEFINED_MODELS.length + 6; // Predefined + some community models
+    const totalDownloads = Math.floor(Math.random() * 10000) + 5000;
     const totalUsers = 250; // Mock user count
 
     setStats({ totalModels, totalDownloads, totalUsers });
@@ -180,27 +179,27 @@ export function HomePage() {
       </section>
 
       {/* Featured Models Section */}
-      {featuredModels.length > 0 && (
-        <section className="py-20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center mb-16">
-              <div>
-                <h2 className="scroll-reveal text-4xl lg:text-5xl font-bold gradient-text mb-6">
-                  Featured Models
-                </h2>
-                <p className="scroll-reveal text-xl lg:text-2xl text-white/80">
-                  Discover the most popular verified models in our community
-                </p>
-              </div>
-              <Link
-                to="/marketplace"
-                className="scroll-reveal text-white/90 hover:text-white font-semibold flex items-center glass-subtle px-6 py-3 rounded-2xl hover:glass transition-all duration-300 hover-glow"
-              >
-                View all models
-                <ArrowRight className="w-5 h-5 ml-2 text-white" />
-              </Link>
+      <section className="py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center mb-16">
+            <div>
+              <h2 className="scroll-reveal text-4xl lg:text-5xl font-bold gradient-text mb-6">
+                Featured Models
+              </h2>
+              <p className="scroll-reveal text-xl lg:text-2xl text-white/80">
+                Discover the most popular verified models in our community
+              </p>
             </div>
+            <Link
+              to="/marketplace"
+              className="scroll-reveal text-white/90 hover:text-white font-semibold flex items-center glass-subtle px-6 py-3 rounded-2xl hover:glass transition-all duration-300 hover-glow"
+            >
+              View all models
+              <ArrowRight className="w-5 h-5 ml-2 text-white" />
+            </Link>
+          </div>
 
+          {featuredModels.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {featuredModels.map((model, index) => (
                 <Link
@@ -251,9 +250,14 @@ export function HomePage() {
                 </Link>
               ))}
             </div>
-          </div>
-        </section>
-      )}
+          ) : (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
+              <p className="text-white/60">Loading featured models...</p>
+            </div>
+          )}
+        </div>
+      </section>
 
       {/* CTA Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
