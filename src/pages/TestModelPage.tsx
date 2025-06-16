@@ -442,7 +442,7 @@ export function TestModelPage() {
 
             {/* Chat Interface */}
             <div className={`${showConfig ? 'lg:col-span-3' : 'lg:col-span-4'}`}>
-              <div className="glass-strong rounded-2xl overflow-hidden grain-texture h-full flex flex-col">
+              <div className="glass-strong rounded-2xl overflow-hidden grain-texture h-50vh flex flex-col">
                 {/* Integrated Header - Now part of chat interface */}
                 <div className="flex items-center justify-between p-6 border-b border-white/10 flex-shrink-0">
                   {/* Left side - AI Assistant info */}
@@ -602,7 +602,7 @@ export function TestModelPage() {
       {/* Publish Modal */}
       {showPublish && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="glass-strong rounded-2xl p-6 w-full max-w-2xl max-h-[50vh] overflow-y-auto grain-texture">
+          <div className="glass-strong rounded-2xl p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto grain-texture">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold gradient-text">Publish Model</h2>
               <button
