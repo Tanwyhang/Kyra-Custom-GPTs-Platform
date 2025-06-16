@@ -6,7 +6,9 @@ import {
   Bot, 
   User as UserIcon, 
   Copy, 
-  Check
+  Check,
+  Database,
+  MessageSquare
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -191,265 +193,332 @@ export function ChatInterface({ model }: ChatInterfaceProps) {
   };
 
   return (
-    <div className="h-full flex flex-col bg-white">
-      {/* Header - Minimal */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-white flex-shrink-0">
-        <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center">
-            <Bot className="w-4 h-4 text-white" />
-          </div>
-          <h1 className="text-lg font-medium text-gray-900">{model.title}</h1>
-        </div>
-
-        <div className="flex items-center space-x-2">
-          <button
-            onClick={() => setShowConfig(!showConfig)}
-            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
-          >
-            <Settings className="w-5 h-5" />
-          </button>
-          <button
-            onClick={resetConversation}
-            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
-          >
-            <RotateCcw className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
-
-      {/* Configuration Panel */}
+    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-full">
+      {/* Configuration Panel - Left Column */}
       {showConfig && (
-        <div className="px-6 py-4 bg-gray-50 border-b border-gray-200 flex-shrink-0">
-          <div className="grid grid-cols-3 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Temperature: {config.temperature}
-              </label>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.1"
-                value={config.temperature}
-                onChange={(e) => setConfig(prev => ({ ...prev, temperature: parseFloat(e.target.value) }))}
-                className="w-full"
-              />
+        <div className="lg:col-span-1">
+          <div className="glass-strong rounded-2xl p-6 grain-texture h-full overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold gradient-text">Configuration</h3>
+              <button
+                onClick={() => {
+                  setConfig({
+                    temperature: model.default_temperature,
+                    topP: model.default_top_p,
+                    maxTokens: model.default_max_tokens
+                  });
+                }}
+                className="text-sm text-white/60 hover:text-white transition-colors"
+              >
+                Reset
+              </button>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Top-p: {config.topP}
-              </label>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.1"
-                value={config.topP}
-                onChange={(e) => setConfig(prev => ({ ...prev, topP: parseFloat(e.target.value) }))}
-                className="w-full"
-              />
-            </div>
+            <div className="space-y-6">
+              {/* Temperature */}
+              <div>
+                <label className="block text-sm font-medium text-white/80 mb-2">
+                  Temperature: {config.temperature}
+                </label>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.1"
+                  value={config.temperature}
+                  onChange={(e) => setConfig(prev => ({ ...prev, temperature: parseFloat(e.target.value) }))}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-xs text-white/50 mt-1">
+                  <span>Focused</span>
+                  <span>Creative</span>
+                </div>
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Max Tokens
-              </label>
-              <input
-                type="number"
-                min="1"
-                max="4096"
-                value={config.maxTokens}
-                onChange={(e) => setConfig(prev => ({ ...prev, maxTokens: parseInt(e.target.value) }))}
-                className="w-full px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-gray-500"
-              />
+              {/* Top-p */}
+              <div>
+                <label className="block text-sm font-medium text-white/80 mb-2">
+                  Top-p: {config.topP}
+                </label>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.1"
+                  value={config.topP}
+                  onChange={(e) => setConfig(prev => ({ ...prev, topP: parseFloat(e.target.value) }))}
+                  className="w-full"
+                />
+              </div>
+
+              {/* Max Tokens */}
+              <div>
+                <label className="block text-sm font-medium text-white/80 mb-2">
+                  Max Tokens
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="4096"
+                  value={config.maxTokens}
+                  onChange={(e) => setConfig(prev => ({ ...prev, maxTokens: parseInt(e.target.value) }))}
+                  className="glass-input w-full px-3 py-2 rounded-xl text-sm"
+                />
+              </div>
+
+              {/* Knowledge Context Info */}
+              {model.knowledge_context && (
+                <div className="border-t border-white/10 pt-6">
+                  <div className="flex items-center text-green-400 mb-2">
+                    <Database className="w-4 h-4 mr-2" />
+                    <span className="text-sm font-medium">Knowledge Base Active</span>
+                  </div>
+                  <p className="text-xs text-white/60">
+                    This GPT has enhanced knowledge context for more relevant responses.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>
       )}
 
-      {/* Messages - Scrollable container */}
-      <div className="flex-1 overflow-y-auto px-6 py-4">
-        <div className="max-w-4xl mx-auto space-y-6">
-          {messages.map((message) => (
-            <div key={message.id} className="flex items-start space-x-4">
-              {/* Avatar */}
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                message.role === 'user' ? 'bg-gray-600' : 'bg-gray-800'
-              }`}>
-                {message.role === 'user' ? (
-                  <UserIcon className="w-4 h-4 text-white" />
-                ) : (
-                  <Bot className="w-4 h-4 text-white" />
-                )}
+      {/* Chat Container - Right Major Column */}
+      <div className={`${showConfig ? 'lg:col-span-3' : 'lg:col-span-4'}`}>
+        <div className="glass-strong rounded-2xl grain-texture h-full flex flex-col">
+          {/* Header */}
+          <div className="flex items-center justify-between p-6 border-b border-white/10 flex-shrink-0">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 rounded-xl icon-bg-primary flex items-center justify-center glow-effect">
+                <Bot className="w-5 h-5 text-white" />
               </div>
+              <div>
+                <h3 className="font-semibold gradient-text">{model.title}</h3>
+                <p className="text-sm text-white/60">Interactive Chat</p>
+              </div>
+            </div>
 
-              {/* Message Content */}
-              <div className="flex-1 min-w-0">
-                <div className="text-gray-900">
-                  {message.role === 'user' ? (
-                    <p className="whitespace-pre-wrap break-words">{message.content}</p>
-                  ) : (
-                    <div className="prose prose-gray max-w-none">
-                      <ReactMarkdown 
-                        remarkPlugins={[remarkGfm]}
-                        components={{
-                          code: ({ node, inline, className, children, ...props }) => {
-                            return inline ? (
-                              <code className="bg-gray-100 px-1 py-0.5 rounded text-sm font-mono" {...props}>
-                                {children}
-                              </code>
-                            ) : (
-                              <pre className="bg-gray-100 p-3 rounded-md overflow-x-auto border">
-                                <code className="text-sm font-mono" {...props}>
-                                  {children}
-                                </code>
-                              </pre>
-                            );
-                          },
-                          blockquote: ({ children }) => (
-                            <blockquote className="border-l-4 border-gray-300 pl-4 italic text-gray-600">
-                              {children}
-                            </blockquote>
-                          ),
-                          table: ({ children }) => (
-                            <div className="overflow-x-auto">
-                              <table className="min-w-full border-collapse border border-gray-300">
-                                {children}
-                              </table>
-                            </div>
-                          ),
-                          th: ({ children }) => (
-                            <th className="border border-gray-300 px-3 py-2 bg-gray-50 font-medium text-left">
-                              {children}
-                            </th>
-                          ),
-                          td: ({ children }) => (
-                            <td className="border border-gray-300 px-3 py-2">
-                              {children}
-                            </td>
-                          ),
-                          ul: ({ children }) => (
-                            <ul className="list-disc list-inside space-y-1">
-                              {children}
-                            </ul>
-                          ),
-                          ol: ({ children }) => (
-                            <ol className="list-decimal list-inside space-y-1">
-                              {children}
-                            </ol>
-                          ),
-                          h1: ({ children }) => (
-                            <h1 className="text-xl font-bold text-gray-900 mb-3">
-                              {children}
-                            </h1>
-                          ),
-                          h2: ({ children }) => (
-                            <h2 className="text-lg font-bold text-gray-900 mb-2">
-                              {children}
-                            </h2>
-                          ),
-                          h3: ({ children }) => (
-                            <h3 className="text-base font-bold text-gray-900 mb-2">
-                              {children}
-                            </h3>
-                          ),
-                          p: ({ children }) => (
-                            <p className="mb-3 last:mb-0 break-words leading-relaxed">
-                              {children}
-                            </p>
-                          ),
-                          strong: ({ children }) => (
-                            <strong className="font-bold">
-                              {children}
-                            </strong>
-                          ),
-                          em: ({ children }) => (
-                            <em className="italic">
-                              {children}
-                            </em>
-                          ),
-                          hr: () => (
-                            <hr className="border-gray-300 my-4" />
-                          )
-                        }}
-                      >
-                        {message.content}
-                      </ReactMarkdown>
-                    </div>
-                  )}
+            <div className="flex items-center space-x-3">
+              <div className="hidden sm:flex items-center space-x-3">
+                <div className="flex items-center space-x-2 glass-subtle px-3 py-2 rounded-xl">
+                  <MessageSquare className="w-4 h-4 text-white/60" />
+                  <span className="text-sm text-white/80">{messages.filter(m => !m.isLoading).length} messages</span>
                 </div>
-
-                {/* Message Actions */}
-                {message.role === 'assistant' && (
-                  <div className="flex items-center mt-2 space-x-2">
-                    <button
-                      onClick={() => copyMessage(message.id, message.content)}
-                      className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors"
-                    >
-                      {copiedMessageId === message.id ? (
-                        <Check className="w-4 h-4 text-green-600" />
-                      ) : (
-                        <Copy className="w-4 h-4" />
-                      )}
-                    </button>
-                    <span className="text-xs text-gray-400">
-                      {message.timestamp.toLocaleTimeString()}
-                    </span>
+                
+                {model.knowledge_context && (
+                  <div className="flex items-center space-x-2 glass-subtle px-3 py-2 rounded-xl">
+                    <Database className="w-4 h-4 text-green-400" />
+                    <span className="text-sm text-green-400">KB Active</span>
                   </div>
                 )}
               </div>
+              
+              <button
+                onClick={resetConversation}
+                className="flex items-center px-3 py-2 glass-subtle rounded-xl hover:glass transition-all duration-300 text-white/80 hover:text-white"
+                title="Reset conversation"
+              >
+                <RotateCcw className="w-4 h-4 mr-2" />
+                <span className="hidden sm:inline">Reset</span>
+              </button>
+              
+              <button
+                onClick={() => setShowConfig(!showConfig)}
+                className={`flex items-center px-3 py-2 rounded-xl transition-all duration-300 ${
+                  showConfig ? 'button-primary' : 'glass-subtle hover:glass'
+                } text-white`}
+                title="Configure GPT"
+              >
+                <Settings className="w-4 h-4 mr-2" />
+                <span className="hidden sm:inline">Config</span>
+              </button>
             </div>
-          ))}
-
-          {/* Loading indicator */}
-          {isLoading && (
-            <div className="flex items-start space-x-4">
-              <div className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center">
-                <Bot className="w-4 h-4 text-white" />
-              </div>
-              <div className="flex-1">
-                <div className="flex space-x-1">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div ref={messagesEndRef} />
-        </div>
-      </div>
-
-      {/* Input Area - Fixed at bottom */}
-      <div className="border-t border-gray-200 bg-white px-6 py-4 flex-shrink-0">
-        <div className="max-w-4xl mx-auto">
-          <div className="relative">
-            <textarea
-              ref={inputRef}
-              value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder={`Message ${model.title}...`}
-              className="w-full resize-none border border-gray-300 rounded-lg px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent text-gray-900 placeholder-gray-500"
-              style={{ minHeight: '52px', maxHeight: '120px' }}
-              disabled={isLoading}
-              rows={1}
-            />
-            <button
-              onClick={handleSendMessage}
-              disabled={!inputMessage.trim() || isLoading}
-              className="absolute right-2 bottom-2 p-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              <Send className="w-4 h-4" />
-            </button>
           </div>
-          
-          <div className="flex items-center justify-center mt-2">
-            <p className="text-xs text-gray-500">
-              Press Enter to send, Shift+Enter for new line
-            </p>
+
+          {/* Messages - Scrollable container with card background */}
+          <div className="flex-1 overflow-y-auto p-6 bg-white/5 backdrop-blur-sm">
+            <div className="max-w-4xl mx-auto space-y-6">
+              {messages.map((message) => (
+                <div key={message.id} className="flex items-start space-x-4">
+                  {/* Avatar */}
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                    message.role === 'user' ? 'bg-white/10' : 'icon-bg-primary'
+                  }`}>
+                    {message.role === 'user' ? (
+                      <UserIcon className="w-4 h-4 text-white" />
+                    ) : (
+                      <Bot className="w-4 h-4 text-white" />
+                    )}
+                  </div>
+
+                  {/* Message Content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="text-white/90">
+                      {message.role === 'user' ? (
+                        <p className="whitespace-pre-wrap break-words">{message.content}</p>
+                      ) : (
+                        <div className="prose prose-invert prose-base max-w-none">
+                          <ReactMarkdown 
+                            remarkPlugins={[remarkGfm]}
+                            components={{
+                              code: ({ node, inline, className, children, ...props }) => {
+                                return inline ? (
+                                  <code className="bg-white/10 px-1 py-0.5 rounded text-sm font-mono" {...props}>
+                                    {children}
+                                  </code>
+                                ) : (
+                                  <pre className="bg-white/5 p-4 rounded-lg overflow-x-auto">
+                                    <code className="text-sm font-mono" {...props}>
+                                      {children}
+                                    </code>
+                                  </pre>
+                                );
+                              },
+                              blockquote: ({ children }) => (
+                                <blockquote className="border-l-4 border-purple-400 pl-4 italic text-white/80">
+                                  {children}
+                                </blockquote>
+                              ),
+                              table: ({ children }) => (
+                                <div className="overflow-x-auto">
+                                  <table className="min-w-full border-collapse border border-white/20">
+                                    {children}
+                                  </table>
+                                </div>
+                              ),
+                              th: ({ children }) => (
+                                <th className="border border-white/20 px-3 py-2 bg-white/10 font-semibold text-left">
+                                  {children}
+                                </th>
+                              ),
+                              td: ({ children }) => (
+                                <td className="border border-white/20 px-3 py-2">
+                                  {children}
+                                </td>
+                              ),
+                              ul: ({ children }) => (
+                                <ul className="list-disc list-inside space-y-2">
+                                  {children}
+                                </ul>
+                              ),
+                              ol: ({ children }) => (
+                                <ol className="list-decimal list-inside space-y-2">
+                                  {children}
+                                </ol>
+                              ),
+                              h1: ({ children }) => (
+                                <h1 className="text-xl font-bold gradient-text mb-3">
+                                  {children}
+                                </h1>
+                              ),
+                              h2: ({ children }) => (
+                                <h2 className="text-lg font-bold gradient-text mb-3">
+                                  {children}
+                                </h2>
+                              ),
+                              h3: ({ children }) => (
+                                <h3 className="text-base font-bold gradient-text mb-2">
+                                  {children}
+                                </h3>
+                              ),
+                              p: ({ children }) => (
+                                <p className="mb-3 last:mb-0 break-words leading-relaxed">
+                                  {children}
+                                </p>
+                              ),
+                              strong: ({ children }) => (
+                                <strong className="font-bold text-white">
+                                  {children}
+                                </strong>
+                              ),
+                              em: ({ children }) => (
+                                <em className="italic text-white/90">
+                                  {children}
+                                </em>
+                              ),
+                              hr: () => (
+                                <hr className="border-white/20 my-6" />
+                              )
+                            }}
+                          >
+                            {message.content}
+                          </ReactMarkdown>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Message Actions */}
+                    {message.role === 'assistant' && (
+                      <div className="flex items-center mt-2 space-x-2">
+                        <button
+                          onClick={() => copyMessage(message.id, message.content)}
+                          className="p-1 text-white/40 hover:text-white/60 hover:bg-white/10 rounded transition-colors"
+                        >
+                          {copiedMessageId === message.id ? (
+                            <Check className="w-4 h-4 text-green-400" />
+                          ) : (
+                            <Copy className="w-4 h-4" />
+                          )}
+                        </button>
+                        <span className="text-xs text-white/40">
+                          {message.timestamp.toLocaleTimeString()}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+
+              {/* Loading indicator */}
+              {isLoading && (
+                <div className="flex items-start space-x-4">
+                  <div className="w-8 h-8 rounded-full icon-bg-primary flex items-center justify-center">
+                    <Bot className="w-4 h-4 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                      <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div ref={messagesEndRef} />
+            </div>
+          </div>
+
+          {/* Input Area - Fixed at bottom with card background */}
+          <div className="border-t border-white/10 bg-white/5 backdrop-blur-sm p-6 flex-shrink-0">
+            <div className="max-w-4xl mx-auto">
+              <div className="relative">
+                <textarea
+                  ref={inputRef}
+                  value={inputMessage}
+                  onChange={(e) => setInputMessage(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder={`Message ${model.title}...`}
+                  className="w-full resize-none glass-input rounded-lg px-4 py-3 pr-12 focus:ring-2 focus:ring-purple-500 text-white placeholder-white/50"
+                  style={{ minHeight: '52px', maxHeight: '120px' }}
+                  disabled={isLoading}
+                  rows={1}
+                />
+                <button
+                  onClick={handleSendMessage}
+                  disabled={!inputMessage.trim() || isLoading}
+                  className="absolute right-2 bottom-2 p-2 button-primary rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
+                >
+                  <Send className="w-4 h-4" />
+                </button>
+              </div>
+              
+              <div className="flex items-center justify-center mt-2">
+                <p className="text-xs text-white/50">
+                  Press Enter to send, Shift+Enter for new line
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
