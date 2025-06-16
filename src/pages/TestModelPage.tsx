@@ -16,9 +16,11 @@ import {
   MessageSquare,
   Bot,
   User as UserIcon,
-  Sparkles
+  Sparkles,
+  Zap
 } from 'lucide-react';
 import { useScrollReveal } from '../hooks/useScrollReveal';
+import { MockModelManager, PREDEFINED_MODELS, type ModelDefinition } from '../lib/gemini';
 
 interface Message {
   id: string;
@@ -31,7 +33,6 @@ interface ModelConfig {
   temperature: number;
   topP: number;
   maxTokens: number;
-  systemPrompt: string;
 }
 
 interface PublicationData {
@@ -58,6 +59,13 @@ export function TestModelPage() {
   const navigate = useNavigate();
   useScrollReveal();
 
+  // Model management
+  const [modelManager] = useState(() => new MockModelManager());
+  const [selectedModelId, setSelectedModelId] = useState('general-assistant');
+  const [selectedModel, setSelectedModel] = useState<ModelDefinition | undefined>(
+    () => PREDEFINED_MODELS.find(m => m.id === 'general-assistant')
+  );
+
   // Chat state
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('');
@@ -68,8 +76,7 @@ export function TestModelPage() {
   const [config, setConfig] = useState<ModelConfig>({
     temperature: 0.7,
     topP: 0.9,
-    maxTokens: 1024,
-    systemPrompt: 'You are a helpful AI assistant.'
+    maxTokens: 1024
   });
 
   // Knowledge enhancement state
@@ -80,6 +87,7 @@ export function TestModelPage() {
   // UI state
   const [showConfig, setShowConfig] = useState(false);
   const [showPublish, setShowPublish] = useState(false);
+  const [showModelSelector, setShowModelSelector] = useState(false);
 
   // Publication state
   const [publicationData, setPublicationData] = useState<PublicationData>({
@@ -93,11 +101,27 @@ export function TestModelPage() {
   const [newTag, setNewTag] = useState('');
   const [publishing, setPublishing] = useState(false);
 
+  // Update config when model changes
+  useEffect(() => {
+    const model = modelManager.getModel(selectedModelId);
+    if (model) {
+      setSelectedModel(model);
+      setConfig(model.defaultConfig);
+    }
+  }, [selectedModelId, modelManager]);
+
   useEffect(() => {
     // Estimate token count (rough approximation)
     const totalText = messages.map(m => m.content).join(' ') + inputMessage;
     setTokenCount(Math.ceil(totalText.length / 4));
   }, [messages, inputMessage]);
+
+  const handleModelChange = (modelId: string) => {
+    setSelectedModelId(modelId);
+    setShowModelSelector(false);
+    // Reset conversation when switching models
+    setMessages([]);
+  };
 
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;
@@ -114,14 +138,27 @@ export function TestModelPage() {
     setIsLoading(true);
 
     try {
-      // Simulate API call to Gemini 1.5 Flash
-      // In a real implementation, this would call your Supabase Edge Function
-      await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
+      // Prepare knowledge context
+      let knowledgeContext = '';
+      if (knowledgeText.trim()) {
+        knowledgeContext += knowledgeText.trim();
+      }
+      if (uploadedFiles.length > 0) {
+        knowledgeContext += '\n\nUploaded files: ' + uploadedFiles.map(f => f.name).join(', ');
+      }
+
+      // Generate response using the selected model
+      const response = await modelManager.generateResponse(
+        selectedModelId,
+        [...messages, userMessage],
+        config,
+        knowledgeContext.trim() || undefined
+      );
       
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: generateMockResponse(userMessage.content),
+        content: response,
         timestamp: new Date()
       };
 
@@ -138,21 +175,6 @@ export function TestModelPage() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const generateMockResponse = (userInput: string): string => {
-    const responses = [
-      "I understand your question. Based on the context and configuration, here's my response...",
-      "That's an interesting point. Let me provide you with a detailed explanation...",
-      "I can help you with that. Here's what I think about your query...",
-      "Thank you for your question. Based on my training and the system prompt, I would say...",
-      "I appreciate you asking. Let me break this down for you step by step..."
-    ];
-    
-    const baseResponse = responses[Math.floor(Math.random() * responses.length)];
-    const elaboration = ` This response is generated using the current model configuration with temperature ${config.temperature}, top-p ${config.topP}, and considering the system prompt: "${config.systemPrompt.substring(0, 50)}..."`;
-    
-    return baseResponse + elaboration;
   };
 
   const resetConversation = () => {
@@ -280,17 +302,31 @@ export function TestModelPage() {
                     <h3 className="text-lg font-semibold gradient-text">Configuration</h3>
                     <button
                       onClick={() => {
-                        setConfig({
-                          temperature: 0.7,
-                          topP: 0.9,
-                          maxTokens: 1024,
-                          systemPrompt: 'You are a helpful AI assistant.'
-                        });
+                        if (selectedModel) {
+                          setConfig(selectedModel.defaultConfig);
+                        }
                       }}
                       className="text-sm text-white/60 hover:text-white transition-colors"
                     >
                       Reset to Defaults
                     </button>
+                  </div>
+
+                  {/* Model Selection */}
+                  <div>
+                    <label className="block text-sm font-medium text-white/80 mb-2">
+                      AI Model
+                    </label>
+                    <button
+                      onClick={() => setShowModelSelector(true)}
+                      className="w-full glass-input px-3 py-2 rounded-xl text-left flex items-center justify-between"
+                    >
+                      <span>{selectedModel?.name || 'Select Model'}</span>
+                      <Zap className="w-4 h-4 text-white/50" />
+                    </button>
+                    {selectedModel && (
+                      <p className="text-xs text-white/60 mt-1">{selectedModel.description}</p>
+                    )}
                   </div>
 
                   {/* Temperature */}
@@ -341,24 +377,6 @@ export function TestModelPage() {
                       value={config.maxTokens}
                       onChange={(e) => setConfig(prev => ({ ...prev, maxTokens: parseInt(e.target.value) }))}
                       className="glass-input w-full px-3 py-2 rounded-xl"
-                    />
-                  </div>
-
-                  {/* System Prompt */}
-                  <div>
-                    <label className="block text-sm font-medium text-white/80 mb-2">
-                      System Prompt ({config.systemPrompt.length}/1000)
-                    </label>
-                    <textarea
-                      value={config.systemPrompt}
-                      onChange={(e) => {
-                        if (e.target.value.length <= 1000) {
-                          setConfig(prev => ({ ...prev, systemPrompt: e.target.value }));
-                        }
-                      }}
-                      rows={4}
-                      className="glass-input w-full px-3 py-2 rounded-xl resize-none"
-                      placeholder="Define how the AI should behave..."
                     />
                   </div>
 
@@ -430,7 +448,7 @@ export function TestModelPage() {
             {/* Chat Interface */}
             <div className={`${showConfig ? 'lg:col-span-3' : 'lg:col-span-4'}`}>
               <div className="glass-strong rounded-2xl overflow-hidden grain-texture h-full flex flex-col">
-                {/* Integrated Header - Now part of chat interface */}
+                {/* Integrated Header */}
                 <div className="flex items-center justify-between p-6 border-b border-white/10 flex-shrink-0">
                   {/* Left side - AI Assistant info */}
                   <div className="flex items-center">
@@ -438,7 +456,7 @@ export function TestModelPage() {
                       <Sparkles className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <h3 className="font-semibold gradient-text">AI Model Tester</h3>
+                      <h3 className="font-semibold gradient-text">{selectedModel?.name || 'AI Model Tester'}</h3>
                       <p className="text-sm text-white/60">Powered by Gemini 1.5 Flash</p>
                     </div>
                   </div>
@@ -506,7 +524,9 @@ export function TestModelPage() {
                     <div className="text-center py-12">
                       <MessageSquare className="w-12 h-12 mx-auto mb-4 text-white/30" />
                       <p className="text-white/60">Start a conversation to test your AI model</p>
-                      <p className="text-white/40 text-sm mt-2">Configure your model settings and begin testing</p>
+                      <p className="text-white/40 text-sm mt-2">
+                        Currently using: <span className="text-purple-400">{selectedModel?.name}</span>
+                      </p>
                     </div>
                   ) : (
                     messages.map((message) => (
@@ -585,6 +605,52 @@ export function TestModelPage() {
           </div>
         </div>
       </div>
+
+      {/* Model Selector Modal */}
+      {showModelSelector && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="glass-strong rounded-2xl p-6 w-full max-w-4xl max-h-[80vh] overflow-y-auto grain-texture">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold gradient-text">Select AI Model</h2>
+              <button
+                onClick={() => setShowModelSelector(false)}
+                className="text-white/60 hover:text-white transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {PREDEFINED_MODELS.map((model) => (
+                <button
+                  key={model.id}
+                  onClick={() => handleModelChange(model.id)}
+                  className={`text-left p-4 rounded-xl transition-all duration-300 ${
+                    selectedModelId === model.id
+                      ? 'button-primary text-white'
+                      : 'glass-subtle hover:glass text-white/90'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-semibold">{model.name}</h3>
+                    <span className="text-xs px-2 py-1 rounded-full glass-subtle">
+                      {model.category}
+                    </span>
+                  </div>
+                  <p className="text-sm opacity-80 mb-3">{model.description}</p>
+                  <div className="flex flex-wrap gap-1">
+                    {model.tags.slice(0, 3).map((tag, index) => (
+                      <span key={index} className="text-xs px-2 py-1 rounded-full glass-subtle opacity-60">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Publish Modal */}
       {showPublish && (

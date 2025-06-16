@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Search, Shield, TrendingUp, Users, Star, Sparkles, Zap, Brain, TestTube } from 'lucide-react';
 import { useScrollReveal } from '../hooks/useScrollReveal';
+import { PREDEFINED_MODELS } from '../lib/gemini';
 
 interface FeaturedModel {
   id: string;
@@ -9,7 +10,7 @@ interface FeaturedModel {
   description: string;
   model_type: string;
   framework: string;
-  accuracy: number;
+  accuracy?: number;
   download_count: number;
   is_verified: boolean;
   uploader: {
@@ -17,75 +18,18 @@ interface FeaturedModel {
   };
 }
 
-// Featured models for demonstration
-const FEATURED_MODELS: FeaturedModel[] = [
-  {
-    id: '1',
-    title: 'Advanced Image Classifier',
-    description: 'A state-of-the-art image classification model trained on ImageNet with 95% accuracy.',
-    model_type: 'Computer Vision',
-    framework: 'TensorFlow',
-    accuracy: 95.2,
-    download_count: 1250,
-    is_verified: true,
-    uploader: { display_name: 'AI Researcher' }
-  },
-  {
-    id: '2',
-    title: 'Sentiment Analysis BERT',
-    description: 'Fine-tuned BERT model for sentiment analysis on social media text.',
-    model_type: 'Natural Language Processing',
-    framework: 'PyTorch',
-    accuracy: 92.8,
-    download_count: 890,
-    is_verified: true,
-    uploader: { display_name: 'NLP Expert' }
-  },
-  {
-    id: '3',
-    title: 'Speech Recognition Model',
-    description: 'Real-time speech recognition model optimized for mobile devices.',
-    model_type: 'Speech',
-    framework: 'TensorFlow.js',
-    accuracy: 88.5,
-    download_count: 567,
-    is_verified: false,
-    uploader: { display_name: 'Mobile Dev' }
-  },
-  {
-    id: '4',
-    title: 'Object Detection YOLO',
-    description: 'Fast and accurate object detection model for real-time applications.',
-    model_type: 'Computer Vision',
-    framework: 'PyTorch',
-    accuracy: 89.3,
-    download_count: 743,
-    is_verified: true,
-    uploader: { display_name: 'Vision Expert' }
-  },
-  {
-    id: '5',
-    title: 'Text Summarization Model',
-    description: 'Transformer-based model for automatic text summarization.',
-    model_type: 'Natural Language Processing',
-    framework: 'TensorFlow',
-    accuracy: 91.7,
-    download_count: 456,
-    is_verified: true,
-    uploader: { display_name: 'NLP Researcher' }
-  },
-  {
-    id: '6',
-    title: 'Recommendation Engine',
-    description: 'Collaborative filtering model for personalized recommendations.',
-    model_type: 'Reinforcement Learning',
-    framework: 'Scikit-learn',
-    accuracy: 87.2,
-    download_count: 321,
-    is_verified: false,
-    uploader: { display_name: 'ML Engineer' }
-  }
-];
+// Convert predefined models to featured models format
+const FEATURED_MODELS: FeaturedModel[] = PREDEFINED_MODELS.map((model, index) => ({
+  id: model.id,
+  title: model.name,
+  description: model.description,
+  model_type: model.category,
+  framework: 'Gemini 1.5 Flash',
+  accuracy: 85 + Math.floor(Math.random() * 15), // Random accuracy between 85-99%
+  download_count: Math.floor(Math.random() * 1000) + 100,
+  is_verified: true,
+  uploader: { display_name: 'AI Model Hub' }
+}));
 
 export function HomePage() {
   const [featuredModels, setFeaturedModels] = useState<FeaturedModel[]>([]);
@@ -104,7 +48,7 @@ export function HomePage() {
 
   const fetchFeaturedModels = async () => {
     // Show featured models
-    setFeaturedModels(FEATURED_MODELS);
+    setFeaturedModels(FEATURED_MODELS.slice(0, 6));
   };
 
   const fetchStats = async () => {

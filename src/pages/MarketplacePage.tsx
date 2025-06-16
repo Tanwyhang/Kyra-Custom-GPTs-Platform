@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, Filter, Download, Shield, Star, Calendar } from 'lucide-react';
 import { useScrollReveal } from '../hooks/useScrollReveal';
+import { PREDEFINED_MODELS } from '../lib/gemini';
 
 interface Model {
   id: string;
@@ -19,13 +20,27 @@ interface Model {
   };
 }
 
-const MODEL_TYPES = ['Computer Vision', 'Natural Language Processing', 'Speech', 'Reinforcement Learning', 'Other'];
-const FRAMEWORKS = ['TensorFlow', 'PyTorch', 'Keras', 'Scikit-learn', 'ONNX', 'TensorFlow.js', 'Other'];
+const MODEL_TYPES = ['Conversational AI', 'Content Generation', 'Code Assistant', 'Educational', 'Creative Writing', 'Business Assistant', 'Technical Support', 'Other'];
+const FRAMEWORKS = ['Gemini 1.5 Flash', 'TensorFlow', 'PyTorch', 'Keras', 'Scikit-learn', 'ONNX', 'TensorFlow.js', 'Other'];
 
-// Comprehensive model data for demonstration
+// Convert predefined models to marketplace format with additional models
 const MARKETPLACE_MODELS: Model[] = [
+  ...PREDEFINED_MODELS.map((model, index) => ({
+    id: model.id,
+    title: model.name,
+    description: model.description,
+    model_type: model.category,
+    framework: 'Gemini 1.5 Flash',
+    tags: model.tags,
+    accuracy: 85 + Math.floor(Math.random() * 15), // Random accuracy between 85-99%
+    download_count: Math.floor(Math.random() * 1000) + 100,
+    is_verified: true,
+    created_at: new Date(Date.now() - Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000).toISOString(),
+    uploader: { display_name: 'AI Model Hub' }
+  })),
+  // Additional community models
   {
-    id: '1',
+    id: 'community-1',
     title: 'Advanced Image Classifier',
     description: 'A state-of-the-art image classification model trained on ImageNet with 95% accuracy.',
     model_type: 'Computer Vision',
@@ -38,7 +53,7 @@ const MARKETPLACE_MODELS: Model[] = [
     uploader: { display_name: 'AI Researcher' }
   },
   {
-    id: '2',
+    id: 'community-2',
     title: 'Sentiment Analysis BERT',
     description: 'Fine-tuned BERT model for sentiment analysis on social media text.',
     model_type: 'Natural Language Processing',
@@ -51,7 +66,7 @@ const MARKETPLACE_MODELS: Model[] = [
     uploader: { display_name: 'NLP Expert' }
   },
   {
-    id: '3',
+    id: 'community-3',
     title: 'Speech Recognition Model',
     description: 'Real-time speech recognition model optimized for mobile devices.',
     model_type: 'Speech',
@@ -62,123 +77,6 @@ const MARKETPLACE_MODELS: Model[] = [
     is_verified: false,
     created_at: '2024-01-08T09:15:00Z',
     uploader: { display_name: 'Mobile Dev' }
-  },
-  {
-    id: '4',
-    title: 'Object Detection YOLO',
-    description: 'Fast and accurate object detection model for real-time applications.',
-    model_type: 'Computer Vision',
-    framework: 'PyTorch',
-    tags: ['object-detection', 'yolo', 'real-time'],
-    accuracy: 89.3,
-    download_count: 743,
-    is_verified: true,
-    created_at: '2024-01-12T16:45:00Z',
-    uploader: { display_name: 'Vision Expert' }
-  },
-  {
-    id: '5',
-    title: 'Text Summarization Model',
-    description: 'Transformer-based model for automatic text summarization.',
-    model_type: 'Natural Language Processing',
-    framework: 'TensorFlow',
-    tags: ['text-summarization', 'transformer', 'nlp'],
-    accuracy: 91.7,
-    download_count: 456,
-    is_verified: true,
-    created_at: '2024-01-05T11:30:00Z',
-    uploader: { display_name: 'NLP Researcher' }
-  },
-  {
-    id: '6',
-    title: 'Recommendation Engine',
-    description: 'Collaborative filtering model for personalized recommendations.',
-    model_type: 'Reinforcement Learning',
-    framework: 'Scikit-learn',
-    tags: ['recommendation', 'collaborative-filtering', 'ml'],
-    accuracy: 87.2,
-    download_count: 321,
-    is_verified: false,
-    created_at: '2024-01-03T13:20:00Z',
-    uploader: { display_name: 'ML Engineer' }
-  },
-  {
-    id: '7',
-    title: 'Face Recognition CNN',
-    description: 'Convolutional neural network for accurate face recognition and verification.',
-    model_type: 'Computer Vision',
-    framework: 'Keras',
-    tags: ['face-recognition', 'cnn', 'biometrics'],
-    accuracy: 96.8,
-    download_count: 1089,
-    is_verified: true,
-    created_at: '2024-01-18T08:15:00Z',
-    uploader: { display_name: 'Computer Vision Lab' }
-  },
-  {
-    id: '8',
-    title: 'Language Translation Model',
-    description: 'Neural machine translation model supporting 50+ languages.',
-    model_type: 'Natural Language Processing',
-    framework: 'TensorFlow',
-    tags: ['translation', 'multilingual', 'seq2seq'],
-    accuracy: 94.1,
-    download_count: 678,
-    is_verified: true,
-    created_at: '2024-01-20T14:30:00Z',
-    uploader: { display_name: 'Translation Team' }
-  },
-  {
-    id: '9',
-    title: 'Anomaly Detection Model',
-    description: 'Unsupervised learning model for detecting anomalies in time series data.',
-    model_type: 'Other',
-    framework: 'Scikit-learn',
-    tags: ['anomaly-detection', 'time-series', 'unsupervised'],
-    accuracy: 85.6,
-    download_count: 234,
-    is_verified: false,
-    created_at: '2024-01-22T10:45:00Z',
-    uploader: { display_name: 'Data Scientist' }
-  },
-  {
-    id: '10',
-    title: 'Chatbot Intent Classifier',
-    description: 'Intent classification model for chatbot applications.',
-    model_type: 'Natural Language Processing',
-    framework: 'PyTorch',
-    tags: ['intent-classification', 'chatbot', 'nlp'],
-    accuracy: 93.4,
-    download_count: 512,
-    is_verified: true,
-    created_at: '2024-01-25T09:20:00Z',
-    uploader: { display_name: 'Conversational AI' }
-  },
-  {
-    id: '11',
-    title: 'Medical Image Segmentation',
-    description: 'U-Net model for medical image segmentation tasks.',
-    model_type: 'Computer Vision',
-    framework: 'TensorFlow',
-    tags: ['medical-imaging', 'segmentation', 'unet'],
-    accuracy: 91.9,
-    download_count: 387,
-    is_verified: true,
-    created_at: '2024-01-28T15:10:00Z',
-    uploader: { display_name: 'Medical AI Lab' }
-  },
-  {
-    id: '12',
-    title: 'Stock Price Predictor',
-    description: 'LSTM model for predicting stock price movements.',
-    model_type: 'Other',
-    framework: 'Keras',
-    tags: ['stock-prediction', 'lstm', 'finance'],
-    accuracy: 78.3,
-    download_count: 445,
-    is_verified: false,
-    created_at: '2024-01-30T12:00:00Z',
-    uploader: { display_name: 'FinTech Developer' }
   }
 ];
 
@@ -264,7 +162,7 @@ export function MarketplacePage() {
         <div className="mb-8">
           <h1 className="scroll-reveal text-3xl font-bold gradient-text mb-4">AI Model Marketplace</h1>
           <p className="scroll-reveal text-lg text-white/70">
-            Discover and download AI models from the community
+            Discover and test AI models from the community
           </p>
         </div>
 
