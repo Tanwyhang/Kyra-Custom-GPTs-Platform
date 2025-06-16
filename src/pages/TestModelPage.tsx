@@ -19,7 +19,9 @@ import {
   Sparkles,
   Zap,
   BookOpen,
-  Database
+  Database,
+  Check,
+  RotateCcw as Reset
 } from 'lucide-react';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import { MockModelManager, PREDEFINED_MODELS, type ModelDefinition } from '../lib/gemini';
@@ -74,24 +76,38 @@ export function TestModelPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [tokenCount, setTokenCount] = useState(0);
 
-  // Configuration state
+  // Configuration state with original values for cancel functionality
   const [config, setConfig] = useState<ModelConfig>({
     temperature: 0.7,
     topP: 0.9,
     maxTokens: 1024
   });
+  const [originalConfig, setOriginalConfig] = useState<ModelConfig>({
+    temperature: 0.7,
+    topP: 0.9,
+    maxTokens: 1024
+  });
 
-  // Enhanced knowledge enhancement state
+  // Enhanced knowledge enhancement state with original values
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [knowledgeText, setKnowledgeText] = useState('');
   const [knowledgeTitle, setKnowledgeTitle] = useState('');
   const [knowledgeDescription, setKnowledgeDescription] = useState('');
   const [dragActive, setDragActive] = useState(false);
 
+  // Original knowledge state for cancel functionality
+  const [originalKnowledge, setOriginalKnowledge] = useState({
+    files: [] as File[],
+    text: '',
+    title: '',
+    description: ''
+  });
+
   // UI state
   const [showConfig, setShowConfig] = useState(false);
   const [showPublish, setShowPublish] = useState(false);
   const [showModelSelector, setShowModelSelector] = useState(false);
+  const [configChanged, setConfigChanged] = useState(false);
 
   // Publication state
   const [publicationData, setPublicationData] = useState<PublicationData>({
@@ -110,9 +126,26 @@ export function TestModelPage() {
     const model = modelManager.getModel(selectedModelId);
     if (model) {
       setSelectedModel(model);
-      setConfig(model.defaultConfig);
+      const newConfig = model.defaultConfig;
+      setConfig(newConfig);
+      setOriginalConfig(newConfig);
     }
   }, [selectedModelId, modelManager]);
+
+  // Check if configuration has changed
+  useEffect(() => {
+    const hasConfigChanged = 
+      config.temperature !== originalConfig.temperature ||
+      config.topP !== originalConfig.topP ||
+      config.maxTokens !== originalConfig.maxTokens ||
+      knowledgeText !== originalKnowledge.text ||
+      knowledgeTitle !== originalKnowledge.title ||
+      knowledgeDescription !== originalKnowledge.description ||
+      uploadedFiles.length !== originalKnowledge.files.length ||
+      uploadedFiles.some((file, index) => file.name !== originalKnowledge.files[index]?.name);
+    
+    setConfigChanged(hasConfigChanged);
+  }, [config, originalConfig, knowledgeText, knowledgeTitle, knowledgeDescription, uploadedFiles, originalKnowledge]);
 
   useEffect(() => {
     // Estimate token count (rough approximation)
@@ -231,6 +264,37 @@ export function TestModelPage() {
     handleFileUpload(e.dataTransfer.files);
   };
 
+  // Configuration save/cancel handlers
+  const handleSaveConfig = () => {
+    setOriginalConfig({ ...config });
+    setOriginalKnowledge({
+      files: [...uploadedFiles],
+      text: knowledgeText,
+      title: knowledgeTitle,
+      description: knowledgeDescription
+    });
+    setConfigChanged(false);
+  };
+
+  const handleCancelConfig = () => {
+    setConfig({ ...originalConfig });
+    setKnowledgeText(originalKnowledge.text);
+    setKnowledgeTitle(originalKnowledge.title);
+    setKnowledgeDescription(originalKnowledge.description);
+    setUploadedFiles([...originalKnowledge.files]);
+    setConfigChanged(false);
+  };
+
+  const handleResetToDefaults = () => {
+    if (selectedModel) {
+      setConfig(selectedModel.defaultConfig);
+      setKnowledgeText('');
+      setKnowledgeTitle('');
+      setKnowledgeDescription('');
+      setUploadedFiles([]);
+    }
+  };
+
   const addTag = () => {
     if (newTag.trim() && publicationData.tags.length < 5 && !publicationData.tags.includes(newTag.trim())) {
       setPublicationData(prev => ({
@@ -309,212 +373,240 @@ export function TestModelPage() {
       {/* Main Content - Fills remaining space below navbar */}
       <div className="flex-1 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 h-full py-6">
-            {/* Enhanced Configuration Panel */}
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-full py-6">
+            {/* Optimized Configuration Panel */}
             {showConfig && (
               <div className="lg:col-span-1">
-                <div className="glass-strong rounded-2xl p-6 grain-texture space-y-6 h-full overflow-y-auto">
-                  <div className="flex items-center justify-between">
+                <div className="glass-strong rounded-2xl grain-texture h-full flex flex-col">
+                  {/* Configuration Header */}
+                  <div className="flex items-center justify-between p-4 border-b border-white/10 flex-shrink-0">
                     <h3 className="text-lg font-semibold gradient-text">Configuration</h3>
                     <button
-                      onClick={() => {
-                        if (selectedModel) {
-                          setConfig(selectedModel.defaultConfig);
-                        }
-                      }}
-                      className="text-sm text-white/60 hover:text-white transition-colors"
+                      onClick={handleResetToDefaults}
+                      className="text-sm text-white/60 hover:text-white transition-colors flex items-center"
+                      title="Reset to model defaults"
                     >
-                      Reset to Defaults
+                      <Reset className="w-4 h-4 mr-1" />
+                      Reset
                     </button>
                   </div>
 
-                  {/* Model Selection */}
-                  <div>
-                    <label className="block text-sm font-medium text-white/80 mb-2">
-                      AI Model
-                    </label>
-                    <button
-                      onClick={() => setShowModelSelector(true)}
-                      className="w-full glass-input px-3 py-2 rounded-xl text-left flex items-center justify-between"
-                    >
-                      <span>{selectedModel?.name || 'Select Model'}</span>
-                      <Zap className="w-4 h-4 text-white/50" />
-                    </button>
-                    {selectedModel && (
-                      <p className="text-xs text-white/60 mt-1">{selectedModel.description}</p>
-                    )}
-                  </div>
-
-                  {/* Temperature */}
-                  <div>
-                    <label className="block text-sm font-medium text-white/80 mb-2">
-                      Temperature: {config.temperature}
-                    </label>
-                    <input
-                      type="range"
-                      min="0"
-                      max="1"
-                      step="0.1"
-                      value={config.temperature}
-                      onChange={(e) => setConfig(prev => ({ ...prev, temperature: parseFloat(e.target.value) }))}
-                      className="w-full"
-                    />
-                    <div className="flex justify-between text-xs text-white/50 mt-1">
-                      <span>Focused</span>
-                      <span>Creative</span>
-                    </div>
-                  </div>
-
-                  {/* Top-p */}
-                  <div>
-                    <label className="block text-sm font-medium text-white/80 mb-2">
-                      Top-p: {config.topP}
-                    </label>
-                    <input
-                      type="range"
-                      min="0"
-                      max="1"
-                      step="0.1"
-                      value={config.topP}
-                      onChange={(e) => setConfig(prev => ({ ...prev, topP: parseFloat(e.target.value) }))}
-                      className="w-full"
-                    />
-                  </div>
-
-                  {/* Max Tokens */}
-                  <div>
-                    <label className="block text-sm font-medium text-white/80 mb-2">
-                      Max Tokens
-                    </label>
-                    <input
-                      type="number"
-                      min="1"
-                      max="4096"
-                      value={config.maxTokens}
-                      onChange={(e) => setConfig(prev => ({ ...prev, maxTokens: parseInt(e.target.value) }))}
-                      className="glass-input w-full px-3 py-2 rounded-xl"
-                    />
-                  </div>
-
-                  {/* Enhanced Knowledge Enhancement */}
-                  <div className="border-t border-white/10 pt-6">
-                    <div className="flex items-center mb-4">
-                      <Database className="w-5 h-5 mr-2 text-white/80" />
-                      <h4 className="text-sm font-semibold text-white/80">Knowledge Base</h4>
-                    </div>
-                    
-                    {/* Knowledge Base Title */}
-                    <div className="mb-4">
-                      <label className="block text-sm font-medium text-white/70 mb-2">
-                        Knowledge Base Title
+                  {/* Scrollable Content */}
+                  <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                    {/* Model Selection */}
+                    <div>
+                      <label className="block text-sm font-medium text-white/80 mb-2">
+                        AI Model
                       </label>
-                      <input
-                        type="text"
-                        value={knowledgeTitle}
-                        onChange={(e) => setKnowledgeTitle(e.target.value)}
-                        className="glass-input w-full px-3 py-2 rounded-xl"
-                        placeholder="e.g., Company Documentation, Product Manual"
-                      />
+                      <button
+                        onClick={() => setShowModelSelector(true)}
+                        className="w-full glass-input px-3 py-2 rounded-xl text-left flex items-center justify-between text-sm"
+                      >
+                        <span className="truncate">{selectedModel?.name || 'Select Model'}</span>
+                        <Zap className="w-4 h-4 text-white/50 flex-shrink-0" />
+                      </button>
+                      {selectedModel && (
+                        <p className="text-xs text-white/60 mt-1 line-clamp-2">{selectedModel.description}</p>
+                      )}
                     </div>
 
-                    {/* Knowledge Base Description */}
-                    <div className="mb-4">
-                      <label className="block text-sm font-medium text-white/70 mb-2">
-                        Description
-                      </label>
-                      <textarea
-                        value={knowledgeDescription}
-                        onChange={(e) => setKnowledgeDescription(e.target.value)}
-                        rows={2}
-                        className="glass-input w-full px-3 py-2 rounded-xl resize-none"
-                        placeholder="Brief description of the knowledge base content"
-                      />
+                    {/* Model Parameters */}
+                    <div className="space-y-4">
+                      <h4 className="text-sm font-semibold text-white/80 border-b border-white/10 pb-2">
+                        Model Parameters
+                      </h4>
+                      
+                      {/* Temperature */}
+                      <div>
+                        <label className="block text-sm font-medium text-white/80 mb-2">
+                          Temperature: {config.temperature}
+                        </label>
+                        <input
+                          type="range"
+                          min="0"
+                          max="1"
+                          step="0.1"
+                          value={config.temperature}
+                          onChange={(e) => setConfig(prev => ({ ...prev, temperature: parseFloat(e.target.value) }))}
+                          className="w-full"
+                        />
+                        <div className="flex justify-between text-xs text-white/50 mt-1">
+                          <span>Focused</span>
+                          <span>Creative</span>
+                        </div>
+                      </div>
+
+                      {/* Top-p */}
+                      <div>
+                        <label className="block text-sm font-medium text-white/80 mb-2">
+                          Top-p: {config.topP}
+                        </label>
+                        <input
+                          type="range"
+                          min="0"
+                          max="1"
+                          step="0.1"
+                          value={config.topP}
+                          onChange={(e) => setConfig(prev => ({ ...prev, topP: parseFloat(e.target.value) }))}
+                          className="w-full"
+                        />
+                      </div>
+
+                      {/* Max Tokens */}
+                      <div>
+                        <label className="block text-sm font-medium text-white/80 mb-2">
+                          Max Tokens
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="4096"
+                          value={config.maxTokens}
+                          onChange={(e) => setConfig(prev => ({ ...prev, maxTokens: parseInt(e.target.value) }))}
+                          className="glass-input w-full px-3 py-2 rounded-xl text-sm"
+                        />
+                      </div>
                     </div>
 
-                    {/* Knowledge Text Content */}
-                    <div className="mb-4">
-                      <label className="block text-sm font-medium text-white/70 mb-2">
-                        Knowledge Content ({knowledgeText.length}/10,000 characters)
-                      </label>
-                      <textarea
-                        value={knowledgeText}
-                        onChange={(e) => {
-                          if (e.target.value.length <= 10000) {
-                            setKnowledgeText(e.target.value);
-                          }
-                        }}
-                        rows={6}
-                        className="glass-input w-full px-3 py-2 rounded-xl resize-none"
-                        placeholder="Paste your knowledge base content here. This will be used to enhance the AI's responses with your specific information..."
-                      />
-                      <p className="text-xs text-white/50 mt-1">
-                        Add specific information, documentation, or context that you want the AI to reference
-                      </p>
-                    </div>
-                    
-                    {/* File Upload */}
-                    <div
-                      className={`border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-colors mb-4 ${
-                        dragActive ? 'border-purple-400 bg-purple-400/10' : 'border-white/20 hover:border-white/30'
-                      }`}
-                      onDragEnter={handleDrag}
-                      onDragLeave={handleDrag}
-                      onDragOver={handleDrag}
-                      onDrop={handleDrop}
-                      onClick={() => document.getElementById('knowledge-files')?.click()}
-                    >
-                      <input
-                        id="knowledge-files"
-                        type="file"
-                        multiple
-                        accept=".pdf,.txt,.csv"
-                        onChange={(e) => handleFileUpload(e.target.files)}
-                        className="hidden"
-                      />
-                      <Upload className="w-6 h-6 mx-auto mb-2 text-white/50" />
-                      <p className="text-sm text-white/70">
-                        Drop files or click to upload
-                      </p>
-                      <p className="text-xs text-white/50 mt-1">
-                        PDF, TXT, CSV (max 10 files, 50MB each)
-                      </p>
-                    </div>
+                    {/* Knowledge Base Section */}
+                    <div className="space-y-4">
+                      <div className="flex items-center border-b border-white/10 pb-2">
+                        <Database className="w-4 h-4 mr-2 text-white/80" />
+                        <h4 className="text-sm font-semibold text-white/80">Knowledge Base</h4>
+                      </div>
+                      
+                      {/* Knowledge Base Title */}
+                      <div>
+                        <label className="block text-sm font-medium text-white/70 mb-2">
+                          Title
+                        </label>
+                        <input
+                          type="text"
+                          value={knowledgeTitle}
+                          onChange={(e) => setKnowledgeTitle(e.target.value)}
+                          className="glass-input w-full px-3 py-2 rounded-xl text-sm"
+                          placeholder="Knowledge base name"
+                        />
+                      </div>
 
-                    {/* Uploaded Files */}
-                    {uploadedFiles.length > 0 && (
-                      <div className="space-y-2 mb-4">
-                        {uploadedFiles.map((file, index) => (
-                          <div key={index} className="flex items-center justify-between glass-subtle rounded-lg p-2">
-                            <div className="flex items-center">
-                              <FileText className="w-4 h-4 mr-2 text-white/50" />
-                              <span className="text-sm text-white/80 truncate">{file.name}</span>
-                            </div>
-                            <button
-                              onClick={() => removeFile(index)}
-                              className="text-white/50 hover:text-red-400 transition-colors"
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
+                      {/* Knowledge Base Description */}
+                      <div>
+                        <label className="block text-sm font-medium text-white/70 mb-2">
+                          Description
+                        </label>
+                        <textarea
+                          value={knowledgeDescription}
+                          onChange={(e) => setKnowledgeDescription(e.target.value)}
+                          rows={2}
+                          className="glass-input w-full px-3 py-2 rounded-xl resize-none text-sm"
+                          placeholder="Brief description"
+                        />
+                      </div>
+
+                      {/* Knowledge Text Content */}
+                      <div>
+                        <label className="block text-sm font-medium text-white/70 mb-2">
+                          Content ({knowledgeText.length}/10,000)
+                        </label>
+                        <textarea
+                          value={knowledgeText}
+                          onChange={(e) => {
+                            if (e.target.value.length <= 10000) {
+                              setKnowledgeText(e.target.value);
+                            }
+                          }}
+                          rows={4}
+                          className="glass-input w-full px-3 py-2 rounded-xl resize-none text-sm"
+                          placeholder="Paste your knowledge content here..."
+                        />
+                      </div>
+                      
+                      {/* Compact File Upload */}
+                      <div>
+                        <label className="block text-sm font-medium text-white/70 mb-2">
+                          Files
+                        </label>
+                        <div
+                          className={`border-2 border-dashed rounded-xl p-3 text-center cursor-pointer transition-colors text-sm ${
+                            dragActive ? 'border-purple-400 bg-purple-400/10' : 'border-white/20 hover:border-white/30'
+                          }`}
+                          onDragEnter={handleDrag}
+                          onDragLeave={handleDrag}
+                          onDragOver={handleDrag}
+                          onDrop={handleDrop}
+                          onClick={() => document.getElementById('knowledge-files')?.click()}
+                        >
+                          <input
+                            id="knowledge-files"
+                            type="file"
+                            multiple
+                            accept=".pdf,.txt,.csv"
+                            onChange={(e) => handleFileUpload(e.target.files)}
+                            className="hidden"
+                          />
+                          <Upload className="w-5 h-5 mx-auto mb-1 text-white/50" />
+                          <p className="text-xs text-white/70">Drop files or click</p>
+                          <p className="text-xs text-white/50">PDF, TXT, CSV (max 10)</p>
+                        </div>
+
+                        {/* Uploaded Files - Compact List */}
+                        {uploadedFiles.length > 0 && (
+                          <div className="mt-2 space-y-1">
+                            {uploadedFiles.map((file, index) => (
+                              <div key={index} className="flex items-center justify-between glass-subtle rounded-lg p-2 text-xs">
+                                <div className="flex items-center min-w-0">
+                                  <FileText className="w-3 h-3 mr-2 text-white/50 flex-shrink-0" />
+                                  <span className="text-white/80 truncate">{file.name}</span>
+                                </div>
+                                <button
+                                  onClick={() => removeFile(index)}
+                                  className="text-white/50 hover:text-red-400 transition-colors flex-shrink-0 ml-2"
+                                >
+                                  <X className="w-3 h-3" />
+                                </button>
+                              </div>
+                            ))}
                           </div>
-                        ))}
+                        )}
                       </div>
-                    )}
 
-                    {/* Knowledge Base Summary */}
-                    {(knowledgeText.trim() || uploadedFiles.length > 0 || knowledgeTitle.trim()) && (
-                      <div className="glass-subtle rounded-lg p-3">
-                        <div className="flex items-center mb-2">
-                          <BookOpen className="w-4 h-4 mr-2 text-green-400" />
-                          <span className="text-sm font-medium text-green-400">Knowledge Base Active</span>
+                      {/* Knowledge Base Summary */}
+                      {(knowledgeText.trim() || uploadedFiles.length > 0 || knowledgeTitle.trim()) && (
+                        <div className="glass-subtle rounded-lg p-3">
+                          <div className="flex items-center mb-2">
+                            <BookOpen className="w-4 h-4 mr-2 text-green-400" />
+                            <span className="text-sm font-medium text-green-400">Knowledge Base Active</span>
+                          </div>
+                          <div className="text-xs text-white/60 space-y-1">
+                            {knowledgeTitle.trim() && <p>Title: {knowledgeTitle}</p>}
+                            {knowledgeText.trim() && <p>Content: {knowledgeText.length} characters</p>}
+                            {uploadedFiles.length > 0 && <p>Files: {uploadedFiles.length} uploaded</p>}
+                          </div>
                         </div>
-                        <div className="text-xs text-white/60 space-y-1">
-                          {knowledgeTitle.trim() && <p>Title: {knowledgeTitle}</p>}
-                          {knowledgeText.trim() && <p>Text content: {knowledgeText.length} characters</p>}
-                          {uploadedFiles.length > 0 && <p>Files: {uploadedFiles.length} uploaded</p>}
-                        </div>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
+
+                  {/* Configuration Actions */}
+                  {configChanged && (
+                    <div className="p-4 border-t border-white/10 flex-shrink-0">
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={handleCancelConfig}
+                          className="flex-1 glass-subtle px-3 py-2 rounded-xl hover:glass transition-colors text-white/80 text-sm"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={handleSaveConfig}
+                          className="flex-1 button-primary px-3 py-2 rounded-xl text-white text-sm flex items-center justify-center"
+                        >
+                          <Check className="w-4 h-4 mr-1" />
+                          Save
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -566,13 +658,16 @@ export function TestModelPage() {
                     
                     <button
                       onClick={() => setShowConfig(!showConfig)}
-                      className={`flex items-center px-3 py-2 rounded-xl transition-all duration-300 ${
+                      className={`flex items-center px-3 py-2 rounded-xl transition-all duration-300 relative ${
                         showConfig ? 'button-primary' : 'glass-subtle hover:glass'
                       } text-white`}
                       title="Configure model"
                     >
                       <Settings className="w-4 h-4 mr-2" />
                       <span className="hidden sm:inline">Configure</span>
+                      {configChanged && (
+                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-orange-400 rounded-full"></div>
+                      )}
                     </button>
                     
                     <button
