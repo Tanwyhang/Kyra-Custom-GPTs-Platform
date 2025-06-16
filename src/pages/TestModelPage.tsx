@@ -281,81 +281,7 @@ export function TestModelPage() {
 
   return (
     <div className="fixed inset-0 flex flex-col">
-      {/* Redesigned Header - More compact and integrated */}
-      <div className="flex-shrink-0 glass-dark grain-texture border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            {/* Left side - Title with icon */}
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-2xl icon-bg-primary flex items-center justify-center glow-effect">
-                <Sparkles className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold gradient-text">AI Model Tester</h1>
-                <p className="text-sm text-white/60">Powered by Gemini 1.5 Flash</p>
-              </div>
-            </div>
-
-            {/* Center - Status indicators */}
-            <div className="hidden md:flex items-center space-x-6">
-              <div className="flex items-center space-x-2 glass-subtle px-3 py-2 rounded-xl">
-                <Clock className="w-4 h-4 text-white/60" />
-                <span className="text-sm text-white/80">{tokenCount} tokens</span>
-              </div>
-              <div className="flex items-center space-x-2 glass-subtle px-3 py-2 rounded-xl">
-                <MessageSquare className="w-4 h-4 text-white/60" />
-                <span className="text-sm text-white/80">{messages.length} messages</span>
-              </div>
-            </div>
-
-            {/* Right side - Action buttons */}
-            <div className="flex items-center space-x-3">
-              <button
-                onClick={resetConversation}
-                className="flex items-center px-3 py-2 glass-subtle rounded-xl hover:glass transition-all duration-300 text-white/80 hover:text-white"
-                title="Reset conversation"
-              >
-                <RotateCcw className="w-4 h-4 mr-2" />
-                <span className="hidden sm:inline">Reset</span>
-              </button>
-              
-              <button
-                onClick={() => setShowConfig(!showConfig)}
-                className={`flex items-center px-3 py-2 rounded-xl transition-all duration-300 ${
-                  showConfig ? 'button-primary' : 'glass-subtle hover:glass'
-                } text-white`}
-                title="Configure model"
-              >
-                <Settings className="w-4 h-4 mr-2" />
-                <span className="hidden sm:inline">Configure</span>
-              </button>
-              
-              <button
-                onClick={() => setShowPublish(true)}
-                className="flex items-center px-3 py-2 rounded-xl button-primary text-white transition-all duration-300 hover:scale-105"
-                title="Publish model"
-              >
-                <Save className="w-4 h-4 mr-2" />
-                <span className="hidden sm:inline">Publish</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Mobile status indicators */}
-          <div className="md:hidden flex items-center justify-center space-x-4 mt-3 pt-3 border-t border-white/10">
-            <div className="flex items-center space-x-2 glass-subtle px-3 py-1 rounded-lg">
-              <Clock className="w-3 h-3 text-white/60" />
-              <span className="text-xs text-white/80">{tokenCount} tokens</span>
-            </div>
-            <div className="flex items-center space-x-2 glass-subtle px-3 py-1 rounded-lg">
-              <MessageSquare className="w-3 h-3 text-white/60" />
-              <span className="text-xs text-white/80">{messages.length} messages</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content - Fills remaining space */}
+      {/* Main Content - Fills entire space */}
       <div className="flex-1 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 h-full py-6">
@@ -517,20 +443,73 @@ export function TestModelPage() {
             {/* Chat Interface */}
             <div className={`${showConfig ? 'lg:col-span-3' : 'lg:col-span-4'}`}>
               <div className="glass-strong rounded-2xl overflow-hidden grain-texture h-full flex flex-col">
-                {/* Chat Header */}
+                {/* Integrated Header - Now part of chat interface */}
                 <div className="flex items-center justify-between p-6 border-b border-white/10 flex-shrink-0">
+                  {/* Left side - AI Assistant info */}
                   <div className="flex items-center">
-                    <div className="w-10 h-10 rounded-xl icon-bg-primary flex items-center justify-center mr-3">
-                      <Bot className="w-5 h-5 text-white" />
+                    <div className="w-10 h-10 rounded-xl icon-bg-primary flex items-center justify-center mr-3 glow-effect">
+                      <Sparkles className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-white">AI Assistant</h3>
-                      <p className="text-sm text-white/60">Ready to help you</p>
+                      <h3 className="font-semibold gradient-text">AI Model Tester</h3>
+                      <p className="text-sm text-white/60">Powered by Gemini 1.5 Flash</p>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                    <span className="text-sm text-white/60">Online</span>
+
+                  {/* Center - Status indicators */}
+                  <div className="hidden md:flex items-center space-x-4">
+                    <div className="flex items-center space-x-2 glass-subtle px-3 py-2 rounded-xl">
+                      <Clock className="w-4 h-4 text-white/60" />
+                      <span className="text-sm text-white/80">{tokenCount} tokens</span>
+                    </div>
+                    <div className="flex items-center space-x-2 glass-subtle px-3 py-2 rounded-xl">
+                      <MessageSquare className="w-4 h-4 text-white/60" />
+                      <span className="text-sm text-white/80">{messages.length} messages</span>
+                    </div>
+                  </div>
+
+                  {/* Right side - Action buttons */}
+                  <div className="flex items-center space-x-3">
+                    <button
+                      onClick={resetConversation}
+                      className="flex items-center px-3 py-2 glass-subtle rounded-xl hover:glass transition-all duration-300 text-white/80 hover:text-white"
+                      title="Reset conversation"
+                    >
+                      <RotateCcw className="w-4 h-4 mr-2" />
+                      <span className="hidden sm:inline">Reset</span>
+                    </button>
+                    
+                    <button
+                      onClick={() => setShowConfig(!showConfig)}
+                      className={`flex items-center px-3 py-2 rounded-xl transition-all duration-300 ${
+                        showConfig ? 'button-primary' : 'glass-subtle hover:glass'
+                      } text-white`}
+                      title="Configure model"
+                    >
+                      <Settings className="w-4 h-4 mr-2" />
+                      <span className="hidden sm:inline">Configure</span>
+                    </button>
+                    
+                    <button
+                      onClick={() => setShowPublish(true)}
+                      className="flex items-center px-3 py-2 rounded-xl button-primary text-white transition-all duration-300 hover:scale-105"
+                      title="Publish model"
+                    >
+                      <Save className="w-4 h-4 mr-2" />
+                      <span className="hidden sm:inline">Publish</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Mobile status indicators */}
+                <div className="md:hidden flex items-center justify-center space-x-4 px-6 py-3 border-b border-white/10">
+                  <div className="flex items-center space-x-2 glass-subtle px-3 py-1 rounded-lg">
+                    <Clock className="w-3 h-3 text-white/60" />
+                    <span className="text-xs text-white/80">{tokenCount} tokens</span>
+                  </div>
+                  <div className="flex items-center space-x-2 glass-subtle px-3 py-1 rounded-lg">
+                    <MessageSquare className="w-3 h-3 text-white/60" />
+                    <span className="text-xs text-white/80">{messages.length} messages</span>
                   </div>
                 </div>
 
@@ -540,6 +519,7 @@ export function TestModelPage() {
                     <div className="text-center py-12">
                       <MessageSquare className="w-12 h-12 mx-auto mb-4 text-white/30" />
                       <p className="text-white/60">Start a conversation to test your AI model</p>
+                      <p className="text-white/40 text-sm mt-2">Configure your model settings and begin testing</p>
                     </div>
                   ) : (
                     messages.map((message) => (
