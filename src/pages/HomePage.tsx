@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Search, Shield, TrendingUp, Users, Star, Sparkles, Zap, Brain, TestTube } from 'lucide-react';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import { PREDEFINED_MODELS } from '../lib/gemini';
+import { DatabaseService } from '../lib/database';
 
 interface FeaturedGPT {
   id: string;
@@ -34,28 +35,87 @@ export function HomePage() {
   }, []);
 
   const fetchFeaturedGPTs = async () => {
-    // Convert predefined models to featured GPTs format
-    const featuredGPTs: FeaturedGPT[] = PREDEFINED_MODELS.map((gpt, index) => ({
-      id: gpt.id,
-      title: gpt.name,
-      description: gpt.description,
-      gpt_type: gpt.category,
-      framework: 'Gemini 1.5 Flash',
-      accuracy: 85 + Math.floor(Math.random() * 15), // Random accuracy between 85-99%
-      download_count: Math.floor(Math.random() * 1000) + 100,
-      is_verified: true,
-      uploader: { display_name: 'GPT Hub' }
-    }));
+    try {
+      // Try to fetch featured GPTs from database first
+      const dbResult = await DatabaseService.getFeaturedGPTs(6);
+      
+      let featuredGPTs: FeaturedGPT[] = [];
+      
+      if (dbResult.success && dbResult.gpts && dbResult.gpts.length > 0) {
+        // Convert database GPTs to featured format
+        featuredGPTs = dbResult.gpts.map((gpt) => ({
+          id: gpt.id,
+          title: gpt.name,
+          description: gpt.description,
+          gpt_type: gpt.category,
+          framework: 'Gemini 1.5 Flash',
+          accuracy: gpt.accuracy_score,
+          download_count: gpt.download_count,
+          is_verified: gpt.validation_status === 'approved',
+          uploader: { display_name: gpt.publisher_name || 'Anonymous' }
+        }));
+      }
+      
+      // Fill remaining slots with predefined models
+      const remainingSlots = 6 - featuredGPTs.length;
+      if (remainingSlots > 0) {
+        const predefinedFeatured = PREDEFINED_MODELS.slice(0, remainingSlots).map((gpt) => ({
+          id: gpt.id,
+          title: gpt.name,
+          description: gpt.description,
+          gpt_type: gpt.category,
+          framework: 'Gemini 1.5 Flash',
+          accuracy: 85 + Math.floor(Math.random() * 15),
+          download_count: Math.floor(Math.random() * 1000) + 100,
+          is_verified: true,
+          uploader: { display_name: 'GPT Hub' }
+        }));
+        
+        featuredGPTs = [...featuredGPTs, ...predefinedFeatured];
+      }
 
-    setFeaturedGPTs(featuredGPTs.slice(0, 6));
+      setFeaturedGPTs(featuredGPTs.slice(0, 6));
+    } catch (error) {
+      console.error('Error fetching featured GPTs:', error);
+      // Fallback to predefined models
+      const fallbackFeatured = PREDEFINED_MODELS.slice(0, 6).map((gpt) => ({
+        id: gpt.id,
+        title: gpt.name,
+        description: gpt.description,
+        gpt_type: gpt.category,
+        framework: 'Gemini 1.5 Flash',
+        accuracy: 85 + Math.floor(Math.random() * 15),
+        download_count: Math.floor(Math.random() * 1000) + 100,
+        is_verified: true,
+        uploader: { display_name: 'GPT Hub' }
+      }));
+      setFeaturedGPTs(fallbackFeatured);
+    }
   };
 
   const fetchStats = async () => {
-    const totalGPTs = PREDEFINED_MODELS.length + 6; // Predefined + some community GPTs
-    const totalDownloads = Math.floor(Math.random() * 10000) + 5000;
-    const totalUsers = 250; // Mock user count
-
-    setStats({ totalGPTs, totalDownloads, totalUsers });
+    try {
+      const dbResult = await DatabaseService.getStats();
+      
+      if (dbResult.success && dbResult.stats) {
+        setStats(dbResult.stats);
+      } else {
+        // Fallback stats
+        setStats({
+          totalGPTs: PREDEFINED_MODELS.length + 6,
+          totalDownloads: Math.floor(Math.random() * 10000) + 5000,
+          totalUsers: 250
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+      // Fallback stats
+      setStats({
+        totalGPTs: PREDEFINED_MODELS.length + 6,
+        totalDownloads: Math.floor(Math.random() * 10000) + 5000,
+        totalUsers: 250
+      });
+    }
   };
 
   return (

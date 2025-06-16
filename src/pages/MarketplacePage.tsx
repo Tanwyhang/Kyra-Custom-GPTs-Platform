@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Search, Filter, Download, Shield, Star, Calendar } from 'lucide-react';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import { PREDEFINED_MODELS } from '../lib/gemini';
+import { DatabaseService, type PublishedGPT } from '../lib/database';
 
 interface GPT {
   id: string;
@@ -42,26 +43,59 @@ export function MarketplacePage() {
     setLoading(true);
     
     try {
-      // Simulate loading delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Create marketplace GPTs from predefined models + additional community GPTs
-      const marketplaceGPTs: GPT[] = [
-        // Convert predefined models
-        ...PREDEFINED_MODELS.map((gpt, index) => ({
+      // First try to fetch from database
+      const dbResult = await DatabaseService.searchGPTs({
+        query: searchTerm,
+        category: selectedType,
+        sortBy,
+        sortOrder: 'desc',
+        limit: 50
+      });
+
+      let marketplaceGPTs: GPT[] = [];
+
+      // Add database GPTs if available
+      if (dbResult.success && dbResult.gpts) {
+        marketplaceGPTs = dbResult.gpts.map((gpt: PublishedGPT) => ({
           id: gpt.id,
           title: gpt.name,
           description: gpt.description,
           gpt_type: gpt.category,
           framework: 'Gemini 1.5 Flash',
           tags: gpt.tags,
-          accuracy: 85 + Math.floor(Math.random() * 15), // Random accuracy between 85-99%
-          download_count: Math.floor(Math.random() * 1000) + 100,
-          is_verified: true,
-          created_at: new Date(Date.now() - Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000).toISOString(),
-          uploader: { display_name: 'AI GPT Hub' }
-        })),
-        // Additional community GPTs
+          accuracy: gpt.accuracy_score,
+          download_count: gpt.download_count,
+          is_verified: gpt.validation_status === 'approved',
+          created_at: gpt.created_at,
+          uploader: { display_name: gpt.publisher_name || 'Anonymous' }
+        }));
+      }
+
+      // Add predefined models as fallback/additional content
+      const predefinedGPTs: GPT[] = PREDEFINED_MODELS.map((gpt, index) => ({
+        id: gpt.id,
+        title: gpt.name,
+        description: gpt.description,
+        gpt_type: gpt.category,
+        framework: 'Gemini 1.5 Flash',
+        tags: gpt.tags,
+        accuracy: 85 + Math.floor(Math.random() * 15), // Random accuracy between 85-99%
+        download_count: Math.floor(Math.random() * 1000) + 100,
+        is_verified: true,
+        created_at: new Date(Date.now() - Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000).toISOString(),
+        uploader: { display_name: 'AI GPT Hub' }
+      }));
+
+      // Combine and deduplicate
+      const allGPTs = [...marketplaceGPTs];
+      predefinedGPTs.forEach(predefined => {
+        if (!allGPTs.find(existing => existing.id === predefined.id)) {
+          allGPTs.push(predefined);
+        }
+      });
+
+      // Add some additional community GPTs for demo
+      const additionalGPTs: GPT[] = [
         {
           id: 'community-1',
           title: 'Advanced Image Classifier',
@@ -129,8 +163,16 @@ export function MarketplacePage() {
         }
       ];
 
-      // Apply search filter
-      let filteredGPTs = [...marketplaceGPTs];
+      // Add additional GPTs if not already present
+      additionalGPTs.forEach(additional => {
+        if (!allGPTs.find(existing => existing.id === additional.id)) {
+          allGPTs.push(additional);
+        }
+      });
+
+      // Apply client-side filters
+      let filteredGPTs = [...allGPTs];
+      
       if (searchTerm.trim()) {
         const searchLower = searchTerm.toLowerCase();
         filteredGPTs = filteredGPTs.filter(gpt => 
@@ -140,12 +182,10 @@ export function MarketplacePage() {
         );
       }
       
-      // Apply type filter
       if (selectedType) {
         filteredGPTs = filteredGPTs.filter(gpt => gpt.gpt_type === selectedType);
       }
       
-      // Apply framework filter
       if (selectedFramework) {
         filteredGPTs = filteredGPTs.filter(gpt => gpt.framework === selectedFramework);
       }
@@ -166,7 +206,21 @@ export function MarketplacePage() {
       setGPTs(filteredGPTs);
     } catch (error) {
       console.error('Error fetching GPTs:', error);
-      setGPTs([]);
+      // Fallback to predefined models only
+      const fallbackGPTs: GPT[] = PREDEFINED_MODELS.map((gpt) => ({
+        id: gpt.id,
+        title: gpt.name,
+        description: gpt.description,
+        gpt_type: gpt.category,
+        framework: 'Gemini 1.5 Flash',
+        tags: gpt.tags,
+        accuracy: 85 + Math.floor(Math.random() * 15),
+        download_count: Math.floor(Math.random() * 1000) + 100,
+        is_verified: true,
+        created_at: new Date(Date.now() - Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000).toISOString(),
+        uploader: { display_name: 'AI GPT Hub' }
+      }));
+      setGPTs(fallbackGPTs);
     } finally {
       setLoading(false);
     }

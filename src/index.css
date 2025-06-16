@@ -495,6 +495,36 @@ input::placeholder, textarea::placeholder {
   color: var(--text-muted) !important;
 }
 
+/* CRITICAL: Fix dropdown/select text color */
+select {
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: var(--text-primary) !important;
+}
+
+select option {
+  background: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  border: none !important;
+}
+
+select:focus {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Ensure all select elements have proper styling */
+.glass-input select,
+select.glass-input {
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: var(--text-primary) !important;
+}
+
+.glass-input select option,
+select.glass-input option {
+  background: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+}
+
 /* Button overrides for dark theme */
 .bg-purple-600 {
   background: var(--color-purple) !important;

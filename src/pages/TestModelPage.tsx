@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import { MockModelManager, PREDEFINED_MODELS, type ModelDefinition } from '../lib/gemini';
+import { DatabaseService, type GPTSubmission } from '../lib/database';
 
 interface Message {
   id: string;
@@ -46,6 +47,12 @@ interface PublicationData {
   tags: string[];
   samplePrompts: string[];
   isPublic: boolean;
+  licenseType: string;
+  licenseText?: string;
+  documentationUrl?: string;
+  repositoryUrl?: string;
+  publisherName?: string;
+  publisherEmail?: string;
 }
 
 const CATEGORIES = [
@@ -56,6 +63,17 @@ const CATEGORIES = [
   'Creative Writing',
   'Business Assistant',
   'Technical Support',
+  'Other'
+];
+
+const LICENSE_TYPES = [
+  'MIT',
+  'Apache 2.0',
+  'GPL v3',
+  'BSD 3-Clause',
+  'Creative Commons',
+  'Commercial',
+  'Custom',
   'Other'
 ];
 
@@ -116,7 +134,13 @@ export function TestModelPage() {
     category: '',
     tags: [],
     samplePrompts: [''],
-    isPublic: true
+    isPublic: true,
+    licenseType: 'MIT',
+    licenseText: '',
+    documentationUrl: '',
+    repositoryUrl: '',
+    publisherName: '',
+    publisherEmail: ''
   });
   const [newTag, setNewTag] = useState('');
   const [publishing, setPublishing] = useState(false);
@@ -341,28 +365,45 @@ export function TestModelPage() {
 
   const handlePublish = async () => {
     if (!publicationData.name.trim() || !publicationData.description.trim() || !publicationData.category) {
+      alert('Please fill in all required fields (Name, Description, Category)');
       return;
     }
 
     setPublishing(true);
     try {
-      // Simulate publishing process
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // In a real implementation, this would save to local storage or a simple database
-      console.log('Publishing GPT:', {
-        ...publicationData,
-        config,
-        knowledgeFiles: uploadedFiles.map(f => f.name),
-        knowledgeText,
-        knowledgeTitle,
-        knowledgeDescription,
-        publishedAt: new Date().toISOString()
-      });
+      // Prepare submission data
+      const submission: GPTSubmission = {
+        name: publicationData.name,
+        description: publicationData.description,
+        category: publicationData.category,
+        tags: publicationData.tags,
+        licenseType: publicationData.licenseType,
+        licenseText: publicationData.licenseText,
+        documentationUrl: publicationData.documentationUrl,
+        repositoryUrl: publicationData.repositoryUrl,
+        systemPrompt: selectedGPT?.systemPrompt || 'You are a helpful AI assistant.',
+        defaultConfig: config,
+        knowledgeContext: knowledgeText.trim() || undefined,
+        knowledgeFiles: uploadedFiles.map(f => ({
+          name: f.name,
+          size: f.size,
+          type: f.type
+        })),
+        samplePrompts: publicationData.samplePrompts.filter(p => p.trim()),
+        publisherName: publicationData.publisherName,
+        publisherEmail: publicationData.publisherEmail,
+        isPublic: publicationData.isPublic
+      };
 
-      // Show success and redirect
-      alert('GPT published successfully!');
-      navigate('/marketplace');
+      // Submit to database
+      const result = await DatabaseService.submitGPT(submission);
+
+      if (result.success) {
+        alert('GPT published successfully! It will be reviewed and made available in the marketplace soon.');
+        navigate('/marketplace');
+      } else {
+        alert(`Error publishing GPT: ${result.error}`);
+      }
     } catch (error) {
       console.error('Error publishing GPT:', error);
       alert('Error publishing GPT. Please try again.');
@@ -855,12 +896,12 @@ export function TestModelPage() {
         </div>
       )}
 
-      {/* Publish Modal */}
+      {/* Enhanced Publish Modal with Database Integration */}
       {showPublish && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="glass-strong rounded-2xl p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto grain-texture">
+          <div className="glass-strong rounded-2xl p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto grain-texture">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold gradient-text">Publish GPT</h2>
+              <h2 className="text-2xl font-bold gradient-text">Publish GPT to Marketplace</h2>
               <button
                 onClick={() => setShowPublish(false)}
                 className="text-white/60 hover:text-white transition-colors"
@@ -870,63 +911,167 @@ export function TestModelPage() {
             </div>
 
             <div className="space-y-6">
-              {/* Required Fields */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-white/80 mb-2">
-                    GPT Name *
-                  </label>
-                  <input
-                    type="text"
-                    value={publicationData.name}
-                    onChange={(e) => setPublicationData(prev => ({ ...prev, name: e.target.value }))}
-                    className="glass-input w-full px-3 py-2 rounded-xl"
-                    placeholder="Enter GPT name (3-50 characters)"
-                    minLength={3}
-                    maxLength={50}
-                  />
+              {/* Basic Information */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold gradient-text">Basic Information</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-white/80 mb-2">
+                      GPT Name * <span className="text-xs text-white/60">({publicationData.name.length}/100)</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={publicationData.name}
+                      onChange={(e) => {
+                        if (e.target.value.length <= 100) {
+                          setPublicationData(prev => ({ ...prev, name: e.target.value }));
+                        }
+                      }}
+                      className="glass-input w-full px-3 py-2 rounded-xl"
+                      placeholder="Enter GPT name"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-white/80 mb-2">
+                      Category *
+                    </label>
+                    <select
+                      value={publicationData.category}
+                      onChange={(e) => setPublicationData(prev => ({ ...prev, category: e.target.value }))}
+                      className="glass-input w-full px-3 py-2 rounded-xl"
+                      required
+                    >
+                      <option value="">Select category</option>
+                      {CATEGORIES.map(category => (
+                        <option key={category} value={category}>{category}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-white/80 mb-2">
-                    Category *
+                    Description * <span className="text-xs text-white/60">({publicationData.description.length}/1000)</span>
                   </label>
-                  <select
-                    value={publicationData.category}
-                    onChange={(e) => setPublicationData(prev => ({ ...prev, category: e.target.value }))}
-                    className="glass-input w-full px-3 py-2 rounded-xl"
-                  >
-                    <option value="">Select category</option>
-                    {CATEGORIES.map(category => (
-                      <option key={category} value={category}>{category}</option>
-                    ))}
-                  </select>
+                  <textarea
+                    value={publicationData.description}
+                    onChange={(e) => {
+                      if (e.target.value.length <= 1000) {
+                        setPublicationData(prev => ({ ...prev, description: e.target.value }));
+                      }
+                    }}
+                    rows={4}
+                    className="glass-input w-full px-3 py-2 rounded-xl resize-none"
+                    placeholder="Describe what your GPT does, its capabilities, and use cases (minimum 50 characters)"
+                    required
+                  />
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-white/80 mb-2">
-                  Description * ({publicationData.description.length}/500)
-                </label>
-                <textarea
-                  value={publicationData.description}
-                  onChange={(e) => {
-                    if (e.target.value.length <= 500) {
-                      setPublicationData(prev => ({ ...prev, description: e.target.value }));
-                    }
-                  }}
-                  rows={3}
-                  className="glass-input w-full px-3 py-2 rounded-xl resize-none"
-                  placeholder="Describe what your GPT does (50-500 characters)"
-                  minLength={50}
-                  maxLength={500}
-                />
+              {/* Licensing */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold gradient-text">Licensing</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-white/80 mb-2">
+                      License Type *
+                    </label>
+                    <select
+                      value={publicationData.licenseType}
+                      onChange={(e) => setPublicationData(prev => ({ ...prev, licenseType: e.target.value }))}
+                      className="glass-input w-full px-3 py-2 rounded-xl"
+                      required
+                    >
+                      {LICENSE_TYPES.map(license => (
+                        <option key={license} value={license}>{license}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-white/80 mb-2">
+                      Documentation URL
+                    </label>
+                    <input
+                      type="url"
+                      value={publicationData.documentationUrl}
+                      onChange={(e) => setPublicationData(prev => ({ ...prev, documentationUrl: e.target.value }))}
+                      className="glass-input w-full px-3 py-2 rounded-xl"
+                      placeholder="https://..."
+                    />
+                  </div>
+                </div>
+
+                {publicationData.licenseType === 'Custom' && (
+                  <div>
+                    <label className="block text-sm font-medium text-white/80 mb-2">
+                      Custom License Text
+                    </label>
+                    <textarea
+                      value={publicationData.licenseText}
+                      onChange={(e) => setPublicationData(prev => ({ ...prev, licenseText: e.target.value }))}
+                      rows={3}
+                      className="glass-input w-full px-3 py-2 rounded-xl resize-none"
+                      placeholder="Enter your custom license terms..."
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Publisher Information */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold gradient-text">Publisher Information</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-white/80 mb-2">
+                      Publisher Name
+                    </label>
+                    <input
+                      type="text"
+                      value={publicationData.publisherName}
+                      onChange={(e) => setPublicationData(prev => ({ ...prev, publisherName: e.target.value }))}
+                      className="glass-input w-full px-3 py-2 rounded-xl"
+                      placeholder="Your name or organization"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-white/80 mb-2">
+                      Contact Email
+                    </label>
+                    <input
+                      type="email"
+                      value={publicationData.publisherEmail}
+                      onChange={(e) => setPublicationData(prev => ({ ...prev, publisherEmail: e.target.value }))}
+                      className="glass-input w-full px-3 py-2 rounded-xl"
+                      placeholder="contact@example.com"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-white/80 mb-2">
+                    Repository URL
+                  </label>
+                  <input
+                    type="url"
+                    value={publicationData.repositoryUrl}
+                    onChange={(e) => setPublicationData(prev => ({ ...prev, repositoryUrl: e.target.value }))}
+                    className="glass-input w-full px-3 py-2 rounded-xl"
+                    placeholder="https://github.com/..."
+                  />
+                </div>
               </div>
 
               {/* Tags */}
               <div>
                 <label className="block text-sm font-medium text-white/80 mb-2">
-                  Tags (max 5)
+                  Tags (max 10)
                 </label>
                 <div className="flex flex-wrap gap-2 mb-2">
                   {publicationData.tags.map((tag, index) => (
@@ -941,7 +1086,7 @@ export function TestModelPage() {
                     </span>
                   ))}
                 </div>
-                {publicationData.tags.length < 5 && (
+                {publicationData.tags.length < 10 && (
                   <div className="flex space-x-2">
                     <input
                       type="text"
@@ -1023,7 +1168,8 @@ export function TestModelPage() {
                   required
                 />
                 <label htmlFor="terms" className="text-sm text-white/70">
-                  I agree to the Terms of Service and confirm that I have the right to publish this GPT configuration.
+                  I agree to the Terms of Service and confirm that I have the right to publish this GPT configuration. 
+                  I understand that my GPT will be reviewed before being made available in the marketplace.
                 </label>
               </div>
 
@@ -1037,7 +1183,7 @@ export function TestModelPage() {
                 </button>
                 <button
                   onClick={handlePublish}
-                  disabled={publishing || !publicationData.name.trim() || !publicationData.description.trim() || !publicationData.category}
+                  disabled={publishing || !publicationData.name.trim() || !publicationData.description.trim() || !publicationData.category || publicationData.description.length < 50}
                   className="button-primary px-6 py-3 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
                 >
                   {publishing ? 'Publishing...' : 'Publish to Marketplace'}
