@@ -18,56 +18,133 @@ export function useAuth() {
       async (event, session) => {
         setUser(session?.user ?? null);
         setLoading(false);
+
+        // Handle user profile creation for OAuth sign-ins
+        if (event === 'SIGNED_IN' && session?.user) {
+          await ensureUserProfile(session.user);
+        }
       }
     );
 
     return () => subscription.unsubscribe();
   }, []);
 
+  const ensureUserProfile = async (user: User) => {
+    try {
+      // Check if user profile exists
+      const { data: existingUser } = await supabase
+        .from('users')
+        .select('id')
+        .eq('id', user.id)
+        .single();
+
+      if (!existingUser) {
+        // Create user profile if it doesn't exist
+        const { error } = await supabase.from('users').insert({
+          id: user.id,
+          email: user.email!,
+          display_name: user.user_metadata?.display_name || user.user_metadata?.full_name || null,
+          avatar_url: user.user_metadata?.avatar_url || null,
+        });
+
+        if (error) {
+          console.error('Error creating user profile:', error);
+        }
+      }
+    } catch (error) {
+      console.error('Error ensuring user profile:', error);
+    }
+  };
+
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    return { error };
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        console.error('Sign in error:', error);
+        return { error };
+      }
+
+      return { error: null };
+    } catch (error) {
+      console.error('Unexpected sign in error:', error);
+      return { error };
+    }
   };
 
   const signInWithGoogle = async () => {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/dashboard`,
-      },
-    });
-    return { data, error };
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`,
+        },
+      });
+
+      if (error) {
+        console.error('Google sign in error:', error);
+        return { data, error };
+      }
+
+      return { data, error: null };
+    } catch (error) {
+      console.error('Unexpected Google sign in error:', error);
+      return { data: null, error };
+    }
   };
 
   const signUp = async (email: string, password: string, displayName?: string) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          display_name: displayName,
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            display_name: displayName,
+          },
         },
-      },
-    });
-
-    if (data.user && !error) {
-      // Create user profile
-      await supabase.from('users').upsert({
-        id: data.user.id,
-        email: data.user.email!,
-        display_name: displayName,
       });
-    }
 
-    return { data, error };
+      if (error) {
+        console.error('Sign up error:', error);
+        return { data, error };
+      }
+
+      if (data.user && !error) {
+        // Create user profile
+        const { error: profileError } = await supabase.from('users').insert({
+          id: data.user.id,
+          email: data.user.email!,
+          display_name: displayName,
+        });
+
+        if (profileError) {
+          console.error('Error creating user profile:', profileError);
+          // Don't return the profile error as the main error since auth was successful
+        }
+      }
+
+      return { data, error: null };
+    } catch (error) {
+      console.error('Unexpected sign up error:', error);
+      return { data: null, error };
+    }
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    return { error };
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Sign out error:', error);
+      }
+      return { error };
+    } catch (error) {
+      console.error('Unexpected sign out error:', error);
+      return { error };
+    }
   };
 
   return {

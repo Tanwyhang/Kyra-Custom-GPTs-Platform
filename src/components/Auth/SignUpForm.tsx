@@ -22,10 +22,28 @@ export function SignUpForm() {
     setLoading(true);
     setError('');
 
-    const { error } = await signUp(email, password, displayName);
+    if (!email.trim() || !password.trim() || !displayName.trim()) {
+      setError('Please fill in all required fields');
+      setLoading(false);
+      return;
+    }
+
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      setLoading(false);
+      return;
+    }
+
+    const { error } = await signUp(email.trim(), password, displayName.trim());
 
     if (error) {
-      setError(error.message);
+      if (error.message?.includes('User already registered')) {
+        setError('An account with this email already exists. Please sign in instead.');
+      } else if (error.message?.includes('Password should be at least')) {
+        setError('Password must be at least 6 characters long');
+      } else {
+        setError(error.message || 'An error occurred during sign up. Please try again.');
+      }
     } else {
       navigate('/dashboard');
     }
@@ -40,7 +58,7 @@ export function SignUpForm() {
     const { error } = await signInWithGoogle();
 
     if (error) {
-      setError(error.message);
+      setError('Failed to sign up with Google. Please try again or use email/password.');
       setGoogleLoading(false);
     }
     // Note: If successful, the user will be redirected by Supabase

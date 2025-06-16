@@ -21,10 +21,22 @@ export function SignInForm() {
     setLoading(true);
     setError('');
 
-    const { error } = await signIn(email, password);
+    if (!email.trim() || !password.trim()) {
+      setError('Please enter both email and password');
+      setLoading(false);
+      return;
+    }
+
+    const { error } = await signIn(email.trim(), password);
 
     if (error) {
-      setError(error.message);
+      if (error.message?.includes('Invalid login credentials')) {
+        setError('Invalid email or password. Please check your credentials and try again.');
+      } else if (error.message?.includes('Email not confirmed')) {
+        setError('Please check your email and click the confirmation link before signing in.');
+      } else {
+        setError(error.message || 'An error occurred during sign in. Please try again.');
+      }
     } else {
       navigate('/dashboard');
     }
@@ -39,7 +51,7 @@ export function SignInForm() {
     const { error } = await signInWithGoogle();
 
     if (error) {
-      setError(error.message);
+      setError('Failed to sign in with Google. Please try again or use email/password.');
       setGoogleLoading(false);
     }
     // Note: If successful, the user will be redirected by Supabase
