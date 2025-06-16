@@ -269,7 +269,7 @@ export function TestModelPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center py-12 px-4">
+      <div className="fixed inset-0 flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold gradient-text mb-4">Authentication Required</h2>
           <p className="text-white/70">Please sign in to test AI models.</p>
@@ -279,10 +279,10 @@ export function TestModelPage() {
   }
 
   return (
-    <div className="min-h-screen py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="scroll-reveal mb-8">
+    <div className="fixed inset-0 flex flex-col">
+      {/* Header - Fixed at top */}
+      <div className="flex-shrink-0 px-4 sm:px-6 lg:px-8 py-6 border-b border-white/10">
+        <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold gradient-text mb-2">Test AI Model</h1>
@@ -308,269 +308,274 @@ export function TestModelPage() {
             </div>
           </div>
         </div>
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Configuration Panel */}
-          {showConfig && (
-            <div className="lg:col-span-1">
-              <div className="scroll-reveal glass-strong rounded-2xl p-6 grain-texture space-y-6 max-h-[calc(100vh-12rem)] overflow-y-auto">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold gradient-text">Configuration</h3>
-                  <button
-                    onClick={() => {
-                      setConfig({
-                        temperature: 0.7,
-                        topP: 0.9,
-                        maxTokens: 1024,
-                        systemPrompt: 'You are a helpful AI assistant.'
-                      });
-                    }}
-                    className="text-sm text-white/60 hover:text-white transition-colors"
-                  >
-                    Reset to Defaults
-                  </button>
-                </div>
-
-                {/* Temperature */}
-                <div>
-                  <label className="block text-sm font-medium text-white/80 mb-2">
-                    Temperature: {config.temperature}
-                  </label>
-                  <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.1"
-                    value={config.temperature}
-                    onChange={(e) => setConfig(prev => ({ ...prev, temperature: parseFloat(e.target.value) }))}
-                    className="w-full"
-                  />
-                  <div className="flex justify-between text-xs text-white/50 mt-1">
-                    <span>Focused</span>
-                    <span>Creative</span>
+      {/* Main Content - Fills remaining space */}
+      <div className="flex-1 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 h-full py-6">
+            {/* Configuration Panel */}
+            {showConfig && (
+              <div className="lg:col-span-1">
+                <div className="glass-strong rounded-2xl p-6 grain-texture space-y-6 h-full overflow-y-auto">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold gradient-text">Configuration</h3>
+                    <button
+                      onClick={() => {
+                        setConfig({
+                          temperature: 0.7,
+                          topP: 0.9,
+                          maxTokens: 1024,
+                          systemPrompt: 'You are a helpful AI assistant.'
+                        });
+                      }}
+                      className="text-sm text-white/60 hover:text-white transition-colors"
+                    >
+                      Reset to Defaults
+                    </button>
                   </div>
-                </div>
 
-                {/* Top-p */}
-                <div>
-                  <label className="block text-sm font-medium text-white/80 mb-2">
-                    Top-p: {config.topP}
-                  </label>
-                  <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.1"
-                    value={config.topP}
-                    onChange={(e) => setConfig(prev => ({ ...prev, topP: parseFloat(e.target.value) }))}
-                    className="w-full"
-                  />
-                </div>
-
-                {/* Max Tokens */}
-                <div>
-                  <label className="block text-sm font-medium text-white/80 mb-2">
-                    Max Tokens
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="4096"
-                    value={config.maxTokens}
-                    onChange={(e) => setConfig(prev => ({ ...prev, maxTokens: parseInt(e.target.value) }))}
-                    className="glass-input w-full px-3 py-2 rounded-xl"
-                  />
-                </div>
-
-                {/* System Prompt */}
-                <div>
-                  <label className="block text-sm font-medium text-white/80 mb-2">
-                    System Prompt ({config.systemPrompt.length}/1000)
-                  </label>
-                  <textarea
-                    value={config.systemPrompt}
-                    onChange={(e) => {
-                      if (e.target.value.length <= 1000) {
-                        setConfig(prev => ({ ...prev, systemPrompt: e.target.value }));
-                      }
-                    }}
-                    rows={4}
-                    className="glass-input w-full px-3 py-2 rounded-xl resize-none"
-                    placeholder="Define how the AI should behave..."
-                  />
-                </div>
-
-                {/* Knowledge Enhancement */}
-                <div className="border-t border-white/10 pt-6">
-                  <h4 className="text-sm font-semibold text-white/80 mb-4">Knowledge Enhancement</h4>
-                  
-                  {/* File Upload */}
-                  <div
-                    className={`border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-colors mb-4 ${
-                      dragActive ? 'border-purple-400 bg-purple-400/10' : 'border-white/20 hover:border-white/30'
-                    }`}
-                    onDragEnter={handleDrag}
-                    onDragLeave={handleDrag}
-                    onDragOver={handleDrag}
-                    onDrop={handleDrop}
-                    onClick={() => document.getElementById('knowledge-files')?.click()}
-                  >
+                  {/* Temperature */}
+                  <div>
+                    <label className="block text-sm font-medium text-white/80 mb-2">
+                      Temperature: {config.temperature}
+                    </label>
                     <input
-                      id="knowledge-files"
-                      type="file"
-                      multiple
-                      accept=".pdf,.txt,.csv"
-                      onChange={(e) => handleFileUpload(e.target.files)}
-                      className="hidden"
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.1"
+                      value={config.temperature}
+                      onChange={(e) => setConfig(prev => ({ ...prev, temperature: parseFloat(e.target.value) }))}
+                      className="w-full"
                     />
-                    <Upload className="w-6 h-6 mx-auto mb-2 text-white/50" />
-                    <p className="text-sm text-white/70">
-                      Drop files or click to upload
-                    </p>
-                    <p className="text-xs text-white/50 mt-1">
-                      PDF, TXT, CSV (max 10 files, 50MB each)
-                    </p>
+                    <div className="flex justify-between text-xs text-white/50 mt-1">
+                      <span>Focused</span>
+                      <span>Creative</span>
+                    </div>
                   </div>
 
-                  {/* Uploaded Files */}
-                  {uploadedFiles.length > 0 && (
-                    <div className="space-y-2 mb-4">
-                      {uploadedFiles.map((file, index) => (
-                        <div key={index} className="flex items-center justify-between glass-subtle rounded-lg p-2">
-                          <div className="flex items-center">
-                            <FileText className="w-4 h-4 mr-2 text-white/50" />
-                            <span className="text-sm text-white/80 truncate">{file.name}</span>
+                  {/* Top-p */}
+                  <div>
+                    <label className="block text-sm font-medium text-white/80 mb-2">
+                      Top-p: {config.topP}
+                    </label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.1"
+                      value={config.topP}
+                      onChange={(e) => setConfig(prev => ({ ...prev, topP: parseFloat(e.target.value) }))}
+                      className="w-full"
+                    />
+                  </div>
+
+                  {/* Max Tokens */}
+                  <div>
+                    <label className="block text-sm font-medium text-white/80 mb-2">
+                      Max Tokens
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="4096"
+                      value={config.maxTokens}
+                      onChange={(e) => setConfig(prev => ({ ...prev, maxTokens: parseInt(e.target.value) }))}
+                      className="glass-input w-full px-3 py-2 rounded-xl"
+                    />
+                  </div>
+
+                  {/* System Prompt */}
+                  <div>
+                    <label className="block text-sm font-medium text-white/80 mb-2">
+                      System Prompt ({config.systemPrompt.length}/1000)
+                    </label>
+                    <textarea
+                      value={config.systemPrompt}
+                      onChange={(e) => {
+                        if (e.target.value.length <= 1000) {
+                          setConfig(prev => ({ ...prev, systemPrompt: e.target.value }));
+                        }
+                      }}
+                      rows={4}
+                      className="glass-input w-full px-3 py-2 rounded-xl resize-none"
+                      placeholder="Define how the AI should behave..."
+                    />
+                  </div>
+
+                  {/* Knowledge Enhancement */}
+                  <div className="border-t border-white/10 pt-6">
+                    <h4 className="text-sm font-semibold text-white/80 mb-4">Knowledge Enhancement</h4>
+                    
+                    {/* File Upload */}
+                    <div
+                      className={`border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-colors mb-4 ${
+                        dragActive ? 'border-purple-400 bg-purple-400/10' : 'border-white/20 hover:border-white/30'
+                      }`}
+                      onDragEnter={handleDrag}
+                      onDragLeave={handleDrag}
+                      onDragOver={handleDrag}
+                      onDrop={handleDrop}
+                      onClick={() => document.getElementById('knowledge-files')?.click()}
+                    >
+                      <input
+                        id="knowledge-files"
+                        type="file"
+                        multiple
+                        accept=".pdf,.txt,.csv"
+                        onChange={(e) => handleFileUpload(e.target.files)}
+                        className="hidden"
+                      />
+                      <Upload className="w-6 h-6 mx-auto mb-2 text-white/50" />
+                      <p className="text-sm text-white/70">
+                        Drop files or click to upload
+                      </p>
+                      <p className="text-xs text-white/50 mt-1">
+                        PDF, TXT, CSV (max 10 files, 50MB each)
+                      </p>
+                    </div>
+
+                    {/* Uploaded Files */}
+                    {uploadedFiles.length > 0 && (
+                      <div className="space-y-2 mb-4">
+                        {uploadedFiles.map((file, index) => (
+                          <div key={index} className="flex items-center justify-between glass-subtle rounded-lg p-2">
+                            <div className="flex items-center">
+                              <FileText className="w-4 h-4 mr-2 text-white/50" />
+                              <span className="text-sm text-white/80 truncate">{file.name}</span>
+                            </div>
+                            <button
+                              onClick={() => removeFile(index)}
+                              className="text-white/50 hover:text-red-400 transition-colors"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
                           </div>
-                          <button
-                            onClick={() => removeFile(index)}
-                            className="text-white/50 hover:text-red-400 transition-colors"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Text Input */}
+                    <textarea
+                      value={knowledgeText}
+                      onChange={(e) => setKnowledgeText(e.target.value)}
+                      rows={3}
+                      className="glass-input w-full px-3 py-2 rounded-xl resize-none"
+                      placeholder="Or paste text directly here..."
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Chat Interface */}
+            <div className={`${showConfig ? 'lg:col-span-3' : 'lg:col-span-4'}`}>
+              <div className="glass-strong rounded-2xl overflow-hidden grain-texture h-full flex flex-col">
+                {/* Chat Header */}
+                <div className="flex items-center justify-between p-6 border-b border-white/10 flex-shrink-0">
+                  <div className="flex items-center">
+                    <div className="w-10 h-10 rounded-xl icon-bg-primary flex items-center justify-center mr-3">
+                      <Bot className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-white">AI Model Test</h3>
+                      <p className="text-sm text-white/60">Powered by Gemini 1.5 Flash</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-4">
+                    <div className="text-sm text-white/60">
+                      <Clock className="w-4 h-4 inline mr-1" />
+                      {tokenCount} tokens
+                    </div>
+                    <button
+                      onClick={resetConversation}
+                      className="flex items-center px-3 py-2 glass-subtle rounded-xl hover:glass transition-colors text-white/80 hover:text-white"
+                    >
+                      <RotateCcw className="w-4 h-4 mr-2" />
+                      Reset
+                    </button>
+                  </div>
+                </div>
+
+                {/* Messages */}
+                <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                  {messages.length === 0 ? (
+                    <div className="text-center py-12">
+                      <MessageSquare className="w-12 h-12 mx-auto mb-4 text-white/30" />
+                      <p className="text-white/60">Start a conversation to test your AI model</p>
+                    </div>
+                  ) : (
+                    messages.map((message) => (
+                      <div
+                        key={message.id}
+                        className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                      >
+                        <div className={`max-w-3xl ${message.role === 'user' ? 'order-2' : 'order-1'}`}>
+                          <div className="flex items-start space-x-3">
+                            {message.role === 'assistant' && (
+                              <div className="w-8 h-8 rounded-lg icon-bg-primary flex items-center justify-center flex-shrink-0">
+                                <Bot className="w-4 h-4 text-white" />
+                              </div>
+                            )}
+                            <div className={`rounded-2xl p-4 ${
+                              message.role === 'user' 
+                                ? 'button-primary text-white' 
+                                : 'glass-subtle text-white/90'
+                            }`}>
+                              <p className="whitespace-pre-wrap">{message.content}</p>
+                              <p className="text-xs opacity-60 mt-2">
+                                {message.timestamp.toLocaleTimeString()}
+                              </p>
+                            </div>
+                            {message.role === 'user' && (
+                              <div className="w-8 h-8 rounded-lg glass-subtle flex items-center justify-center flex-shrink-0">
+                                <UserIcon className="w-4 h-4 text-white" />
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      ))}
+                      </div>
+                    ))
+                  )}
+                  {isLoading && (
+                    <div className="flex justify-start">
+                      <div className="flex items-start space-x-3">
+                        <div className="w-8 h-8 rounded-lg icon-bg-primary flex items-center justify-center">
+                          <Bot className="w-4 h-4 text-white" />
+                        </div>
+                        <div className="glass-subtle rounded-2xl p-4">
+                          <div className="flex space-x-2">
+                            <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce"></div>
+                            <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                            <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   )}
-
-                  {/* Text Input */}
-                  <textarea
-                    value={knowledgeText}
-                    onChange={(e) => setKnowledgeText(e.target.value)}
-                    rows={3}
-                    className="glass-input w-full px-3 py-2 rounded-xl resize-none"
-                    placeholder="Or paste text directly here..."
-                  />
                 </div>
-              </div>
-            </div>
-          )}
 
-          {/* Chat Interface */}
-          <div className={`${showConfig ? 'lg:col-span-3' : 'lg:col-span-4'}`}>
-            <div className="scroll-reveal glass-strong rounded-2xl overflow-hidden grain-texture h-[calc(100vh-12rem)] flex flex-col">
-              {/* Chat Header */}
-              <div className="flex items-center justify-between p-6 border-b border-white/10 flex-shrink-0">
-                <div className="flex items-center">
-                  <div className="w-10 h-10 rounded-xl icon-bg-primary flex items-center justify-center mr-3">
-                    <Bot className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-white">AI Model Test</h3>
-                    <p className="text-sm text-white/60">Powered by Gemini 1.5 Flash</p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-4">
-                  <div className="text-sm text-white/60">
-                    <Clock className="w-4 h-4 inline mr-1" />
-                    {tokenCount} tokens
-                  </div>
-                  <button
-                    onClick={resetConversation}
-                    className="flex items-center px-3 py-2 glass-subtle rounded-xl hover:glass transition-colors text-white/80 hover:text-white"
-                  >
-                    <RotateCcw className="w-4 h-4 mr-2" />
-                    Reset
-                  </button>
-                </div>
-              </div>
-
-              {/* Messages */}
-              <div className="flex-1 overflow-y-auto p-6 space-y-4">
-                {messages.length === 0 ? (
-                  <div className="text-center py-12">
-                    <MessageSquare className="w-12 h-12 mx-auto mb-4 text-white/30" />
-                    <p className="text-white/60">Start a conversation to test your AI model</p>
-                  </div>
-                ) : (
-                  messages.map((message) => (
-                    <div
-                      key={message.id}
-                      className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                {/* Input */}
+                <div className="p-6 border-t border-white/10 flex-shrink-0">
+                  <div className="flex space-x-4">
+                    <input
+                      type="text"
+                      value={inputMessage}
+                      onChange={(e) => setInputMessage(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                      placeholder="Type your message..."
+                      className="flex-1 glass-input px-4 py-3 rounded-xl focus:ring-2 focus:ring-purple-500"
+                      disabled={isLoading}
+                    />
+                    <button
+                      onClick={handleSendMessage}
+                      disabled={!inputMessage.trim() || isLoading}
+                      className="button-primary px-6 py-3 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
                     >
-                      <div className={`max-w-3xl ${message.role === 'user' ? 'order-2' : 'order-1'}`}>
-                        <div className="flex items-start space-x-3">
-                          {message.role === 'assistant' && (
-                            <div className="w-8 h-8 rounded-lg icon-bg-primary flex items-center justify-center flex-shrink-0">
-                              <Bot className="w-4 h-4 text-white" />
-                            </div>
-                          )}
-                          <div className={`rounded-2xl p-4 ${
-                            message.role === 'user' 
-                              ? 'button-primary text-white' 
-                              : 'glass-subtle text-white/90'
-                          }`}>
-                            <p className="whitespace-pre-wrap">{message.content}</p>
-                            <p className="text-xs opacity-60 mt-2">
-                              {message.timestamp.toLocaleTimeString()}
-                            </p>
-                          </div>
-                          {message.role === 'user' && (
-                            <div className="w-8 h-8 rounded-lg glass-subtle flex items-center justify-center flex-shrink-0">
-                              <UserIcon className="w-4 h-4 text-white" />
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                )}
-                {isLoading && (
-                  <div className="flex justify-start">
-                    <div className="flex items-start space-x-3">
-                      <div className="w-8 h-8 rounded-lg icon-bg-primary flex items-center justify-center">
-                        <Bot className="w-4 h-4 text-white" />
-                      </div>
-                      <div className="glass-subtle rounded-2xl p-4">
-                        <div className="flex space-x-2">
-                          <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce"></div>
-                          <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                          <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                        </div>
-                      </div>
-                    </div>
+                      <Send className="w-5 h-5" />
+                    </button>
                   </div>
-                )}
-              </div>
-
-              {/* Input */}
-              <div className="p-6 border-t border-white/10 flex-shrink-0">
-                <div className="flex space-x-4">
-                  <input
-                    type="text"
-                    value={inputMessage}
-                    onChange={(e) => setInputMessage(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                    placeholder="Type your message..."
-                    className="flex-1 glass-input px-4 py-3 rounded-xl focus:ring-2 focus:ring-purple-500"
-                    disabled={isLoading}
-                  />
-                  <button
-                    onClick={handleSendMessage}
-                    disabled={!inputMessage.trim() || isLoading}
-                    className="button-primary px-6 py-3 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
-                  >
-                    <Send className="w-5 h-5" />
-                  </button>
                 </div>
               </div>
             </div>
@@ -581,7 +586,7 @@ export function TestModelPage() {
       {/* Publish Modal */}
       {showPublish && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="glass-strong rounded-2xl p-6 w-full max-w-2xl max-h-[70vh] overflow-y-auto grain-texture">
+          <div className="glass-strong rounded-2xl p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto grain-texture">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold gradient-text">Publish Model</h2>
               <button
