@@ -347,157 +347,155 @@ export function ChatInterface({ model }: ChatInterfaceProps) {
               overscrollBehavior: 'contain'
             }}
           >
-            <div className="p-6">
-              <div className="max-w-4xl mx-auto space-y-6">
-                {messages.map((message) => (
-                  <div key={message.id} className="flex items-start space-x-4">
-                    {/* Avatar */}
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                      message.role === 'user' ? 'bg-white/10' : 'icon-bg-primary'
-                    }`}>
-                      {message.role === 'user' ? (
-                        <UserIcon className="w-4 h-4 text-white" />
-                      ) : (
-                        <Bot className="w-4 h-4 text-white" />
-                      )}
-                    </div>
+            <div className="p-6 max-w-4xl mx-auto space-y-6">
+              {messages.map((message) => (
+                <div key={message.id} className="flex items-start space-x-4">
+                  {/* Avatar */}
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                    message.role === 'user' ? 'bg-white/10' : 'icon-bg-primary'
+                  }`}>
+                    {message.role === 'user' ? (
+                      <UserIcon className="w-4 h-4 text-white" />
+                    ) : (
+                      <Bot className="w-4 h-4 text-white" />
+                    )}
+                  </div>
 
-                    {/* Message Content */}
-                    <div className="flex-1 min-w-0">
-                      <div className="text-white/90">
-                        {message.role === 'user' ? (
-                          <p className="whitespace-pre-wrap break-words">{message.content}</p>
-                        ) : (
-                          <div className="prose prose-invert prose-base max-w-none">
-                            <ReactMarkdown 
-                              remarkPlugins={[remarkGfm]}
-                              components={{
-                                code: ({ node, inline, className, children, ...props }) => {
-                                  return inline ? (
-                                    <code className="bg-white/10 px-1 py-0.5 rounded text-sm font-mono" {...props}>
+                  {/* Message Content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="text-white/90">
+                      {message.role === 'user' ? (
+                        <p className="whitespace-pre-wrap break-words">{message.content}</p>
+                      ) : (
+                        <div className="prose prose-invert prose-base max-w-none">
+                          <ReactMarkdown 
+                            remarkPlugins={[remarkGfm]}
+                            components={{
+                              code: ({ node, inline, className, children, ...props }) => {
+                                return inline ? (
+                                  <code className="bg-white/10 px-1 py-0.5 rounded text-sm font-mono" {...props}>
+                                    {children}
+                                  </code>
+                                ) : (
+                                  <pre className="bg-white/5 p-4 rounded-lg overflow-x-auto">
+                                    <code className="text-sm font-mono" {...props}>
                                       {children}
                                     </code>
-                                  ) : (
-                                    <pre className="bg-white/5 p-4 rounded-lg overflow-x-auto">
-                                      <code className="text-sm font-mono" {...props}>
-                                        {children}
-                                      </code>
-                                    </pre>
-                                  );
-                                },
-                                blockquote: ({ children }) => (
-                                  <blockquote className="border-l-4 border-purple-400 pl-4 italic text-white/80">
+                                  </pre>
+                                );
+                              },
+                              blockquote: ({ children }) => (
+                                <blockquote className="border-l-4 border-purple-400 pl-4 italic text-white/80">
+                                  {children}
+                                </blockquote>
+                              ),
+                              table: ({ children }) => (
+                                <div className="overflow-x-auto">
+                                  <table className="min-w-full border-collapse border border-white/20">
                                     {children}
-                                  </blockquote>
-                                ),
-                                table: ({ children }) => (
-                                  <div className="overflow-x-auto">
-                                    <table className="min-w-full border-collapse border border-white/20">
-                                      {children}
-                                    </table>
-                                  </div>
-                                ),
-                                th: ({ children }) => (
-                                  <th className="border border-white/20 px-3 py-2 bg-white/10 font-semibold text-left">
-                                    {children}
-                                  </th>
-                                ),
-                                td: ({ children }) => (
-                                  <td className="border border-white/20 px-3 py-2">
-                                    {children}
-                                  </td>
-                                ),
-                                ul: ({ children }) => (
-                                  <ul className="list-disc list-inside space-y-2">
-                                    {children}
-                                  </ul>
-                                ),
-                                ol: ({ children }) => (
-                                  <ol className="list-decimal list-inside space-y-2">
-                                    {children}
-                                  </ol>
-                                ),
-                                h1: ({ children }) => (
-                                  <h1 className="text-xl font-bold gradient-text mb-3">
-                                    {children}
-                                  </h1>
-                                ),
-                                h2: ({ children }) => (
-                                  <h2 className="text-lg font-bold gradient-text mb-3">
-                                    {children}
-                                  </h2>
-                                ),
-                                h3: ({ children }) => (
-                                  <h3 className="text-base font-bold gradient-text mb-2">
-                                    {children}
-                                  </h3>
-                                ),
-                                p: ({ children }) => (
-                                  <p className="mb-3 last:mb-0 break-words leading-relaxed">
-                                    {children}
-                                  </p>
-                                ),
-                                strong: ({ children }) => (
-                                  <strong className="font-bold text-white">
-                                    {children}
-                                  </strong>
-                                ),
-                                em: ({ children }) => (
-                                  <em className="italic text-white/90">
-                                    {children}
-                                  </em>
-                                ),
-                                hr: () => (
-                                  <hr className="border-white/20 my-6" />
-                                )
-                              }}
-                            >
-                              {message.content}
-                            </ReactMarkdown>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Message Actions */}
-                      {message.role === 'assistant' && (
-                        <div className="flex items-center mt-2 space-x-2">
-                          <button
-                            onClick={() => copyMessage(message.id, message.content)}
-                            className="p-1 text-white/40 hover:text-white/60 hover:bg-white/10 rounded transition-colors"
+                                  </table>
+                                </div>
+                              ),
+                              th: ({ children }) => (
+                                <th className="border border-white/20 px-3 py-2 bg-white/10 font-semibold text-left">
+                                  {children}
+                                </th>
+                              ),
+                              td: ({ children }) => (
+                                <td className="border border-white/20 px-3 py-2">
+                                  {children}
+                                </td>
+                              ),
+                              ul: ({ children }) => (
+                                <ul className="list-disc list-inside space-y-2">
+                                  {children}
+                                </ul>
+                              ),
+                              ol: ({ children }) => (
+                                <ol className="list-decimal list-inside space-y-2">
+                                  {children}
+                                </ol>
+                              ),
+                              h1: ({ children }) => (
+                                <h1 className="text-xl font-bold gradient-text mb-3">
+                                  {children}
+                                </h1>
+                              ),
+                              h2: ({ children }) => (
+                                <h2 className="text-lg font-bold gradient-text mb-3">
+                                  {children}
+                                </h2>
+                              ),
+                              h3: ({ children }) => (
+                                <h3 className="text-base font-bold gradient-text mb-2">
+                                  {children}
+                                </h3>
+                              ),
+                              p: ({ children }) => (
+                                <p className="mb-3 last:mb-0 break-words leading-relaxed">
+                                  {children}
+                                </p>
+                              ),
+                              strong: ({ children }) => (
+                                <strong className="font-bold text-white">
+                                  {children}
+                                </strong>
+                              ),
+                              em: ({ children }) => (
+                                <em className="italic text-white/90">
+                                  {children}
+                                </em>
+                              ),
+                              hr: () => (
+                                <hr className="border-white/20 my-6" />
+                              )
+                            }}
                           >
-                            {copiedMessageId === message.id ? (
-                              <Check className="w-4 h-4 text-green-400" />
-                            ) : (
-                              <Copy className="w-4 h-4" />
-                            )}
-                          </button>
-                          <span className="text-xs text-white/40">
-                            {message.timestamp.toLocaleTimeString()}
-                          </span>
+                            {message.content}
+                          </ReactMarkdown>
                         </div>
                       )}
                     </div>
-                  </div>
-                ))}
 
-                {/* Loading indicator */}
-                {isLoading && (
-                  <div className="flex items-start space-x-4">
-                    <div className="w-8 h-8 rounded-full icon-bg-primary flex items-center justify-center">
-                      <Bot className="w-4 h-4 text-white" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex space-x-1">
-                        <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce"></div>
-                        <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                        <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                    {/* Message Actions */}
+                    {message.role === 'assistant' && (
+                      <div className="flex items-center mt-2 space-x-2">
+                        <button
+                          onClick={() => copyMessage(message.id, message.content)}
+                          className="p-1 text-white/40 hover:text-white/60 hover:bg-white/10 rounded transition-colors"
+                        >
+                          {copiedMessageId === message.id ? (
+                            <Check className="w-4 h-4 text-green-400" />
+                          ) : (
+                            <Copy className="w-4 h-4" />
+                          )}
+                        </button>
+                        <span className="text-xs text-white/40">
+                          {message.timestamp.toLocaleTimeString()}
+                        </span>
                       </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+
+              {/* Loading indicator */}
+              {isLoading && (
+                <div className="flex items-start space-x-4">
+                  <div className="w-8 h-8 rounded-full icon-bg-primary flex items-center justify-center">
+                    <Bot className="w-4 h-4 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                      <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                     </div>
                   </div>
-                )}
+                </div>
+              )}
 
-                <div ref={messagesEndRef} />
-              </div>
+              <div ref={messagesEndRef} />
             </div>
           </div>
 
