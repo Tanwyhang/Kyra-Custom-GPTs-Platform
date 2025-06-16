@@ -53,11 +53,18 @@ export function useAuth() {
       if (!existingUserArray || existingUserArray.length === 0) {
         console.log('Creating user profile...');
         
+        // Sanitize display name to prevent encoding issues
+        const sanitizeText = (text: string | null | undefined): string | null => {
+          if (!text) return null;
+          // Remove any non-printable characters and ensure it's valid UTF-8
+          return text.replace(/[\x00-\x1F\x7F-\x9F]/g, '').trim() || null;
+        };
+
         // Create user profile if it doesn't exist
         const { error } = await supabase.from('users').insert({
           id: user.id,
           email: user.email!,
-          display_name: user.user_metadata?.display_name || user.user_metadata?.full_name || null,
+          display_name: sanitizeText(user.user_metadata?.display_name || user.user_metadata?.full_name),
           avatar_url: user.user_metadata?.avatar_url || null,
         });
 
@@ -78,9 +85,23 @@ export function useAuth() {
     try {
       console.log('Attempting to sign in with email:', email);
       
+      // Sanitize input to prevent encoding issues
+      const sanitizedEmail = email.trim().toLowerCase();
+      const sanitizedPassword = password.trim();
+
+      if (!sanitizedEmail || !sanitizedPassword) {
+        return { error: { message: 'Email and password are required' } };
+      }
+
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(sanitizedEmail)) {
+        return { error: { message: 'Please enter a valid email address' } };
+      }
+
       const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+        email: sanitizedEmail,
+        password: sanitizedPassword,
       });
 
       if (error) {
@@ -98,7 +119,7 @@ export function useAuth() {
       return { error: null };
     } catch (error) {
       console.error('Unexpected sign in error:', error);
-      return { error };
+      return { error: { message: 'An unexpected error occurred. Please try again.' } };
     }
   };
 
@@ -110,6 +131,10 @@ export function useAuth() {
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/dashboard`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
         },
       });
 
@@ -122,7 +147,7 @@ export function useAuth() {
       return { data, error: null };
     } catch (error) {
       console.error('Unexpected Google sign in error:', error);
-      return { data: null, error };
+      return { data: null, error: { message: 'Failed to initiate Google sign in' } };
     }
   };
 
@@ -130,12 +155,32 @@ export function useAuth() {
     try {
       console.log('Attempting to sign up with email:', email);
       
+      // Sanitize input to prevent encoding issues
+      const sanitizedEmail = email.trim().toLowerCase();
+      const sanitizedPassword = password.trim();
+      const sanitizedDisplayName = displayName?.trim().replace(/[\x00-\x1F\x7F-\x9F]/g, '') || null;
+
+      if (!sanitizedEmail || !sanitizedPassword) {
+        return { data: null, error: { message: 'Email and password are required' } };
+      }
+
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(sanitizedEmail)) {
+        return { data: null, error: { message: 'Please enter a valid email address' } };
+      }
+
+      // Validate password strength
+      if (sanitizedPassword.length < 6) {
+        return { data: null, error: { message: 'Password must be at least 6 characters long' } };
+      }
+
       const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
+        email: sanitizedEmail,
+        password: sanitizedPassword,
         options: {
           data: {
-            display_name: displayName,
+            display_name: sanitizedDisplayName,
           },
         },
       });
@@ -154,7 +199,7 @@ export function useAuth() {
         const { error: profileError } = await supabase.from('users').insert({
           id: data.user.id,
           email: data.user.email!,
-          display_name: displayName,
+          display_name: sanitizedDisplayName,
         });
 
         if (profileError) {
@@ -168,7 +213,7 @@ export function useAuth() {
       return { data, error: null };
     } catch (error) {
       console.error('Unexpected sign up error:', error);
-      return { data: null, error };
+      return { data: null, error: { message: 'An unexpected error occurred. Please try again.' } };
     }
   };
 

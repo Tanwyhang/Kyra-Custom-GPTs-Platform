@@ -21,42 +21,65 @@ export function SignInForm() {
     setLoading(true);
     setError('');
 
-    if (!email.trim() || !password.trim()) {
+    // Basic validation
+    const trimmedEmail = email.trim();
+    const trimmedPassword = password.trim();
+
+    if (!trimmedEmail || !trimmedPassword) {
       setError('Please enter both email and password');
       setLoading(false);
       return;
     }
 
-    const { error } = await signIn(email.trim(), password);
-
-    if (error) {
-      if (error.message?.includes('Invalid login credentials')) {
-        setError('Invalid email or password. Please check your credentials and try again. If you just signed up, make sure to confirm your email first.');
-      } else if (error.message?.includes('Email not confirmed')) {
-        setError('Please check your email and click the confirmation link before signing in.');
-      } else if (error.message?.includes('invalid_credentials')) {
-        setError('Invalid email or password. If you don\'t have an account yet, please sign up first. If you recently signed up, check your email for a confirmation link.');
-      } else {
-        setError(error.message || 'An error occurred during sign in. Please try again.');
-      }
-    } else {
-      navigate('/dashboard');
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmedEmail)) {
+      setError('Please enter a valid email address');
+      setLoading(false);
+      return;
     }
 
-    setLoading(false);
+    try {
+      const { error } = await signIn(trimmedEmail, trimmedPassword);
+
+      if (error) {
+        if (error.message?.includes('Invalid login credentials')) {
+          setError('Invalid email or password. Please check your credentials and try again.');
+        } else if (error.message?.includes('Email not confirmed')) {
+          setError('Please check your email and click the confirmation link before signing in.');
+        } else if (error.message?.includes('invalid_credentials')) {
+          setError('Invalid email or password. If you don\'t have an account yet, please sign up first.');
+        } else {
+          setError(error.message || 'An error occurred during sign in. Please try again.');
+        }
+      } else {
+        navigate('/dashboard');
+      }
+    } catch (error) {
+      console.error('Sign in error:', error);
+      setError('An unexpected error occurred. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
     setError('');
 
-    const { error } = await signInWithGoogle();
+    try {
+      const { error } = await signInWithGoogle();
 
-    if (error) {
-      setError('Failed to sign in with Google. Please try again or use email/password.');
+      if (error) {
+        setError('Failed to sign in with Google. Please try again or use email/password.');
+        setGoogleLoading(false);
+      }
+      // Note: If successful, the user will be redirected by Supabase
+    } catch (error) {
+      console.error('Google sign in error:', error);
+      setError('Failed to sign in with Google. Please try again.');
       setGoogleLoading(false);
     }
-    // Note: If successful, the user will be redirected by Supabase
   };
 
   return (
@@ -129,6 +152,7 @@ export function SignInForm() {
                     onChange={(e) => setEmail(e.target.value)}
                     className="glass-input appearance-none relative block w-full pl-12 pr-4 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-base transition-all duration-300"
                     placeholder="Enter your email"
+                    maxLength={254} // Standard email max length
                   />
                 </div>
               </div>
@@ -151,6 +175,7 @@ export function SignInForm() {
                     onChange={(e) => setPassword(e.target.value)}
                     className="glass-input appearance-none relative block w-full pl-12 pr-12 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-base transition-all duration-300"
                     placeholder="Enter your password"
+                    maxLength={128} // Reasonable password max length
                   />
                   <button
                     type="button"

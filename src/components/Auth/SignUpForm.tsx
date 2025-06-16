@@ -22,46 +22,84 @@ export function SignUpForm() {
     setLoading(true);
     setError('');
 
-    if (!email.trim() || !password.trim() || !displayName.trim()) {
+    // Basic validation
+    const trimmedEmail = email.trim();
+    const trimmedPassword = password.trim();
+    const trimmedDisplayName = displayName.trim();
+
+    if (!trimmedEmail || !trimmedPassword || !trimmedDisplayName) {
       setError('Please fill in all required fields');
       setLoading(false);
       return;
     }
 
-    if (password.length < 6) {
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmedEmail)) {
+      setError('Please enter a valid email address');
+      setLoading(false);
+      return;
+    }
+
+    // Password validation
+    if (trimmedPassword.length < 6) {
       setError('Password must be at least 6 characters long');
       setLoading(false);
       return;
     }
 
-    const { error } = await signUp(email.trim(), password, displayName.trim());
-
-    if (error) {
-      if (error.message?.includes('User already registered')) {
-        setError('An account with this email already exists. Please sign in instead.');
-      } else if (error.message?.includes('Password should be at least')) {
-        setError('Password must be at least 6 characters long');
-      } else {
-        setError(error.message || 'An error occurred during sign up. Please try again.');
-      }
-    } else {
-      navigate('/dashboard');
+    // Display name validation
+    if (trimmedDisplayName.length < 2) {
+      setError('Display name must be at least 2 characters long');
+      setLoading(false);
+      return;
     }
 
-    setLoading(false);
+    if (trimmedDisplayName.length > 50) {
+      setError('Display name must be less than 50 characters');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const { error } = await signUp(trimmedEmail, trimmedPassword, trimmedDisplayName);
+
+      if (error) {
+        if (error.message?.includes('User already registered')) {
+          setError('An account with this email already exists. Please sign in instead.');
+        } else if (error.message?.includes('Password should be at least')) {
+          setError('Password must be at least 6 characters long');
+        } else {
+          setError(error.message || 'An error occurred during sign up. Please try again.');
+        }
+      } else {
+        navigate('/dashboard');
+      }
+    } catch (error) {
+      console.error('Sign up error:', error);
+      setError('An unexpected error occurred. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGoogleSignUp = async () => {
     setGoogleLoading(true);
     setError('');
 
-    const { error } = await signInWithGoogle();
+    try {
+      const { error } = await signInWithGoogle();
 
-    if (error) {
-      setError('Failed to sign up with Google. Please try again or use email/password.');
+      if (error) {
+        setError('Failed to sign up with Google. Please try again or use email/password.');
+        setGoogleLoading(false);
+      }
+      // Note: If successful, the user will be redirected by Supabase
+    } catch (error) {
+      console.error('Google sign up error:', error);
+      setError('Failed to sign up with Google. Please try again.');
       setGoogleLoading(false);
     }
-    // Note: If successful, the user will be redirected by Supabase
   };
 
   return (
@@ -133,6 +171,8 @@ export function SignUpForm() {
                     onChange={(e) => setDisplayName(e.target.value)}
                     className="glass-input appearance-none relative block w-full pl-12 pr-4 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-base transition-all duration-300"
                     placeholder="Enter your display name"
+                    minLength={2}
+                    maxLength={50}
                   />
                 </div>
               </div>
@@ -155,6 +195,7 @@ export function SignUpForm() {
                     onChange={(e) => setEmail(e.target.value)}
                     className="glass-input appearance-none relative block w-full pl-12 pr-4 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-base transition-all duration-300"
                     placeholder="Enter your email"
+                    maxLength={254} // Standard email max length
                   />
                 </div>
               </div>
@@ -178,6 +219,7 @@ export function SignUpForm() {
                     onChange={(e) => setPassword(e.target.value)}
                     className="glass-input appearance-none relative block w-full pl-12 pr-12 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-base transition-all duration-300"
                     placeholder="Enter your password (min. 6 characters)"
+                    maxLength={128} // Reasonable password max length
                   />
                   <button
                     type="button"
