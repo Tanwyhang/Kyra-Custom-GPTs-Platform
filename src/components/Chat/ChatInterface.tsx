@@ -352,7 +352,7 @@ export function ChatInterface({ model }: ChatInterfaceProps) {
           className="flex-1 overflow-y-auto p-6 space-y-6 min-h-0"
           style={{ 
             height: '1000px', // Increased from 700px
-            maxHeight: '800px',
+            maxHeight: '1000px',
             scrollBehavior: 'smooth',
             overscrollBehavior: 'contain'
           }}
