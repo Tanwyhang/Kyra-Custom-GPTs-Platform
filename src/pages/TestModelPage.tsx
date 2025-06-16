@@ -64,8 +64,6 @@ export function TestModelPage() {
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [tokenCount, setTokenCount] = useState(0);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const previousMessageCount = useRef(0);
 
   // Configuration state
   const [config, setConfig] = useState<ModelConfig>({
@@ -96,24 +94,11 @@ export function TestModelPage() {
   const [newTag, setNewTag] = useState('');
   const [publishing, setPublishing] = useState(false);
 
-  // Only scroll to bottom when new messages are added, not on initial load
-  useEffect(() => {
-    // Only scroll if messages were actually added (not on initial load)
-    if (messages.length > previousMessageCount.current && previousMessageCount.current > 0) {
-      scrollToBottom();
-    }
-    previousMessageCount.current = messages.length;
-  }, [messages]);
-
   useEffect(() => {
     // Estimate token count (rough approximation)
     const totalText = messages.map(m => m.content).join(' ') + inputMessage;
     setTokenCount(Math.ceil(totalText.length / 4));
   }, [messages, inputMessage]);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
 
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;
@@ -174,7 +159,6 @@ export function TestModelPage() {
   const resetConversation = () => {
     setMessages([]);
     setTokenCount(0);
-    previousMessageCount.current = 0; // Reset the counter
   };
 
   const handleFileUpload = (files: FileList | null) => {
@@ -566,7 +550,6 @@ export function TestModelPage() {
                     </div>
                   </div>
                 )}
-                <div ref={messagesEndRef} />
               </div>
 
               {/* Input */}
