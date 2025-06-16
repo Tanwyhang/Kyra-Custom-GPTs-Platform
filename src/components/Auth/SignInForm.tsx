@@ -31,9 +31,11 @@ export function SignInForm() {
 
     if (error) {
       if (error.message?.includes('Invalid login credentials')) {
-        setError('Invalid email or password. Please check your credentials and try again.');
+        setError('Invalid email or password. Please check your credentials and try again. If you just signed up, make sure to confirm your email first.');
       } else if (error.message?.includes('Email not confirmed')) {
         setError('Please check your email and click the confirmation link before signing in.');
+      } else if (error.message?.includes('invalid_credentials')) {
+        setError('Invalid email or password. If you don\'t have an account yet, please sign up first. If you recently signed up, check your email for a confirmation link.');
       } else {
         setError(error.message || 'An error occurred during sign in. Please try again.');
       }

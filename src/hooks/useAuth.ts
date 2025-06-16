@@ -31,14 +31,19 @@ export function useAuth() {
 
   const ensureUserProfile = async (user: User) => {
     try {
-      // Check if user profile exists
-      const { data: existingUser } = await supabase
+      // Check if user profile exists - use regular select instead of single
+      const { data: existingUserArray, error: selectError } = await supabase
         .from('users')
         .select('id')
-        .eq('id', user.id)
-        .single();
+        .eq('id', user.id);
 
-      if (!existingUser) {
+      if (selectError) {
+        console.error('Error checking user profile:', selectError);
+        return;
+      }
+
+      // Check if user profile doesn't exist
+      if (!existingUserArray || existingUserArray.length === 0) {
         // Create user profile if it doesn't exist
         const { error } = await supabase.from('users').insert({
           id: user.id,
@@ -66,6 +71,11 @@ export function useAuth() {
       if (error) {
         console.error('Sign in error:', error);
         return { error };
+      }
+
+      // Ensure user profile exists after successful sign in
+      if (data.user) {
+        await ensureUserProfile(data.user);
       }
 
       return { error: null };
