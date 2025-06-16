@@ -6,12 +6,12 @@
 @layer base {
   :root {
     /* Custom Color Palette */
-    --color-navy: #0B1354;
-    --color-royal-blue: #165BAA;
-    --color-purple: #A155B9;
-    --color-coral: #F765A3;
-    --color-pink: #FFA4B6;
-    --color-light-pink: #F9D1D1;
+    --color-navy: #343c75;
+    --color-royal-blue: #4a83c3;
+    --color-purple: #c389d1;
+    --color-coral: #fba3cb;
+    --color-pink: #ffd0dc;
+    --color-light-pink: #fff1f1;
     
     /* Dark Theme Colors */
     --bg-primary: #0a0a0f;
