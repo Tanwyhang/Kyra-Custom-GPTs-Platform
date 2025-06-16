@@ -195,7 +195,7 @@ export function HomePage() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="scroll-reveal text-4xl lg:text-5xl font-bold gradient-text mb-6">
-              Why Choose GPT Hub?
+              Why Choose Kyra?
             </h2>
             <p className="scroll-reveal text-xl lg:text-2xl text-white/80 max-w-4xl mx-auto">
               Test GPTs for free, enhance with your knowledge, and discover the best GPTs from the community.
