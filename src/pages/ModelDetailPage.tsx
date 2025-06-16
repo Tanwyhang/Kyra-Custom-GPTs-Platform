@@ -314,19 +314,22 @@ export function ModelDetailPage() {
             </button>
           </div>
 
-          <div className="p-8 h-[600px] flex flex-col">
+          {/* Content Area - Fixed height with proper flex layout */}
+          <div className="h-[70vh] flex flex-col">
             {activeTab === 'chat' ? (
-              <div className="flex flex-col h-full">
-                <div className="mb-6">
+              <div className="flex flex-col h-full p-6">
+                <div className="mb-4 flex-shrink-0">
                   <h3 className="text-lg font-semibold gradient-text mb-2">Chat with {model.title}</h3>
                   <p className="text-white/70">
                     Interact directly with this AI model. No downloads required - start chatting immediately!
                   </p>
                 </div>
-                <ChatInterface model={model} />
+                <div className="flex-1 min-h-0">
+                  <ChatInterface model={model} />
+                </div>
               </div>
             ) : (
-              <div className="overflow-y-auto">
+              <div className="overflow-y-auto p-8">
                 {/* Quick Stats */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                   <div className="text-center">
