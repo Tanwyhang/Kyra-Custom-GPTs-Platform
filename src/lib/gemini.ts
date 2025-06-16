@@ -1,6 +1,5 @@
 /**
- * Simple Gemini API wrapper with context-based model definitions
- * Each "model" is defined by its core prompt/context using the same underlying Gemini API
+ * Enhanced Gemini API wrapper with proper knowledge base and context handling
  */
 
 interface ModelConfig {
@@ -25,7 +24,7 @@ interface ModelDefinition {
 }
 
 /**
- * Base Gemini API wrapper class
+ * Enhanced Gemini API wrapper class with knowledge base support
  */
 export class GeminiWrapper {
   private apiKey: string;
@@ -36,37 +35,51 @@ export class GeminiWrapper {
   }
 
   /**
-   * Generate response using Gemini API
+   * Generate response using Gemini API with enhanced context handling
    */
   async generateResponse(
     messages: Message[],
     systemPrompt: string,
     config: ModelConfig,
-    knowledgeContext?: string
+    knowledgeContext?: string,
+    uploadedFiles?: File[]
   ): Promise<string> {
     try {
-      // Build the full prompt with system context
+      // Build comprehensive prompt with system context
       let fullPrompt = systemPrompt;
 
       // Add knowledge context if provided
-      if (knowledgeContext) {
-        fullPrompt += `\n\nAdditional Knowledge Context:\n${knowledgeContext}`;
+      if (knowledgeContext && knowledgeContext.trim()) {
+        fullPrompt += `\n\n=== KNOWLEDGE BASE ===\n${knowledgeContext.trim()}\n=== END KNOWLEDGE BASE ===`;
       }
 
-      // Add conversation history
+      // Add file context if files are uploaded
+      if (uploadedFiles && uploadedFiles.length > 0) {
+        fullPrompt += `\n\n=== UPLOADED FILES CONTEXT ===\n`;
+        fullPrompt += `The user has uploaded ${uploadedFiles.length} file(s): `;
+        fullPrompt += uploadedFiles.map(f => `"${f.name}" (${f.type}, ${this.formatFileSize(f.size)})`).join(', ');
+        fullPrompt += `\nUse this information to provide more contextual and relevant responses.`;
+        fullPrompt += `\n=== END FILES CONTEXT ===`;
+      }
+
+      // Add conversation history with proper formatting
       if (messages.length > 0) {
-        fullPrompt += '\n\nConversation History:';
-        messages.forEach(msg => {
-          fullPrompt += `\n${msg.role === 'user' ? 'Human' : 'Assistant'}: ${msg.content}`;
+        fullPrompt += '\n\n=== CONVERSATION HISTORY ===';
+        messages.forEach((msg, index) => {
+          const role = msg.role === 'user' ? 'Human' : 'Assistant';
+          fullPrompt += `\n\n${role}: ${msg.content}`;
         });
+        fullPrompt += '\n=== END CONVERSATION HISTORY ===';
       }
 
       // Get the latest user message
       const latestMessage = messages[messages.length - 1];
       if (latestMessage?.role === 'user') {
-        fullPrompt += `\n\nHuman: ${latestMessage.content}\nAssistant:`;
+        fullPrompt += `\n\nCurrent Human Message: ${latestMessage.content}`;
+        fullPrompt += `\n\nAssistant Response:`;
       }
 
+      // Make API call to Gemini
       const response = await fetch(`${this.baseUrl}?key=${this.apiKey}`, {
         method: 'POST',
         headers: {
@@ -82,20 +95,73 @@ export class GeminiWrapper {
             temperature: config.temperature,
             topP: config.topP,
             maxOutputTokens: config.maxTokens,
-          }
+            candidateCount: 1,
+            stopSequences: []
+          },
+          safetySettings: [
+            {
+              category: "HARM_CATEGORY_HARASSMENT",
+              threshold: "BLOCK_MEDIUM_AND_ABOVE"
+            },
+            {
+              category: "HARM_CATEGORY_HATE_SPEECH",
+              threshold: "BLOCK_MEDIUM_AND_ABOVE"
+            },
+            {
+              category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+              threshold: "BLOCK_MEDIUM_AND_ABOVE"
+            },
+            {
+              category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+              threshold: "BLOCK_MEDIUM_AND_ABOVE"
+            }
+          ]
         })
       });
 
       if (!response.ok) {
-        throw new Error(`Gemini API error: ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Gemini API error:', response.status, errorData);
+        throw new Error(`Gemini API error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
       }
 
       const data = await response.json();
-      return data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response generated';
+      
+      // Extract response with better error handling
+      const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      
+      if (!responseText) {
+        console.error('No response text from Gemini:', data);
+        throw new Error('No response generated from Gemini API');
+      }
+
+      return responseText;
     } catch (error) {
       console.error('Gemini API error:', error);
-      throw new Error('Failed to generate response');
+      
+      // Provide more specific error messages
+      if (error instanceof Error) {
+        if (error.message.includes('API_KEY')) {
+          throw new Error('Invalid API key. Please check your Gemini API configuration.');
+        } else if (error.message.includes('QUOTA')) {
+          throw new Error('API quota exceeded. Please try again later.');
+        } else if (error.message.includes('RATE_LIMIT')) {
+          throw new Error('Rate limit exceeded. Please wait a moment before trying again.');
+        }
+      }
+      
+      throw new Error('Failed to generate response. Please try again.');
     }
+  }
+
+  /**
+   * Format file size for display
+   */
+  private formatFileSize(bytes: number): string {
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    if (bytes === 0) return '0 Bytes';
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
   }
 }
 
@@ -107,7 +173,7 @@ export const PREDEFINED_MODELS: ModelDefinition[] = [
     id: 'general-assistant',
     name: 'General Assistant',
     description: 'A helpful AI assistant for general questions and tasks',
-    systemPrompt: 'You are a helpful, knowledgeable, and friendly AI assistant. Provide clear, accurate, and helpful responses to user questions. Be concise but thorough in your explanations.',
+    systemPrompt: 'You are a helpful, knowledgeable, and friendly AI assistant. Provide clear, accurate, and helpful responses to user questions. Be concise but thorough in your explanations. Use the knowledge base and context provided to give more relevant and informed answers.',
     defaultConfig: {
       temperature: 0.7,
       topP: 0.9,
@@ -120,7 +186,7 @@ export const PREDEFINED_MODELS: ModelDefinition[] = [
     id: 'creative-writer',
     name: 'Creative Writer',
     description: 'An AI specialized in creative writing and storytelling',
-    systemPrompt: 'You are a creative writing assistant with expertise in storytelling, poetry, and creative content. Help users craft engaging narratives, develop characters, and explore creative ideas. Be imaginative and inspiring while maintaining literary quality.',
+    systemPrompt: 'You are a creative writing assistant with expertise in storytelling, poetry, and creative content. Help users craft engaging narratives, develop characters, and explore creative ideas. Be imaginative and inspiring while maintaining literary quality. Use any provided knowledge base to enhance your creative suggestions with relevant context and inspiration.',
     defaultConfig: {
       temperature: 0.9,
       topP: 0.95,
@@ -133,7 +199,7 @@ export const PREDEFINED_MODELS: ModelDefinition[] = [
     id: 'code-assistant',
     name: 'Code Assistant',
     description: 'A programming expert for code help and technical guidance',
-    systemPrompt: 'You are an expert programming assistant. Help users with coding problems, explain programming concepts, review code, and provide technical guidance. Focus on best practices, clean code, and practical solutions. Support multiple programming languages and frameworks.',
+    systemPrompt: 'You are an expert programming assistant with deep knowledge of multiple programming languages, frameworks, and best practices. Help users with coding problems, explain programming concepts, review code, and provide technical guidance. Focus on clean code, best practices, and practical solutions. Use any provided documentation or code files to give more specific and contextual assistance.',
     defaultConfig: {
       temperature: 0.3,
       topP: 0.8,
@@ -146,7 +212,7 @@ export const PREDEFINED_MODELS: ModelDefinition[] = [
     id: 'business-advisor',
     name: 'Business Advisor',
     description: 'An AI consultant for business strategy and professional advice',
-    systemPrompt: 'You are a business consultant and advisor with expertise in strategy, operations, marketing, and professional development. Provide practical business advice, help with decision-making, and offer insights on industry trends. Be professional and data-driven in your responses.',
+    systemPrompt: 'You are a senior business consultant and advisor with expertise in strategy, operations, marketing, and professional development. Provide practical business advice, help with decision-making, and offer insights on industry trends. Be professional and data-driven in your responses. Use any provided business documents or context to give more targeted and relevant advice.',
     defaultConfig: {
       temperature: 0.5,
       topP: 0.85,
@@ -159,7 +225,7 @@ export const PREDEFINED_MODELS: ModelDefinition[] = [
     id: 'educational-tutor',
     name: 'Educational Tutor',
     description: 'A patient tutor for learning and educational support',
-    systemPrompt: 'You are an educational tutor who helps students learn various subjects. Break down complex topics into understandable parts, provide examples, and encourage learning. Be patient, supportive, and adapt your teaching style to the student\'s needs. Focus on understanding rather than just providing answers.',
+    systemPrompt: 'You are an educational tutor who helps students learn various subjects. Break down complex topics into understandable parts, provide examples, and encourage learning. Be patient, supportive, and adapt your teaching style to the student\'s needs. Focus on understanding rather than just providing answers. Use any provided educational materials or context to create more personalized learning experiences.',
     defaultConfig: {
       temperature: 0.6,
       topP: 0.9,
@@ -172,7 +238,7 @@ export const PREDEFINED_MODELS: ModelDefinition[] = [
     id: 'technical-support',
     name: 'Technical Support',
     description: 'A technical expert for troubleshooting and IT support',
-    systemPrompt: 'You are a technical support specialist with expertise in troubleshooting software, hardware, and IT issues. Provide step-by-step solutions, explain technical concepts clearly, and help users resolve problems efficiently. Be methodical and thorough in your approach.',
+    systemPrompt: 'You are a technical support specialist with expertise in troubleshooting software, hardware, and IT issues. Provide step-by-step solutions, explain technical concepts clearly, and help users resolve problems efficiently. Be methodical and thorough in your approach. Use any provided system information or error logs to give more accurate diagnostics and solutions.',
     defaultConfig: {
       temperature: 0.4,
       topP: 0.8,
@@ -184,7 +250,7 @@ export const PREDEFINED_MODELS: ModelDefinition[] = [
 ];
 
 /**
- * Model manager class for handling different context-based models
+ * Enhanced model manager class with real Gemini integration
  */
 export class ModelManager {
   private gemini: GeminiWrapper;
@@ -222,13 +288,14 @@ export class ModelManager {
   }
 
   /**
-   * Generate response using a specific model
+   * Generate response using a specific model with enhanced context
    */
   async generateResponse(
     modelId: string,
     messages: Message[],
     config?: Partial<ModelConfig>,
-    knowledgeContext?: string
+    knowledgeContext?: string,
+    uploadedFiles?: File[]
   ): Promise<string> {
     const model = this.models.get(modelId);
     if (!model) {
@@ -244,7 +311,8 @@ export class ModelManager {
       messages,
       model.systemPrompt,
       finalConfig,
-      knowledgeContext
+      knowledgeContext,
+      uploadedFiles
     );
   }
 
@@ -283,7 +351,7 @@ export function createModelManager(apiKey: string): ModelManager {
 }
 
 /**
- * Mock implementation for development/testing
+ * Enhanced mock implementation for development/testing
  */
 export class MockModelManager extends ModelManager {
   constructor() {
@@ -294,7 +362,8 @@ export class MockModelManager extends ModelManager {
     modelId: string,
     messages: Message[],
     config?: Partial<ModelConfig>,
-    knowledgeContext?: string
+    knowledgeContext?: string,
+    uploadedFiles?: File[]
   ): Promise<string> {
     const model = this.getModel(modelId);
     if (!model) {
@@ -307,47 +376,60 @@ export class MockModelManager extends ModelManager {
     const latestMessage = messages[messages.length - 1];
     const userInput = latestMessage?.content || '';
 
-    // Generate contextual mock responses based on model type
-    const responses = this.getMockResponses(modelId, userInput);
-    const response = responses[Math.floor(Math.random() * responses.length)];
+    // Generate contextual mock responses based on model type and knowledge
+    let response = this.getMockResponse(modelId, userInput);
 
-    return `${response} (Generated using ${model.name} with temperature ${config?.temperature || model.defaultConfig.temperature})`;
+    // Add knowledge base context to response if provided
+    if (knowledgeContext && knowledgeContext.trim()) {
+      response += `\n\n*Note: I've incorporated information from your knowledge base to provide a more contextual response.*`;
+    }
+
+    // Add file context if files are uploaded
+    if (uploadedFiles && uploadedFiles.length > 0) {
+      response += `\n\n*I've considered the ${uploadedFiles.length} uploaded file(s): ${uploadedFiles.map(f => f.name).join(', ')} in my response.*`;
+    }
+
+    // Add configuration note
+    response += `\n\n---\n*Generated using ${model.name} with temperature ${config?.temperature || model.defaultConfig.temperature}*`;
+
+    return response;
   }
 
-  private getMockResponses(modelId: string, userInput: string): string[] {
-    const baseResponses = {
+  private getMockResponse(modelId: string, userInput: string): string {
+    const responses = {
       'general-assistant': [
-        "I understand your question. Let me provide you with a comprehensive answer based on my knowledge.",
-        "That's an interesting point. Here's what I can tell you about that topic.",
-        "I'd be happy to help you with that. Based on the information available, here's my response."
+        "I understand your question and I'm here to help! Based on my knowledge and the context you've provided, here's a comprehensive response that addresses your needs.",
+        "That's an interesting point you've raised. Let me provide you with a detailed answer that takes into account the information available to me.",
+        "I'd be happy to assist you with that. Here's my analysis and recommendations based on your query and any relevant context."
       ],
       'creative-writer': [
-        "What a fascinating creative challenge! Let me craft something imaginative for you.",
-        "I love exploring creative ideas. Here's an artistic take on your request.",
-        "Let's dive into the realm of creativity and storytelling together."
+        "What a fascinating creative challenge! Let me craft something imaginative for you, drawing inspiration from the themes and context you've shared.",
+        "I love exploring creative ideas with you. Here's an artistic take on your request, incorporating elements that will make your story truly engaging.",
+        "Let's dive into the realm of creativity and storytelling together. I'll weave together your ideas with creative techniques to bring your vision to life."
       ],
       'code-assistant': [
-        "Looking at your code question, here's a technical solution with best practices in mind.",
-        "I can help you solve this programming challenge. Let me break down the approach step by step.",
-        "Here's a clean, efficient solution to your coding problem with explanations."
+        "Looking at your programming question, I'll provide a technical solution with best practices in mind. Here's a clean, efficient approach to solve your problem:",
+        "I can help you with this coding challenge. Let me break down the solution step by step, explaining the logic and providing optimized code.",
+        "Here's a robust solution to your programming problem, complete with explanations, error handling, and suggestions for improvement."
       ],
       'business-advisor': [
-        "From a business perspective, here's my strategic analysis and recommendations.",
-        "Let me provide you with actionable business insights based on industry best practices.",
-        "Here's a professional assessment of your business question with practical next steps."
+        "From a business perspective, here's my strategic analysis and recommendations based on current market trends and best practices:",
+        "Let me provide you with actionable business insights that consider your specific context and industry dynamics.",
+        "Here's a professional assessment of your business question with practical next steps and strategic considerations."
       ],
       'educational-tutor': [
-        "Great question! Let me explain this concept in a way that's easy to understand.",
-        "I'm here to help you learn. Let's break this topic down into manageable parts.",
-        "Learning is a journey, and I'm here to guide you through this subject step by step."
+        "Great question! Let me explain this concept in a way that's easy to understand, building on what you already know.",
+        "I'm here to help you learn effectively. Let's break this topic down into manageable parts and explore it step by step.",
+        "Learning is a journey, and I'm here to guide you through this subject with clear explanations and helpful examples."
       ],
       'technical-support': [
-        "I can help you troubleshoot this technical issue. Here's a systematic approach to resolve it.",
-        "Let me walk you through the solution to this technical problem with clear steps.",
-        "Based on the symptoms you've described, here's the most likely solution and how to implement it."
+        "I can help you troubleshoot this technical issue. Here's a systematic approach to diagnose and resolve the problem:",
+        "Let me walk you through the solution to this technical problem with clear, step-by-step instructions.",
+        "Based on the symptoms you've described and any system information provided, here's the most likely solution and implementation steps."
       ]
     };
 
-    return baseResponses[modelId as keyof typeof baseResponses] || baseResponses['general-assistant'];
+    const modelResponses = responses[modelId as keyof typeof responses] || responses['general-assistant'];
+    return modelResponses[Math.floor(Math.random() * modelResponses.length)];
   }
 }

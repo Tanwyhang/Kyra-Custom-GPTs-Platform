@@ -18,13 +18,12 @@ import {
   User as UserIcon,
   Sparkles,
   Zap,
-  BookOpen,
   Database,
-  Check,
-  RotateCcw as Reset
+  AlertCircle,
+  CheckCircle
 } from 'lucide-react';
 import { useScrollReveal } from '../hooks/useScrollReveal';
-import { MockModelManager, PREDEFINED_MODELS, type ModelDefinition } from '../lib/gemini';
+import { ModelManager, PREDEFINED_MODELS, type ModelDefinition } from '../lib/gemini';
 import { DatabaseService, type GPTSubmission } from '../lib/database';
 
 interface Message {
@@ -34,7 +33,7 @@ interface Message {
   timestamp: Date;
 }
 
-interface GPTConfig {
+interface ModelConfig {
   temperature: number;
   topP: number;
   maxTokens: number;
@@ -45,14 +44,14 @@ interface PublicationData {
   description: string;
   category: string;
   tags: string[];
-  samplePrompts: string[];
-  isPublic: boolean;
   licenseType: string;
-  licenseText?: string;
-  documentationUrl?: string;
-  repositoryUrl?: string;
-  publisherName?: string;
-  publisherEmail?: string;
+  licenseText: string;
+  documentationUrl: string;
+  repositoryUrl: string;
+  samplePrompts: string[];
+  publisherName: string;
+  publisherEmail: string;
+  isPublic: boolean;
 }
 
 const CATEGORIES = [
@@ -73,20 +72,20 @@ const LICENSE_TYPES = [
   'BSD 3-Clause',
   'Creative Commons',
   'Commercial',
-  'Custom',
-  'Other'
+  'Custom'
 ];
 
 export function TestModelPage() {
   const navigate = useNavigate();
   useScrollReveal();
 
-  // GPT management
-  const [gptManager] = useState(() => new MockModelManager());
-  const [selectedGPTId, setSelectedGPTId] = useState('general-assistant');
-  const [selectedGPT, setSelectedGPT] = useState<ModelDefinition | undefined>(
+  // Model management
+  const [modelManager, setModelManager] = useState<ModelManager | null>(null);
+  const [selectedModelId, setSelectedModelId] = useState('general-assistant');
+  const [selectedModel, setSelectedModel] = useState<ModelDefinition | undefined>(
     () => PREDEFINED_MODELS.find(m => m.id === 'general-assistant')
   );
+  const [apiKeyConfigured, setApiKeyConfigured] = useState(false);
 
   // Chat state
   const [messages, setMessages] = useState<Message[]>([]);
@@ -94,38 +93,24 @@ export function TestModelPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [tokenCount, setTokenCount] = useState(0);
 
-  // Configuration state with original values for cancel functionality
-  const [config, setConfig] = useState<GPTConfig>({
-    temperature: 0.7,
-    topP: 0.9,
-    maxTokens: 1024
-  });
-  const [originalConfig, setOriginalConfig] = useState<GPTConfig>({
+  // Configuration state
+  const [config, setConfig] = useState<ModelConfig>({
     temperature: 0.7,
     topP: 0.9,
     maxTokens: 1024
   });
 
-  // Enhanced knowledge enhancement state with original values
+  // Knowledge enhancement state
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [knowledgeText, setKnowledgeText] = useState('');
-  const [knowledgeTitle, setKnowledgeTitle] = useState('');
-  const [knowledgeDescription, setKnowledgeDescription] = useState('');
   const [dragActive, setDragActive] = useState(false);
-
-  // Original knowledge state for cancel functionality
-  const [originalKnowledge, setOriginalKnowledge] = useState({
-    files: [] as File[],
-    text: '',
-    title: '',
-    description: ''
-  });
 
   // UI state
   const [showConfig, setShowConfig] = useState(false);
   const [showPublish, setShowPublish] = useState(false);
-  const [showGPTSelector, setShowGPTSelector] = useState(false);
-  const [configChanged, setConfigChanged] = useState(false);
+  const [showModelSelector, setShowModelSelector] = useState(false);
+  const [showApiKeyInput, setShowApiKeyInput] = useState(false);
+  const [apiKey, setApiKey] = useState('');
 
   // Publication state
   const [publicationData, setPublicationData] = useState<PublicationData>({
@@ -133,59 +118,69 @@ export function TestModelPage() {
     description: '',
     category: '',
     tags: [],
-    samplePrompts: [''],
-    isPublic: true,
-    licenseType: 'MIT',
+    licenseType: '',
     licenseText: '',
     documentationUrl: '',
     repositoryUrl: '',
+    samplePrompts: [''],
     publisherName: '',
-    publisherEmail: ''
+    publisherEmail: '',
+    isPublic: true
   });
   const [newTag, setNewTag] = useState('');
   const [publishing, setPublishing] = useState(false);
 
-  // Update config when GPT changes
+  // Initialize model manager when API key is provided
   useEffect(() => {
-    const gpt = gptManager.getModel(selectedGPTId);
-    if (gpt) {
-      setSelectedGPT(gpt);
-      const newConfig = gpt.defaultConfig;
-      setConfig(newConfig);
-      setOriginalConfig(newConfig);
+    const savedApiKey = localStorage.getItem('gemini_api_key');
+    if (savedApiKey) {
+      setApiKey(savedApiKey);
+      setModelManager(new ModelManager(savedApiKey));
+      setApiKeyConfigured(true);
     }
-  }, [selectedGPTId, gptManager]);
+  }, []);
 
-  // Check if configuration has changed
+  // Update config when model changes
   useEffect(() => {
-    const hasConfigChanged = 
-      config.temperature !== originalConfig.temperature ||
-      config.topP !== originalConfig.topP ||
-      config.maxTokens !== originalConfig.maxTokens ||
-      knowledgeText !== originalKnowledge.text ||
-      knowledgeTitle !== originalKnowledge.title ||
-      knowledgeDescription !== originalKnowledge.description ||
-      uploadedFiles.length !== originalKnowledge.files.length ||
-      uploadedFiles.some((file, index) => file.name !== originalKnowledge.files[index]?.name);
-    
-    setConfigChanged(hasConfigChanged);
-  }, [config, originalConfig, knowledgeText, knowledgeTitle, knowledgeDescription, uploadedFiles, originalKnowledge]);
+    if (modelManager) {
+      const model = modelManager.getModel(selectedModelId);
+      if (model) {
+        setSelectedModel(model);
+        setConfig(model.defaultConfig);
+      }
+    } else {
+      const model = PREDEFINED_MODELS.find(m => m.id === selectedModelId);
+      if (model) {
+        setSelectedModel(model);
+        setConfig(model.defaultConfig);
+      }
+    }
+  }, [selectedModelId, modelManager]);
 
   useEffect(() => {
     // Estimate token count (rough approximation)
-    const totalText = messages.map(m => m.content).join(' ') + inputMessage;
+    const totalText = messages.map(m => m.content).join(' ') + inputMessage + knowledgeText;
     setTokenCount(Math.ceil(totalText.length / 4));
-  }, [messages, inputMessage]);
+  }, [messages, inputMessage, knowledgeText]);
 
-  const handleGPTChange = (gptId: string) => {
-    setSelectedGPTId(gptId);
-    setShowGPTSelector(false);
-    // Reset conversation when switching GPTs
+  const handleApiKeySubmit = () => {
+    if (apiKey.trim()) {
+      localStorage.setItem('gemini_api_key', apiKey.trim());
+      setModelManager(new ModelManager(apiKey.trim()));
+      setApiKeyConfigured(true);
+      setShowApiKeyInput(false);
+    }
+  };
+
+  const handleModelChange = (modelId: string) => {
+    setSelectedModelId(modelId);
+    setShowModelSelector(false);
+    // Reset conversation when switching models
     setMessages([]);
   };
 
   const handleSendMessage = async () => {
-    if (!inputMessage.trim() || isLoading) return;
+    if (!inputMessage.trim() || isLoading || !modelManager) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -199,31 +194,19 @@ export function TestModelPage() {
     setIsLoading(true);
 
     try {
-      // Prepare enhanced knowledge context
+      // Prepare knowledge context
       let knowledgeContext = '';
-      
-      if (knowledgeTitle.trim()) {
-        knowledgeContext += `Knowledge Base: ${knowledgeTitle.trim()}\n`;
-      }
-      
-      if (knowledgeDescription.trim()) {
-        knowledgeContext += `Description: ${knowledgeDescription.trim()}\n`;
-      }
-      
       if (knowledgeText.trim()) {
-        knowledgeContext += `\nContent:\n${knowledgeText.trim()}`;
-      }
-      
-      if (uploadedFiles.length > 0) {
-        knowledgeContext += '\n\nUploaded files: ' + uploadedFiles.map(f => f.name).join(', ');
+        knowledgeContext = knowledgeText.trim();
       }
 
-      // Generate response using the selected GPT
-      const response = await gptManager.generateResponse(
-        selectedGPTId,
+      // Generate response using the selected model with real Gemini API
+      const response = await modelManager.generateResponse(
+        selectedModelId,
         [...messages, userMessage],
         config,
-        knowledgeContext.trim() || undefined
+        knowledgeContext || undefined,
+        uploadedFiles.length > 0 ? uploadedFiles : undefined
       );
       
       const assistantMessage: Message = {
@@ -239,7 +222,7 @@ export function TestModelPage() {
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: 'Sorry, I encountered an error. Please try again.',
+        content: `Sorry, I encountered an error: ${error instanceof Error ? error.message : 'Unknown error'}. Please check your API key and try again.`,
         timestamp: new Date()
       };
       setMessages(prev => [...prev, errorMessage]);
@@ -257,7 +240,7 @@ export function TestModelPage() {
     if (!files) return;
 
     const validFiles = Array.from(files).filter(file => {
-      const validTypes = ['application/pdf', 'text/plain', 'text/csv'];
+      const validTypes = ['application/pdf', 'text/plain', 'text/csv', 'application/json', 'text/markdown'];
       const maxSize = 50 * 1024 * 1024; // 50MB
       return validTypes.includes(file.type) && file.size <= maxSize;
     });
@@ -288,43 +271,8 @@ export function TestModelPage() {
     handleFileUpload(e.dataTransfer.files);
   };
 
-  // Configuration save/cancel handlers
-  const handleSaveConfig = () => {
-    setOriginalConfig({ ...config });
-    setOriginalKnowledge({
-      files: [...uploadedFiles],
-      text: knowledgeText,
-      title: knowledgeTitle,
-      description: knowledgeDescription
-    });
-    setConfigChanged(false);
-  };
-
-  const handleCancelConfig = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    // Reset all configuration to original values
-    setConfig({ ...originalConfig });
-    setKnowledgeText(originalKnowledge.text);
-    setKnowledgeTitle(originalKnowledge.title);
-    setKnowledgeDescription(originalKnowledge.description);
-    setUploadedFiles([...originalKnowledge.files]);
-    setConfigChanged(false);
-  };
-
-  const handleResetToDefaults = () => {
-    if (selectedGPT) {
-      setConfig(selectedGPT.defaultConfig);
-      setKnowledgeText('');
-      setKnowledgeTitle('');
-      setKnowledgeDescription('');
-      setUploadedFiles([]);
-    }
-  };
-
   const addTag = () => {
-    if (newTag.trim() && publicationData.tags.length < 5 && !publicationData.tags.includes(newTag.trim())) {
+    if (newTag.trim() && publicationData.tags.length < 10 && !publicationData.tags.includes(newTag.trim())) {
       setPublicationData(prev => ({
         ...prev,
         tags: [...prev.tags, newTag.trim()]
@@ -341,7 +289,7 @@ export function TestModelPage() {
   };
 
   const addSamplePrompt = () => {
-    if (publicationData.samplePrompts.length < 3) {
+    if (publicationData.samplePrompts.length < 5) {
       setPublicationData(prev => ({
         ...prev,
         samplePrompts: [...prev.samplePrompts, '']
@@ -364,8 +312,7 @@ export function TestModelPage() {
   };
 
   const handlePublish = async () => {
-    if (!publicationData.name.trim() || !publicationData.description.trim() || !publicationData.category) {
-      alert('Please fill in all required fields (Name, Description, Category)');
+    if (!publicationData.name.trim() || !publicationData.description.trim() || !publicationData.category || !selectedModel) {
       return;
     }
 
@@ -378,20 +325,20 @@ export function TestModelPage() {
         category: publicationData.category,
         tags: publicationData.tags,
         licenseType: publicationData.licenseType,
-        licenseText: publicationData.licenseText,
-        documentationUrl: publicationData.documentationUrl,
-        repositoryUrl: publicationData.repositoryUrl,
-        systemPrompt: selectedGPT?.systemPrompt || 'You are a helpful AI assistant.',
+        licenseText: publicationData.licenseText || undefined,
+        documentationUrl: publicationData.documentationUrl || undefined,
+        repositoryUrl: publicationData.repositoryUrl || undefined,
+        systemPrompt: selectedModel.systemPrompt,
         defaultConfig: config,
-        knowledgeContext: knowledgeText.trim() || undefined,
+        knowledgeContext: knowledgeText || undefined,
         knowledgeFiles: uploadedFiles.map(f => ({
           name: f.name,
           size: f.size,
           type: f.type
         })),
         samplePrompts: publicationData.samplePrompts.filter(p => p.trim()),
-        publisherName: publicationData.publisherName,
-        publisherEmail: publicationData.publisherEmail,
+        publisherName: publicationData.publisherName || undefined,
+        publisherEmail: publicationData.publisherEmail || undefined,
         isPublic: publicationData.isPublic
       };
 
@@ -399,7 +346,7 @@ export function TestModelPage() {
       const result = await DatabaseService.submitGPT(submission);
 
       if (result.success) {
-        alert('GPT published successfully! It will be reviewed and made available in the marketplace soon.');
+        alert('GPT published successfully! It will be reviewed and appear in the marketplace once approved.');
         navigate('/marketplace');
       } else {
         alert(`Error publishing GPT: ${result.error}`);
@@ -413,262 +360,248 @@ export function TestModelPage() {
     }
   };
 
+  // Show API key input if not configured
+  if (!apiKeyConfigured) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="glass-strong rounded-2xl p-8 max-w-md w-full grain-texture">
+          <div className="text-center mb-6">
+            <div className="w-16 h-16 rounded-2xl icon-bg-primary flex items-center justify-center mx-auto mb-4 glow-effect">
+              <Zap className="w-8 h-8 text-white" />
+            </div>
+            <h2 className="text-2xl font-bold gradient-text mb-2">Configure Gemini API</h2>
+            <p className="text-white/70">
+              Enter your Gemini API key to start testing GPTs with real AI responses.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-white/80 mb-2">
+                Gemini API Key
+              </label>
+              <input
+                type="password"
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+                placeholder="Enter your Gemini API key..."
+                className="glass-input w-full px-4 py-3 rounded-xl"
+                onKeyPress={(e) => e.key === 'Enter' && handleApiKeySubmit()}
+              />
+            </div>
+
+            <button
+              onClick={handleApiKeySubmit}
+              disabled={!apiKey.trim()}
+              className="w-full button-primary py-3 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Start Testing
+            </button>
+
+            <div className="text-center">
+              <p className="text-sm text-white/60 mb-2">
+                Don't have an API key?
+              </p>
+              <a
+                href="https://makersuite.google.com/app/apikey"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-purple-400 hover:text-purple-300 text-sm underline"
+              >
+                Get your free Gemini API key →
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 flex flex-col pt-16">
       {/* Main Content - Fills remaining space below navbar */}
       <div className="flex-1 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-full py-6">
-            {/* Ultra-Compact Configuration Panel with 2-Column Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 h-full py-6">
+            {/* Configuration Panel */}
             {showConfig && (
               <div className="lg:col-span-1">
-                <div className="glass-strong rounded-2xl grain-texture h-full flex flex-col max-h-[calc(100vh-8rem)]">
-                  {/* Compact Header */}
-                  <div className="flex items-center justify-between p-3 border-b border-white/10 flex-shrink-0">
-                    <h3 className="text-base font-semibold gradient-text">Config</h3>
+                <div className="glass-strong rounded-2xl p-6 grain-texture space-y-6 h-full overflow-y-auto">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold gradient-text">Configuration</h3>
                     <button
-                      onClick={handleResetToDefaults}
-                      className="text-xs text-white/60 hover:text-white transition-colors flex items-center"
-                      title="Reset to defaults"
+                      onClick={() => {
+                        if (selectedModel) {
+                          setConfig(selectedModel.defaultConfig);
+                        }
+                      }}
+                      className="text-sm text-white/60 hover:text-white transition-colors"
                     >
-                      <Reset className="w-3 h-3 mr-1" />
-                      Reset
+                      Reset to Defaults
                     </button>
                   </div>
 
-                  {/* Scrollable Content - Ultra Compact with 2-Column Layout */}
-                  <div className="flex-1 overflow-y-auto p-3 space-y-3 text-sm">
-                    {/* GPT Selection - Full Width */}
-                    <div>
-                      <label className="block text-xs font-medium text-white/80 mb-1">GPT</label>
-                      <button
-                        onClick={() => setShowGPTSelector(true)}
-                        className="w-full glass-input px-2 py-1.5 rounded-lg text-left flex items-center justify-between text-xs"
-                      >
-                        <span className="truncate">{selectedGPT?.name || 'Select'}</span>
-                        <Zap className="w-3 h-3 text-white/50 flex-shrink-0" />
-                      </button>
-                    </div>
+                  {/* Model Selection */}
+                  <div>
+                    <label className="block text-sm font-medium text-white/80 mb-2">
+                      AI GPT
+                    </label>
+                    <button
+                      onClick={() => setShowModelSelector(true)}
+                      className="w-full glass-input px-3 py-2 rounded-xl text-left flex items-center justify-between"
+                    >
+                      <span>{selectedModel?.name || 'Select GPT'}</span>
+                      <Zap className="w-4 h-4 text-white/50" />
+                    </button>
+                    {selectedModel && (
+                      <p className="text-xs text-white/60 mt-1">{selectedModel.description}</p>
+                    )}
+                  </div>
 
-                    {/* GPT Parameters - 2-Column Layout */}
-                    <div className="space-y-2">
-                      <h4 className="text-xs font-semibold text-white/80 border-b border-white/10 pb-1">Parameters</h4>
-                      
-                      {/* Temperature & Top-p in 2 columns */}
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <div className="flex justify-between items-center mb-1">
-                            <label className="text-xs text-white/70">Temp</label>
-                            <span className="text-xs text-white/90 font-mono">{config.temperature}</span>
-                          </div>
-                          <input
-                            type="range"
-                            min="0"
-                            max="1"
-                            step="0.1"
-                            value={config.temperature}
-                            onChange={(e) => setConfig(prev => ({ ...prev, temperature: parseFloat(e.target.value) }))}
-                            className="w-full h-1"
-                          />
-                        </div>
-
-                        <div>
-                          <div className="flex justify-between items-center mb-1">
-                            <label className="text-xs text-white/70">Top-p</label>
-                            <span className="text-xs text-white/90 font-mono">{config.topP}</span>
-                          </div>
-                          <input
-                            type="range"
-                            min="0"
-                            max="1"
-                            step="0.1"
-                            value={config.topP}
-                            onChange={(e) => setConfig(prev => ({ ...prev, topP: parseFloat(e.target.value) }))}
-                            className="w-full h-1"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Max Tokens - Full Width */}
-                      <div>
-                        <label className="block text-xs text-white/70 mb-1">Max Tokens</label>
-                        <input
-                          type="number"
-                          min="1"
-                          max="4096"
-                          value={config.maxTokens}
-                          onChange={(e) => setConfig(prev => ({ ...prev, maxTokens: parseInt(e.target.value) }))}
-                          className="glass-input w-full px-2 py-1 rounded-lg text-xs"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Knowledge Base - 2-Column Layout where applicable */}
-                    <div className="space-y-2">
-                      <div className="flex items-center border-b border-white/10 pb-1">
-                        <Database className="w-3 h-3 mr-1 text-white/80" />
-                        <h4 className="text-xs font-semibold text-white/80">Knowledge</h4>
-                      </div>
-                      
-                      {/* Title & Description in 2 columns */}
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <label className="block text-xs text-white/70 mb-1">Title</label>
-                          <input
-                            type="text"
-                            value={knowledgeTitle}
-                            onChange={(e) => setKnowledgeTitle(e.target.value)}
-                            className="glass-input w-full px-2 py-1 rounded-lg text-xs"
-                            placeholder="KB name"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-xs text-white/70 mb-1">Type</label>
-                          <select
-                            className="glass-input w-full px-2 py-1 rounded-lg text-xs"
-                            defaultValue=""
-                          >
-                            <option value="">General</option>
-                            <option value="technical">Technical</option>
-                            <option value="creative">Creative</option>
-                            <option value="business">Business</option>
-                          </select>
-                        </div>
-                      </div>
-
-                      {/* Description - Full Width */}
-                      <div>
-                        <label className="block text-xs text-white/70 mb-1">Description</label>
-                        <textarea
-                          value={knowledgeDescription}
-                          onChange={(e) => setKnowledgeDescription(e.target.value)}
-                          rows={2}
-                          className="glass-input w-full px-2 py-1 rounded-lg resize-none text-xs"
-                          placeholder="Brief description"
-                        />
-                      </div>
-
-                      {/* Content - Full Width */}
-                      <div>
-                        <label className="block text-xs text-white/70 mb-1">
-                          Content ({knowledgeText.length}/5000)
-                        </label>
-                        <textarea
-                          value={knowledgeText}
-                          onChange={(e) => {
-                            if (e.target.value.length <= 5000) {
-                              setKnowledgeText(e.target.value);
-                            }
-                          }}
-                          rows={3}
-                          className="glass-input w-full px-2 py-1 rounded-lg resize-none text-xs"
-                          placeholder="Knowledge content..."
-                        />
-                      </div>
-                      
-                      {/* Files & Status in 2 columns */}
-                      <div className="grid grid-cols-2 gap-2">
-                        {/* Ultra Compact File Upload */}
-                        <div>
-                          <label className="block text-xs text-white/70 mb-1">Files</label>
-                          <div
-                            className={`border border-dashed rounded-lg p-2 text-center cursor-pointer transition-colors text-xs ${
-                              dragActive ? 'border-purple-400 bg-purple-400/10' : 'border-white/20 hover:border-white/30'
-                            }`}
-                            onDragEnter={handleDrag}
-                            onDragLeave={handleDrag}
-                            onDragOver={handleDrag}
-                            onDrop={handleDrop}
-                            onClick={() => document.getElementById('knowledge-files')?.click()}
-                          >
-                            <input
-                              id="knowledge-files"
-                              type="file"
-                              multiple
-                              accept=".pdf,.txt,.csv"
-                              onChange={(e) => handleFileUpload(e.target.files)}
-                              className="hidden"
-                            />
-                            <Upload className="w-3 h-3 mx-auto mb-1 text-white/50" />
-                            <p className="text-xs text-white/70">Upload</p>
-                          </div>
-                        </div>
-
-                        {/* Knowledge Status */}
-                        <div>
-                          <label className="block text-xs text-white/70 mb-1">Status</label>
-                          {(knowledgeText.trim() || uploadedFiles.length > 0 || knowledgeTitle.trim()) ? (
-                            <div className="glass-subtle rounded-lg p-2">
-                              <div className="flex items-center mb-1">
-                                <BookOpen className="w-3 h-3 mr-1 text-green-400" />
-                                <span className="text-xs font-medium text-green-400">Active</span>
-                              </div>
-                              <div className="text-xs text-white/60">
-                                {knowledgeTitle.trim() && <div>• {knowledgeTitle}</div>}
-                                {knowledgeText.trim() && <div>• {knowledgeText.length} chars</div>}
-                                {uploadedFiles.length > 0 && <div>• {uploadedFiles.length} files</div>}
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="glass-subtle rounded-lg p-2 text-center">
-                              <span className="text-xs text-white/50">Inactive</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* File List - Full Width, Compact */}
-                      {uploadedFiles.length > 0 && (
-                        <div className="space-y-1 max-h-12 overflow-y-auto">
-                          {uploadedFiles.map((file, index) => (
-                            <div key={index} className="flex items-center justify-between glass-subtle rounded p-1 text-xs">
-                              <span className="text-white/80 truncate flex-1 mr-1">{file.name}</span>
-                              <button
-                                onClick={() => removeFile(index)}
-                                className="text-white/50 hover:text-red-400 transition-colors flex-shrink-0"
-                              >
-                                <X className="w-3 h-3" />
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                  {/* Temperature */}
+                  <div>
+                    <label className="block text-sm font-medium text-white/80 mb-2">
+                      Temperature: {config.temperature}
+                    </label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.1"
+                      value={config.temperature}
+                      onChange={(e) => setConfig(prev => ({ ...prev, temperature: parseFloat(e.target.value) }))}
+                      className="w-full"
+                    />
+                    <div className="flex justify-between text-xs text-white/50 mt-1">
+                      <span>Focused</span>
+                      <span>Creative</span>
                     </div>
                   </div>
 
-                  {/* Save/Cancel Actions - Always Visible with Fixed Positioning */}
-                  <div className="p-3 border-t border-white/10 flex-shrink-0 relative z-10">
-                    <div className="grid grid-cols-2 gap-2">
-                      <button
-                        type="button"
-                        onClick={handleCancelConfig}
-                        disabled={!configChanged}
-                        className="glass-subtle px-2 py-1.5 rounded-lg hover:glass transition-colors text-white/80 text-xs disabled:opacity-50 disabled:cursor-not-allowed relative z-20"
-                        style={{ pointerEvents: 'auto' }}
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        type="button"
-                        onClick={handleSaveConfig}
-                        disabled={!configChanged}
-                        className="button-primary px-2 py-1.5 rounded-lg text-white text-xs flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed relative z-20"
-                        style={{ pointerEvents: 'auto' }}
-                      >
-                        <Check className="w-3 h-3 mr-1" />
-                        Save
-                      </button>
+                  {/* Top-p */}
+                  <div>
+                    <label className="block text-sm font-medium text-white/80 mb-2">
+                      Top-p: {config.topP}
+                    </label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.1"
+                      value={config.topP}
+                      onChange={(e) => setConfig(prev => ({ ...prev, topP: parseFloat(e.target.value) }))}
+                      className="w-full"
+                    />
+                  </div>
+
+                  {/* Max Tokens */}
+                  <div>
+                    <label className="block text-sm font-medium text-white/80 mb-2">
+                      Max Tokens
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="4096"
+                      value={config.maxTokens}
+                      onChange={(e) => setConfig(prev => ({ ...prev, maxTokens: parseInt(e.target.value) }))}
+                      className="glass-input w-full px-3 py-2 rounded-xl"
+                    />
+                  </div>
+
+                  {/* Knowledge Enhancement */}
+                  <div className="border-t border-white/10 pt-6">
+                    <h4 className="text-sm font-semibold text-white/80 mb-4 flex items-center">
+                      <Database className="w-4 h-4 mr-2" />
+                      Knowledge Enhancement
+                    </h4>
+                    
+                    {/* File Upload */}
+                    <div
+                      className={`border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-colors mb-4 ${
+                        dragActive ? 'border-purple-400 bg-purple-400/10' : 'border-white/20 hover:border-white/30'
+                      }`}
+                      onDragEnter={handleDrag}
+                      onDragLeave={handleDrag}
+                      onDragOver={handleDrag}
+                      onDrop={handleDrop}
+                      onClick={() => document.getElementById('knowledge-files')?.click()}
+                    >
+                      <input
+                        id="knowledge-files"
+                        type="file"
+                        multiple
+                        accept=".pdf,.txt,.csv,.json,.md"
+                        onChange={(e) => handleFileUpload(e.target.files)}
+                        className="hidden"
+                      />
+                      <Upload className="w-6 h-6 mx-auto mb-2 text-white/50" />
+                      <p className="text-sm text-white/70">
+                        Drop files or click to upload
+                      </p>
+                      <p className="text-xs text-white/50 mt-1">
+                        PDF, TXT, CSV, JSON, MD (max 10 files, 50MB each)
+                      </p>
                     </div>
-                    {configChanged && (
-                      <p className="text-xs text-orange-400 mt-1 text-center">Unsaved changes</p>
+
+                    {/* Uploaded Files */}
+                    {uploadedFiles.length > 0 && (
+                      <div className="space-y-2 mb-4">
+                        {uploadedFiles.map((file, index) => (
+                          <div key={index} className="flex items-center justify-between glass-subtle rounded-lg p-2">
+                            <div className="flex items-center">
+                              <FileText className="w-4 h-4 mr-2 text-white/50" />
+                              <span className="text-sm text-white/80 truncate">{file.name}</span>
+                            </div>
+                            <button
+                              onClick={() => removeFile(index)}
+                              className="text-white/50 hover:text-red-400 transition-colors"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
                     )}
+
+                    {/* Text Input */}
+                    <textarea
+                      value={knowledgeText}
+                      onChange={(e) => setKnowledgeText(e.target.value)}
+                      rows={4}
+                      className="glass-input w-full px-3 py-2 rounded-xl resize-none"
+                      placeholder="Add context, instructions, or knowledge that will enhance the GPT's responses..."
+                    />
+                    <p className="text-xs text-white/50 mt-1">
+                      This context will be included with every message to provide more relevant responses.
+                    </p>
+                  </div>
+
+                  {/* API Key Management */}
+                  <div className="border-t border-white/10 pt-6">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-sm font-semibold text-white/80">API Configuration</h4>
+                      <div className="flex items-center text-green-400">
+                        <CheckCircle className="w-4 h-4 mr-1" />
+                        <span className="text-xs">Connected</span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => {
+                        localStorage.removeItem('gemini_api_key');
+                        setApiKeyConfigured(false);
+                        setModelManager(null);
+                      }}
+                      className="text-sm text-white/60 hover:text-white transition-colors"
+                    >
+                      Change API Key
+                    </button>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Chat Interface - Increased height */}
+            {/* Chat Interface */}
             <div className={`${showConfig ? 'lg:col-span-3' : 'lg:col-span-4'}`}>
               <div className="glass-strong rounded-2xl overflow-hidden grain-texture h-full flex flex-col">
                 {/* Integrated Header */}
@@ -679,25 +612,25 @@ export function TestModelPage() {
                       <Sparkles className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <h3 className="font-semibold gradient-text">{selectedGPT?.name || 'AI GPT Tester'}</h3>
+                      <h3 className="font-semibold gradient-text">{selectedModel?.name || 'AI GPT Tester'}</h3>
                       <p className="text-sm text-white/60">Powered by Gemini 1.5 Flash</p>
                     </div>
                   </div>
 
-                  {/* Center - Status indicators - Made smaller and more compact */}
-                  <div className="hidden md:flex items-center space-x-2">
-                    <div className="flex items-center space-x-1 glass-subtle px-2 py-1 rounded-lg">
-                      <Clock className="w-3 h-3 text-white/60" />
-                      <span className="text-xs text-white/80">{tokenCount}</span>
+                  {/* Center - Status indicators */}
+                  <div className="hidden md:flex items-center space-x-4">
+                    <div className="flex items-center space-x-2 glass-subtle px-3 py-2 rounded-xl">
+                      <Clock className="w-4 h-4 text-white/60" />
+                      <span className="text-sm text-white/80">{tokenCount} tokens</span>
                     </div>
-                    <div className="flex items-center space-x-1 glass-subtle px-2 py-1 rounded-lg">
-                      <MessageSquare className="w-3 h-3 text-white/60" />
-                      <span className="text-xs text-white/80">{messages.length}</span>
+                    <div className="flex items-center space-x-2 glass-subtle px-3 py-2 rounded-xl">
+                      <MessageSquare className="w-4 h-4 text-white/60" />
+                      <span className="text-sm text-white/80">{messages.length} messages</span>
                     </div>
                     {(knowledgeText.trim() || uploadedFiles.length > 0) && (
-                      <div className="flex items-center space-x-1 glass-subtle px-2 py-1 rounded-lg">
-                        <Database className="w-3 h-3 text-green-400" />
-                        <span className="text-xs text-green-400">KB</span>
+                      <div className="flex items-center space-x-2 glass-subtle px-3 py-2 rounded-xl">
+                        <Database className="w-4 h-4 text-green-400" />
+                        <span className="text-sm text-green-400">KB Active</span>
                       </div>
                     )}
                   </div>
@@ -715,16 +648,13 @@ export function TestModelPage() {
                     
                     <button
                       onClick={() => setShowConfig(!showConfig)}
-                      className={`flex items-center px-3 py-2 rounded-xl transition-all duration-300 relative ${
+                      className={`flex items-center px-3 py-2 rounded-xl transition-all duration-300 ${
                         showConfig ? 'button-primary' : 'glass-subtle hover:glass'
                       } text-white`}
                       title="Configure GPT"
                     >
                       <Settings className="w-4 h-4 mr-2" />
                       <span className="hidden sm:inline">Configure</span>
-                      {configChanged && (
-                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-orange-400 rounded-full"></div>
-                      )}
                     </button>
                     
                     <button
@@ -738,37 +668,37 @@ export function TestModelPage() {
                   </div>
                 </div>
 
-                {/* Mobile status indicators - Made smaller and more compact */}
-                <div className="md:hidden flex items-center justify-center space-x-2 px-6 py-2 border-b border-white/10">
-                  <div className="flex items-center space-x-1 glass-subtle px-2 py-1 rounded-lg">
+                {/* Mobile status indicators */}
+                <div className="md:hidden flex items-center justify-center space-x-4 px-6 py-3 border-b border-white/10">
+                  <div className="flex items-center space-x-2 glass-subtle px-3 py-1 rounded-lg">
                     <Clock className="w-3 h-3 text-white/60" />
-                    <span className="text-xs text-white/80">{tokenCount}</span>
+                    <span className="text-xs text-white/80">{tokenCount} tokens</span>
                   </div>
-                  <div className="flex items-center space-x-1 glass-subtle px-2 py-1 rounded-lg">
+                  <div className="flex items-center space-x-2 glass-subtle px-3 py-1 rounded-lg">
                     <MessageSquare className="w-3 h-3 text-white/60" />
-                    <span className="text-xs text-white/80">{messages.length}</span>
+                    <span className="text-xs text-white/80">{messages.length} messages</span>
                   </div>
                   {(knowledgeText.trim() || uploadedFiles.length > 0) && (
-                    <div className="flex items-center space-x-1 glass-subtle px-2 py-1 rounded-lg">
+                    <div className="flex items-center space-x-2 glass-subtle px-3 py-1 rounded-lg">
                       <Database className="w-3 h-3 text-green-400" />
                       <span className="text-xs text-green-400">KB</span>
                     </div>
                   )}
                 </div>
 
-                {/* Messages - Increased height */}
-                <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                {/* Messages */}
+                <div className="flex-1 overflow-y-auto p-6 space-y-4">
                   {messages.length === 0 ? (
-                    <div className="text-center py-16">
-                      <MessageSquare className="w-16 h-16 mx-auto mb-6 text-white/30" />
-                      <h3 className="text-xl font-semibold gradient-text mb-4">Start Testing Your AI GPT</h3>
-                      <p className="text-white/60 mb-2">
-                        Currently using: <span className="text-purple-400 font-medium">{selectedGPT?.name}</span>
+                    <div className="text-center py-12">
+                      <MessageSquare className="w-12 h-12 mx-auto mb-4 text-white/30" />
+                      <p className="text-white/60">Start a conversation to test your AI GPT</p>
+                      <p className="text-white/40 text-sm mt-2">
+                        Currently using: <span className="text-purple-400">{selectedModel?.name}</span>
                       </p>
                       {(knowledgeText.trim() || uploadedFiles.length > 0) && (
-                        <div className="inline-flex items-center px-4 py-2 glass-subtle rounded-xl mt-4">
-                          <Database className="w-4 h-4 mr-2 text-green-400" />
-                          <span className="text-sm text-green-400">Knowledge Base is active and ready</span>
+                        <div className="mt-4 flex items-center justify-center text-green-400">
+                          <Database className="w-4 h-4 mr-2" />
+                          <span className="text-sm">Knowledge base is active</span>
                         </div>
                       )}
                     </div>
@@ -778,26 +708,26 @@ export function TestModelPage() {
                         key={message.id}
                         className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                       >
-                        <div className={`max-w-4xl ${message.role === 'user' ? 'order-2' : 'order-1'}`}>
-                          <div className="flex items-start space-x-4">
+                        <div className={`max-w-3xl ${message.role === 'user' ? 'order-2' : 'order-1'}`}>
+                          <div className="flex items-start space-x-3">
                             {message.role === 'assistant' && (
-                              <div className="w-10 h-10 rounded-xl icon-bg-primary flex items-center justify-center flex-shrink-0">
-                                <Bot className="w-5 h-5 text-white" />
+                              <div className="w-8 h-8 rounded-lg icon-bg-primary flex items-center justify-center flex-shrink-0">
+                                <Bot className="w-4 h-4 text-white" />
                               </div>
                             )}
-                            <div className={`rounded-2xl p-6 ${
+                            <div className={`rounded-2xl p-4 ${
                               message.role === 'user' 
                                 ? 'button-primary text-white' 
                                 : 'glass-subtle text-white/90'
                             }`}>
-                              <p className="whitespace-pre-wrap leading-relaxed text-base">{message.content}</p>
-                              <p className="text-xs opacity-60 mt-3">
+                              <p className="whitespace-pre-wrap">{message.content}</p>
+                              <p className="text-xs opacity-60 mt-2">
                                 {message.timestamp.toLocaleTimeString()}
                               </p>
                             </div>
                             {message.role === 'user' && (
-                              <div className="w-10 h-10 rounded-xl glass-subtle flex items-center justify-center flex-shrink-0">
-                                <UserIcon className="w-5 h-5 text-white" />
+                              <div className="w-8 h-8 rounded-lg glass-subtle flex items-center justify-center flex-shrink-0">
+                                <UserIcon className="w-4 h-4 text-white" />
                               </div>
                             )}
                           </div>
@@ -807,15 +737,15 @@ export function TestModelPage() {
                   )}
                   {isLoading && (
                     <div className="flex justify-start">
-                      <div className="flex items-start space-x-4">
-                        <div className="w-10 h-10 rounded-xl icon-bg-primary flex items-center justify-center">
-                          <Bot className="w-5 h-5 text-white" />
+                      <div className="flex items-start space-x-3">
+                        <div className="w-8 h-8 rounded-lg icon-bg-primary flex items-center justify-center">
+                          <Bot className="w-4 h-4 text-white" />
                         </div>
-                        <div className="glass-subtle rounded-2xl p-6">
+                        <div className="glass-subtle rounded-2xl p-4">
                           <div className="flex space-x-2">
-                            <div className="w-3 h-3 bg-white/50 rounded-full animate-bounce"></div>
-                            <div className="w-3 h-3 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                            <div className="w-3 h-3 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                            <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce"></div>
+                            <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                            <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                           </div>
                         </div>
                       </div>
@@ -823,7 +753,7 @@ export function TestModelPage() {
                   )}
                 </div>
 
-                {/* Input - Enhanced spacing */}
+                {/* Input */}
                 <div className="p-6 border-t border-white/10 flex-shrink-0">
                   <div className="flex space-x-4">
                     <input
@@ -832,13 +762,13 @@ export function TestModelPage() {
                       onChange={(e) => setInputMessage(e.target.value)}
                       onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                       placeholder="Type your message..."
-                      className="flex-1 glass-input px-6 py-4 rounded-xl focus:ring-2 focus:ring-purple-500 text-base"
+                      className="flex-1 glass-input px-4 py-3 rounded-xl focus:ring-2 focus:ring-purple-500"
                       disabled={isLoading}
                     />
                     <button
                       onClick={handleSendMessage}
                       disabled={!inputMessage.trim() || isLoading}
-                      className="button-primary px-8 py-4 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
+                      className="button-primary px-6 py-3 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
                     >
                       <Send className="w-5 h-5" />
                     </button>
@@ -850,14 +780,14 @@ export function TestModelPage() {
         </div>
       </div>
 
-      {/* GPT Selector Modal */}
-      {showGPTSelector && (
+      {/* Model Selector Modal */}
+      {showModelSelector && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="glass-strong rounded-2xl p-6 w-full max-w-4xl max-h-[80vh] overflow-y-auto grain-texture">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold gradient-text">Select AI GPT</h2>
               <button
-                onClick={() => setShowGPTSelector(false)}
+                onClick={() => setShowModelSelector(false)}
                 className="text-white/60 hover:text-white transition-colors"
               >
                 <X className="w-6 h-6" />
@@ -865,25 +795,25 @@ export function TestModelPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {PREDEFINED_MODELS.map((gpt) => (
+              {PREDEFINED_MODELS.map((model) => (
                 <button
-                  key={gpt.id}
-                  onClick={() => handleGPTChange(gpt.id)}
+                  key={model.id}
+                  onClick={() => handleModelChange(model.id)}
                   className={`text-left p-4 rounded-xl transition-all duration-300 ${
-                    selectedGPTId === gpt.id
+                    selectedModelId === model.id
                       ? 'button-primary text-white'
                       : 'glass-subtle hover:glass text-white/90'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-semibold">{gpt.name}</h3>
+                    <h3 className="font-semibold">{model.name}</h3>
                     <span className="text-xs px-2 py-1 rounded-full glass-subtle">
-                      {gpt.category}
+                      {model.category}
                     </span>
                   </div>
-                  <p className="text-sm opacity-80 mb-3">{gpt.description}</p>
+                  <p className="text-sm opacity-80 mb-3">{model.description}</p>
                   <div className="flex flex-wrap gap-1">
-                    {gpt.tags.slice(0, 3).map((tag, index) => (
+                    {model.tags.slice(0, 3).map((tag, index) => (
                       <span key={index} className="text-xs px-2 py-1 rounded-full glass-subtle opacity-60">
                         {tag}
                       </span>
@@ -896,10 +826,10 @@ export function TestModelPage() {
         </div>
       )}
 
-      {/* Enhanced Publish Modal with Database Integration */}
+      {/* Enhanced Publish Modal */}
       {showPublish && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="glass-strong rounded-2xl p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto grain-texture">
+          <div className="glass-strong rounded-2xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto grain-texture">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold gradient-text">Publish GPT to Marketplace</h2>
               <button
@@ -912,158 +842,115 @@ export function TestModelPage() {
 
             <div className="space-y-6">
               {/* Basic Information */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold gradient-text">Basic Information</h3>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-white/80 mb-2">
-                      GPT Name * <span className="text-xs text-white/60">({publicationData.name.length}/100)</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={publicationData.name}
-                      onChange={(e) => {
-                        if (e.target.value.length <= 100) {
-                          setPublicationData(prev => ({ ...prev, name: e.target.value }));
-                        }
-                      }}
-                      className="glass-input w-full px-3 py-2 rounded-xl"
-                      placeholder="Enter GPT name"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-white/80 mb-2">
-                      Category *
-                    </label>
-                    <select
-                      value={publicationData.category}
-                      onChange={(e) => setPublicationData(prev => ({ ...prev, category: e.target.value }))}
-                      className="glass-input w-full px-3 py-2 rounded-xl"
-                      required
-                    >
-                      <option value="">Select category</option>
-                      {CATEGORIES.map(category => (
-                        <option key={category} value={category}>{category}</option>
-                      ))}
-                    </select>
-                  </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-white/80 mb-2">
+                    GPT Name * <span className="text-red-400">({publicationData.name.length}/100)</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={publicationData.name}
+                    onChange={(e) => setPublicationData(prev => ({ ...prev, name: e.target.value.slice(0, 100) }))}
+                    className="glass-input w-full px-3 py-2 rounded-xl"
+                    placeholder="Enter GPT name (3-100 characters)"
+                    minLength={3}
+                    maxLength={100}
+                  />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-white/80 mb-2">
-                    Description * <span className="text-xs text-white/60">({publicationData.description.length}/1000)</span>
+                    Category *
                   </label>
-                  <textarea
-                    value={publicationData.description}
-                    onChange={(e) => {
-                      if (e.target.value.length <= 1000) {
-                        setPublicationData(prev => ({ ...prev, description: e.target.value }));
-                      }
-                    }}
-                    rows={4}
-                    className="glass-input w-full px-3 py-2 rounded-xl resize-none"
-                    placeholder="Describe what your GPT does, its capabilities, and use cases (minimum 50 characters)"
-                    required
+                  <select
+                    value={publicationData.category}
+                    onChange={(e) => setPublicationData(prev => ({ ...prev, category: e.target.value }))}
+                    className="glass-input w-full px-3 py-2 rounded-xl"
+                  >
+                    <option value="">Select category</option>
+                    {CATEGORIES.map(category => (
+                      <option key={category} value={category}>{category}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-white/80 mb-2">
+                  Description * <span className="text-red-400">({publicationData.description.length}/1000)</span>
+                </label>
+                <textarea
+                  value={publicationData.description}
+                  onChange={(e) => {
+                    if (e.target.value.length <= 1000) {
+                      setPublicationData(prev => ({ ...prev, description: e.target.value }));
+                    }
+                  }}
+                  rows={4}
+                  className="glass-input w-full px-3 py-2 rounded-xl resize-none"
+                  placeholder="Describe what your GPT does, its capabilities, and use cases (50-1000 characters)"
+                  minLength={50}
+                  maxLength={1000}
+                />
+              </div>
+
+              {/* Licensing */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-white/80 mb-2">
+                    License Type *
+                  </label>
+                  <select
+                    value={publicationData.licenseType}
+                    onChange={(e) => setPublicationData(prev => ({ ...prev, licenseType: e.target.value }))}
+                    className="glass-input w-full px-3 py-2 rounded-xl"
+                  >
+                    <option value="">Select license</option>
+                    {LICENSE_TYPES.map(license => (
+                      <option key={license} value={license}>{license}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-white/80 mb-2">
+                    Documentation URL
+                  </label>
+                  <input
+                    type="url"
+                    value={publicationData.documentationUrl}
+                    onChange={(e) => setPublicationData(prev => ({ ...prev, documentationUrl: e.target.value }))}
+                    className="glass-input w-full px-3 py-2 rounded-xl"
+                    placeholder="https://..."
                   />
                 </div>
               </div>
 
-              {/* Licensing */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold gradient-text">Licensing</h3>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-white/80 mb-2">
-                      License Type *
-                    </label>
-                    <select
-                      value={publicationData.licenseType}
-                      onChange={(e) => setPublicationData(prev => ({ ...prev, licenseType: e.target.value }))}
-                      className="glass-input w-full px-3 py-2 rounded-xl"
-                      required
-                    >
-                      {LICENSE_TYPES.map(license => (
-                        <option key={license} value={license}>{license}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-white/80 mb-2">
-                      Documentation URL
-                    </label>
-                    <input
-                      type="url"
-                      value={publicationData.documentationUrl}
-                      onChange={(e) => setPublicationData(prev => ({ ...prev, documentationUrl: e.target.value }))}
-                      className="glass-input w-full px-3 py-2 rounded-xl"
-                      placeholder="https://..."
-                    />
-                  </div>
-                </div>
-
-                {publicationData.licenseType === 'Custom' && (
-                  <div>
-                    <label className="block text-sm font-medium text-white/80 mb-2">
-                      Custom License Text
-                    </label>
-                    <textarea
-                      value={publicationData.licenseText}
-                      onChange={(e) => setPublicationData(prev => ({ ...prev, licenseText: e.target.value }))}
-                      rows={3}
-                      className="glass-input w-full px-3 py-2 rounded-xl resize-none"
-                      placeholder="Enter your custom license terms..."
-                    />
-                  </div>
-                )}
-              </div>
-
               {/* Publisher Information */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold gradient-text">Publisher Information</h3>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-white/80 mb-2">
-                      Publisher Name
-                    </label>
-                    <input
-                      type="text"
-                      value={publicationData.publisherName}
-                      onChange={(e) => setPublicationData(prev => ({ ...prev, publisherName: e.target.value }))}
-                      className="glass-input w-full px-3 py-2 rounded-xl"
-                      placeholder="Your name or organization"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-white/80 mb-2">
-                      Contact Email
-                    </label>
-                    <input
-                      type="email"
-                      value={publicationData.publisherEmail}
-                      onChange={(e) => setPublicationData(prev => ({ ...prev, publisherEmail: e.target.value }))}
-                      className="glass-input w-full px-3 py-2 rounded-xl"
-                      placeholder="contact@example.com"
-                    />
-                  </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-white/80 mb-2">
+                    Publisher Name
+                  </label>
+                  <input
+                    type="text"
+                    value={publicationData.publisherName}
+                    onChange={(e) => setPublicationData(prev => ({ ...prev, publisherName: e.target.value }))}
+                    className="glass-input w-full px-3 py-2 rounded-xl"
+                    placeholder="Your name or organization"
+                  />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-white/80 mb-2">
-                    Repository URL
+                    Contact Email
                   </label>
                   <input
-                    type="url"
-                    value={publicationData.repositoryUrl}
-                    onChange={(e) => setPublicationData(prev => ({ ...prev, repositoryUrl: e.target.value }))}
+                    type="email"
+                    value={publicationData.publisherEmail}
+                    onChange={(e) => setPublicationData(prev => ({ ...prev, publisherEmail: e.target.value }))}
                     className="glass-input w-full px-3 py-2 rounded-xl"
-                    placeholder="https://github.com/..."
+                    placeholder="contact@example.com"
                   />
                 </div>
               </div>
@@ -1109,7 +996,7 @@ export function TestModelPage() {
               {/* Sample Prompts */}
               <div>
                 <label className="block text-sm font-medium text-white/80 mb-2">
-                  Sample Prompts (max 3)
+                  Sample Prompts (max 5)
                 </label>
                 <div className="space-y-2">
                   {publicationData.samplePrompts.map((prompt, index) => (
@@ -1131,7 +1018,7 @@ export function TestModelPage() {
                       )}
                     </div>
                   ))}
-                  {publicationData.samplePrompts.length < 3 && (
+                  {publicationData.samplePrompts.length < 5 && (
                     <button
                       onClick={addSamplePrompt}
                       className="flex items-center glass-subtle px-4 py-2 rounded-xl hover:glass transition-colors text-white/80"
@@ -1169,7 +1056,7 @@ export function TestModelPage() {
                 />
                 <label htmlFor="terms" className="text-sm text-white/70">
                   I agree to the Terms of Service and confirm that I have the right to publish this GPT configuration. 
-                  I understand that my GPT will be reviewed before being made available in the marketplace.
+                  I understand that my GPT will be reviewed before appearing in the marketplace.
                 </label>
               </div>
 
@@ -1183,7 +1070,7 @@ export function TestModelPage() {
                 </button>
                 <button
                   onClick={handlePublish}
-                  disabled={publishing || !publicationData.name.trim() || !publicationData.description.trim() || !publicationData.category || publicationData.description.length < 50}
+                  disabled={publishing || !publicationData.name.trim() || !publicationData.description.trim() || !publicationData.category || !publicationData.licenseType}
                   className="button-primary px-6 py-3 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
                 >
                   {publishing ? 'Publishing...' : 'Publish to Marketplace'}
