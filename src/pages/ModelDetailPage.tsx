@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { 
-  Download, 
   Shield, 
   Calendar, 
   User, 
@@ -11,9 +10,12 @@ import {
   ArrowLeft,
   Star,
   TrendingUp,
-  CheckCircle
+  CheckCircle,
+  MessageSquare,
+  Bot
 } from 'lucide-react';
 import { PREDEFINED_MODELS } from '../lib/gemini';
+import { ChatInterface } from '../components/Chat/ChatInterface';
 
 interface ModelDetail {
   id: string;
@@ -34,14 +36,20 @@ interface ModelDetail {
     id?: string;
     display_name: string | null;
   };
+  // Chat interface specific fields
+  system_prompt: string;
+  default_temperature: number;
+  default_top_p: number;
+  default_max_tokens: number;
+  knowledge_context?: string;
 }
 
 export function ModelDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [model, setModel] = useState<ModelDetail | null>(null);
   const [loading, setLoading] = useState(true);
-  const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState('');
+  const [activeTab, setActiveTab] = useState<'chat' | 'details'>('chat');
 
   useEffect(() => {
     if (id) {
@@ -69,7 +77,13 @@ export function ModelDetailPage() {
           download_count: Math.floor(Math.random() * 1000) + 100,
           created_at: new Date(Date.now() - Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000).toISOString(),
           updated_at: new Date(Date.now() - Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000).toISOString(),
-          uploader: { display_name: 'AI Model Hub' }
+          uploader: { display_name: 'AI Model Hub' },
+          // Chat interface fields
+          system_prompt: predefinedModel.systemPrompt,
+          default_temperature: predefinedModel.defaultConfig.temperature,
+          default_top_p: predefinedModel.defaultConfig.topP,
+          default_max_tokens: predefinedModel.defaultConfig.maxTokens,
+          knowledge_context: 'This model has been optimized for specific use cases and provides contextual responses based on its specialized training.'
         };
         setModel(modelDetail);
       } else {
@@ -88,7 +102,12 @@ export function ModelDetailPage() {
             download_count: 1250,
             created_at: '2024-01-15T10:30:00Z',
             updated_at: '2024-01-15T10:30:00Z',
-            uploader: { display_name: 'AI Researcher' }
+            uploader: { display_name: 'AI Researcher' },
+            system_prompt: 'You are an expert computer vision assistant specialized in image classification and analysis. Help users understand image content, classify objects, and provide detailed visual analysis.',
+            default_temperature: 0.3,
+            default_top_p: 0.8,
+            default_max_tokens: 1024,
+            knowledge_context: 'Trained on ImageNet dataset with 1000+ object categories. Optimized for accuracy and edge device deployment.'
           },
           'community-2': {
             id: 'community-2',
@@ -103,7 +122,12 @@ export function ModelDetailPage() {
             download_count: 890,
             created_at: '2024-01-10T14:20:00Z',
             updated_at: '2024-01-10T14:20:00Z',
-            uploader: { display_name: 'NLP Expert' }
+            uploader: { display_name: 'NLP Expert' },
+            system_prompt: 'You are a sentiment analysis expert specializing in understanding emotions and opinions in text. Analyze sentiment, detect emotional nuances, and provide insights about textual content.',
+            default_temperature: 0.4,
+            default_top_p: 0.85,
+            default_max_tokens: 1280,
+            knowledge_context: 'Fine-tuned on diverse social media datasets including Twitter, Reddit, and Facebook posts. Specialized in detecting subtle emotional cues.'
           },
           'community-3': {
             id: 'community-3',
@@ -118,7 +142,12 @@ export function ModelDetailPage() {
             download_count: 567,
             created_at: '2024-01-08T09:15:00Z',
             updated_at: '2024-01-08T09:15:00Z',
-            uploader: { display_name: 'Mobile Dev' }
+            uploader: { display_name: 'Mobile Dev' },
+            system_prompt: 'You are a speech recognition and audio processing expert. Help users with speech-to-text conversion, audio analysis, and voice-related applications.',
+            default_temperature: 0.2,
+            default_top_p: 0.7,
+            default_max_tokens: 1024,
+            knowledge_context: 'Optimized for real-time processing on mobile devices. Supports multiple languages and accent variations.'
           },
           'community-4': {
             id: 'community-4',
@@ -133,7 +162,12 @@ export function ModelDetailPage() {
             download_count: 743,
             created_at: '2024-01-12T16:45:00Z',
             updated_at: '2024-01-12T16:45:00Z',
-            uploader: { display_name: 'Vision Expert' }
+            uploader: { display_name: 'Vision Expert' },
+            system_prompt: 'You are an object detection specialist using YOLO architecture. Help users identify and locate objects in images, provide bounding box coordinates, and explain detection confidence scores.',
+            default_temperature: 0.3,
+            default_top_p: 0.8,
+            default_max_tokens: 1536,
+            knowledge_context: 'Based on YOLOv8 architecture, trained on COCO dataset with 80+ object classes. Optimized for real-time detection applications.'
           },
           'community-5': {
             id: 'community-5',
@@ -148,7 +182,12 @@ export function ModelDetailPage() {
             download_count: 456,
             created_at: '2024-01-05T11:30:00Z',
             updated_at: '2024-01-05T11:30:00Z',
-            uploader: { display_name: 'NLP Researcher' }
+            uploader: { display_name: 'NLP Researcher' },
+            system_prompt: 'You are a text summarization expert. Help users create concise, coherent summaries of long documents while preserving key information and maintaining readability.',
+            default_temperature: 0.5,
+            default_top_p: 0.9,
+            default_max_tokens: 2048,
+            knowledge_context: 'Trained on diverse text sources including news articles, research papers, and web content. Specialized in extractive and abstractive summarization techniques.'
           }
         };
 
@@ -163,36 +202,6 @@ export function ModelDetailPage() {
       console.error('Error fetching model:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleDownload = async () => {
-    if (!model) return;
-
-    setDownloading(true);
-
-    try {
-      // Simulate download process
-      await new Promise(resolve => setTimeout(resolve, 1500));
-
-      // Simulate file download
-      const blob = new Blob(['Mock model file content'], { type: 'application/octet-stream' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${model.title.replace(/\s+/g, '_')}.model`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-
-      // Update local state
-      setModel(prev => prev ? { ...prev, download_count: prev.download_count + 1 } : null);
-    } catch (err) {
-      console.error('Error downloading model:', err);
-      setError('Failed to download model');
-    } finally {
-      setDownloading(false);
     }
   };
 
@@ -234,7 +243,7 @@ export function ModelDetailPage() {
 
   return (
     <div className="min-h-screen py-8">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Breadcrumb */}
         <div className="mb-6">
           <Link
@@ -272,159 +281,191 @@ export function ModelDetailPage() {
                   </div>
                 )}
                 <div className="flex items-center text-white/70">
-                  <Download className="w-4 h-4 mr-1" />
-                  <span>{model.download_count} downloads</span>
+                  <TrendingUp className="w-4 h-4 mr-1" />
+                  <span>{model.download_count} interactions</span>
                 </div>
               </div>
             </div>
           </div>
 
+          {/* Tab Navigation */}
+          <div className="flex border-b border-white/10">
+            <button
+              onClick={() => setActiveTab('chat')}
+              className={`flex items-center px-6 py-4 font-medium transition-colors ${
+                activeTab === 'chat'
+                  ? 'text-white border-b-2 border-purple-400 bg-white/5'
+                  : 'text-white/70 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <MessageSquare className="w-4 h-4 mr-2" />
+              Interactive Chat
+            </button>
+            <button
+              onClick={() => setActiveTab('details')}
+              className={`flex items-center px-6 py-4 font-medium transition-colors ${
+                activeTab === 'details'
+                  ? 'text-white border-b-2 border-purple-400 bg-white/5'
+                  : 'text-white/70 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <FileText className="w-4 h-4 mr-2" />
+              Model Details
+            </button>
+          </div>
+
           <div className="p-8">
-            {/* Quick Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-              <div className="text-center">
-                <div className="w-12 h-12 rounded-xl glass-subtle flex items-center justify-center mx-auto mb-2">
-                  <Tag className="w-6 h-6 text-purple-400" />
-                </div>
-                <p className="text-sm text-white/60">Type</p>
-                <p className="font-semibold text-white">{model.model_type}</p>
-              </div>
-
-              <div className="text-center">
-                <div className="w-12 h-12 rounded-xl glass-subtle flex items-center justify-center mx-auto mb-2">
-                  <FileText className="w-6 h-6 text-blue-400" />
-                </div>
-                <p className="text-sm text-white/60">Framework</p>
-                <p className="font-semibold text-white">{model.framework}</p>
-              </div>
-
-              {model.accuracy && (
-                <div className="text-center">
-                  <div className="w-12 h-12 rounded-xl glass-subtle flex items-center justify-center mx-auto mb-2">
-                    <Star className="w-6 h-6 text-green-400" />
-                  </div>
-                  <p className="text-sm text-white/60">Accuracy</p>
-                  <p className="font-semibold text-white">{model.accuracy}%</p>
-                </div>
-              )}
-
-              {model.file_size && (
-                <div className="text-center">
-                  <div className="w-12 h-12 rounded-xl glass-subtle flex items-center justify-center mx-auto mb-2">
-                    <BarChart3 className="w-6 h-6 text-orange-400" />
-                  </div>
-                  <p className="text-sm text-white/60">File Size</p>
-                  <p className="font-semibold text-white">{formatFileSize(model.file_size)}</p>
-                </div>
-              )}
-            </div>
-
-            {/* Description */}
-            {model.description && (
-              <div className="mb-8">
-                <h3 className="text-lg font-semibold gradient-text mb-4">Description</h3>
-                <div className="prose prose-gray max-w-none">
-                  <p className="text-white/80 whitespace-pre-wrap leading-relaxed">{model.description}</p>
-                </div>
-              </div>
-            )}
-
-            {/* Tags */}
-            {model.tags && model.tags.length > 0 && (
-              <div className="mb-8">
-                <h3 className="text-lg font-semibold gradient-text mb-4">Tags</h3>
-                <div className="flex flex-wrap gap-2">
-                  {model.tags.map((tag, index) => (
-                    <span
-                      key={index}
-                      className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium glass-subtle text-purple-300"
-                    >
-                      <Tag className="w-3 h-3 mr-1" />
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Download Section */}
-            <div className="border-t border-white/10 pt-8">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-semibold gradient-text mb-2">Download Model</h3>
-                  <p className="text-white/60">
-                    Download this model to use in your projects. Make sure to review the documentation and licensing terms.
+            {activeTab === 'chat' ? (
+              <div>
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold gradient-text mb-2">Chat with {model.title}</h3>
+                  <p className="text-white/70">
+                    Interact directly with this AI model. No downloads required - start chatting immediately!
                   </p>
                 </div>
-                
-                <button
-                  onClick={handleDownload}
-                  disabled={downloading}
-                  className="button-primary text-white px-6 py-3 rounded-xl font-medium hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex items-center"
-                >
-                  {downloading ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Downloading...
-                    </>
-                  ) : (
-                    <>
-                      <Download className="w-4 h-4 mr-2" />
-                      Download Model
-                    </>
-                  )}
-                </button>
+                <ChatInterface model={model} />
               </div>
-            </div>
+            ) : (
+              <div>
+                {/* Quick Stats */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                  <div className="text-center">
+                    <div className="w-12 h-12 rounded-xl glass-subtle flex items-center justify-center mx-auto mb-2">
+                      <Tag className="w-6 h-6 text-purple-400" />
+                    </div>
+                    <p className="text-sm text-white/60">Type</p>
+                    <p className="font-semibold text-white">{model.model_type}</p>
+                  </div>
 
-            {/* Model Info */}
-            <div className="mt-8 pt-8 border-t border-white/10">
-              <h3 className="text-lg font-semibold gradient-text mb-4">Model Information</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <h4 className="font-medium text-white mb-2">Model Details</h4>
-                  <dl className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <dt className="text-white/60">ID:</dt>
-                      <dd className="text-white font-mono text-xs">{model.id}</dd>
+                  <div className="text-center">
+                    <div className="w-12 h-12 rounded-xl glass-subtle flex items-center justify-center mx-auto mb-2">
+                      <FileText className="w-6 h-6 text-blue-400" />
                     </div>
-                    <div className="flex justify-between">
-                      <dt className="text-white/60">Created:</dt>
-                      <dd className="text-white">{new Date(model.created_at).toLocaleString()}</dd>
-                    </div>
-                    {model.updated_at && (
-                      <div className="flex justify-between">
-                        <dt className="text-white/60">Updated:</dt>
-                        <dd className="text-white">{new Date(model.updated_at).toLocaleString()}</dd>
+                    <p className="text-sm text-white/60">Framework</p>
+                    <p className="font-semibold text-white">{model.framework}</p>
+                  </div>
+
+                  {model.accuracy && (
+                    <div className="text-center">
+                      <div className="w-12 h-12 rounded-xl glass-subtle flex items-center justify-center mx-auto mb-2">
+                        <Star className="w-6 h-6 text-green-400" />
                       </div>
-                    )}
-                  </dl>
+                      <p className="text-sm text-white/60">Accuracy</p>
+                      <p className="font-semibold text-white">{model.accuracy}%</p>
+                    </div>
+                  )}
+
+                  {model.file_size && (
+                    <div className="text-center">
+                      <div className="w-12 h-12 rounded-xl glass-subtle flex items-center justify-center mx-auto mb-2">
+                        <BarChart3 className="w-6 h-6 text-orange-400" />
+                      </div>
+                      <p className="text-sm text-white/60">Model Size</p>
+                      <p className="font-semibold text-white">{formatFileSize(model.file_size)}</p>
+                    </div>
+                  )}
                 </div>
 
-                <div>
-                  <h4 className="font-medium text-white mb-2">Usage Statistics</h4>
-                  <dl className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <dt className="text-white/60">Total Downloads:</dt>
-                      <dd className="text-white">{model.download_count}</dd>
+                {/* Description */}
+                {model.description && (
+                  <div className="mb-8">
+                    <h3 className="text-lg font-semibold gradient-text mb-4">Description</h3>
+                    <div className="prose prose-gray max-w-none">
+                      <p className="text-white/80 whitespace-pre-wrap leading-relaxed">{model.description}</p>
                     </div>
-                    <div className="flex justify-between">
-                      <dt className="text-white/60">Verification Status:</dt>
-                      <dd className="text-white">
-                        {model.is_verified ? (
-                          <span className="inline-flex items-center text-green-400">
-                            <CheckCircle className="w-3 h-3 mr-1" />
-                            Verified
-                          </span>
-                        ) : (
-                          <span className="text-yellow-400">Pending Review</span>
+                  </div>
+                )}
+
+                {/* Tags */}
+                {model.tags && model.tags.length > 0 && (
+                  <div className="mb-8">
+                    <h3 className="text-lg font-semibold gradient-text mb-4">Tags</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {model.tags.map((tag, index) => (
+                        <span
+                          key={index}
+                          className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium glass-subtle text-purple-300"
+                        >
+                          <Tag className="w-3 h-3 mr-1" />
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Model Configuration */}
+                <div className="mb-8">
+                  <h3 className="text-lg font-semibold gradient-text mb-4">Model Configuration</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="glass-subtle rounded-xl p-4">
+                      <h4 className="font-medium text-white mb-2">Temperature</h4>
+                      <p className="text-2xl font-bold gradient-text">{model.default_temperature}</p>
+                      <p className="text-sm text-white/60">Creativity level</p>
+                    </div>
+                    <div className="glass-subtle rounded-xl p-4">
+                      <h4 className="font-medium text-white mb-2">Top-p</h4>
+                      <p className="text-2xl font-bold gradient-text">{model.default_top_p}</p>
+                      <p className="text-sm text-white/60">Nucleus sampling</p>
+                    </div>
+                    <div className="glass-subtle rounded-xl p-4">
+                      <h4 className="font-medium text-white mb-2">Max Tokens</h4>
+                      <p className="text-2xl font-bold gradient-text">{model.default_max_tokens}</p>
+                      <p className="text-sm text-white/60">Response length</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Model Info */}
+                <div className="border-t border-white/10 pt-8">
+                  <h3 className="text-lg font-semibold gradient-text mb-4">Model Information</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <h4 className="font-medium text-white mb-2">Model Details</h4>
+                      <dl className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <dt className="text-white/60">ID:</dt>
+                          <dd className="text-white font-mono text-xs">{model.id}</dd>
+                        </div>
+                        <div className="flex justify-between">
+                          <dt className="text-white/60">Created:</dt>
+                          <dd className="text-white">{new Date(model.created_at).toLocaleString()}</dd>
+                        </div>
+                        {model.updated_at && (
+                          <div className="flex justify-between">
+                            <dt className="text-white/60">Updated:</dt>
+                            <dd className="text-white">{new Date(model.updated_at).toLocaleString()}</dd>
+                          </div>
                         )}
-                      </dd>
+                      </dl>
                     </div>
-                  </dl>
+
+                    <div>
+                      <h4 className="font-medium text-white mb-2">Usage Statistics</h4>
+                      <dl className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <dt className="text-white/60">Total Interactions:</dt>
+                          <dd className="text-white">{model.download_count}</dd>
+                        </div>
+                        <div className="flex justify-between">
+                          <dt className="text-white/60">Verification Status:</dt>
+                          <dd className="text-white">
+                            {model.is_verified ? (
+                              <span className="inline-flex items-center text-green-400">
+                                <CheckCircle className="w-3 h-3 mr-1" />
+                                Verified
+                              </span>
+                            ) : (
+                              <span className="text-yellow-400">Pending Review</span>
+                            )}
+                          </dd>
+                        </div>
+                      </dl>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
