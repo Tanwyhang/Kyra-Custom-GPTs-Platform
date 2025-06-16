@@ -205,7 +205,7 @@ export function HomePage() {
                 <Link
                   key={model.id}
                   to={`/models/${model.id}`}
-                  className="scroll-reveal-scale glass-card rounded-3xl p-8 grain-texture hover:scale-105 transition-all duration-300 group hover-glow"
+                  className="glass-card rounded-3xl p-8 grain-texture hover:scale-105 transition-all duration-300 group hover-glow"
                   style={{ transitionDelay: `${index * 0.1}s` }}
                 >
                   <div className="flex items-center justify-between mb-6">
