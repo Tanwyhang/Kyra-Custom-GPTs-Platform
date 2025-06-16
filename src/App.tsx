@@ -27,7 +27,7 @@ function AppContent() {
             <Route path="/" element={<HomePage />} />
             <Route path="/marketplace" element={<MarketplacePage />} />
             <Route path="/test" element={<TestModelPage />} />
-            <Route path="/models/:id" element={<ModelDetailPage />} />
+            <Route path="/gpts/:id" element={<ModelDetailPage />} />
           </Routes>
         </main>
         {isHomePage && <Footer />}

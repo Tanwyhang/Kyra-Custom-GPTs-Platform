@@ -33,7 +33,7 @@ interface Message {
   timestamp: Date;
 }
 
-interface ModelConfig {
+interface GPTConfig {
   temperature: number;
   topP: number;
   maxTokens: number;
@@ -63,10 +63,10 @@ export function TestModelPage() {
   const navigate = useNavigate();
   useScrollReveal();
 
-  // Model management
-  const [modelManager] = useState(() => new MockModelManager());
-  const [selectedModelId, setSelectedModelId] = useState('general-assistant');
-  const [selectedModel, setSelectedModel] = useState<ModelDefinition | undefined>(
+  // GPT management
+  const [gptManager] = useState(() => new MockModelManager());
+  const [selectedGPTId, setSelectedGPTId] = useState('general-assistant');
+  const [selectedGPT, setSelectedGPT] = useState<ModelDefinition | undefined>(
     () => PREDEFINED_MODELS.find(m => m.id === 'general-assistant')
   );
 
@@ -77,12 +77,12 @@ export function TestModelPage() {
   const [tokenCount, setTokenCount] = useState(0);
 
   // Configuration state with original values for cancel functionality
-  const [config, setConfig] = useState<ModelConfig>({
+  const [config, setConfig] = useState<GPTConfig>({
     temperature: 0.7,
     topP: 0.9,
     maxTokens: 1024
   });
-  const [originalConfig, setOriginalConfig] = useState<ModelConfig>({
+  const [originalConfig, setOriginalConfig] = useState<GPTConfig>({
     temperature: 0.7,
     topP: 0.9,
     maxTokens: 1024
@@ -106,7 +106,7 @@ export function TestModelPage() {
   // UI state
   const [showConfig, setShowConfig] = useState(false);
   const [showPublish, setShowPublish] = useState(false);
-  const [showModelSelector, setShowModelSelector] = useState(false);
+  const [showGPTSelector, setShowGPTSelector] = useState(false);
   const [configChanged, setConfigChanged] = useState(false);
 
   // Publication state
@@ -121,16 +121,16 @@ export function TestModelPage() {
   const [newTag, setNewTag] = useState('');
   const [publishing, setPublishing] = useState(false);
 
-  // Update config when model changes
+  // Update config when GPT changes
   useEffect(() => {
-    const model = modelManager.getModel(selectedModelId);
-    if (model) {
-      setSelectedModel(model);
-      const newConfig = model.defaultConfig;
+    const gpt = gptManager.getModel(selectedGPTId);
+    if (gpt) {
+      setSelectedGPT(gpt);
+      const newConfig = gpt.defaultConfig;
       setConfig(newConfig);
       setOriginalConfig(newConfig);
     }
-  }, [selectedModelId, modelManager]);
+  }, [selectedGPTId, gptManager]);
 
   // Check if configuration has changed
   useEffect(() => {
@@ -153,10 +153,10 @@ export function TestModelPage() {
     setTokenCount(Math.ceil(totalText.length / 4));
   }, [messages, inputMessage]);
 
-  const handleModelChange = (modelId: string) => {
-    setSelectedModelId(modelId);
-    setShowModelSelector(false);
-    // Reset conversation when switching models
+  const handleGPTChange = (gptId: string) => {
+    setSelectedGPTId(gptId);
+    setShowGPTSelector(false);
+    // Reset conversation when switching GPTs
     setMessages([]);
   };
 
@@ -194,9 +194,9 @@ export function TestModelPage() {
         knowledgeContext += '\n\nUploaded files: ' + uploadedFiles.map(f => f.name).join(', ');
       }
 
-      // Generate response using the selected model
-      const response = await modelManager.generateResponse(
-        selectedModelId,
+      // Generate response using the selected GPT
+      const response = await gptManager.generateResponse(
+        selectedGPTId,
         [...messages, userMessage],
         config,
         knowledgeContext.trim() || undefined
@@ -290,8 +290,8 @@ export function TestModelPage() {
   };
 
   const handleResetToDefaults = () => {
-    if (selectedModel) {
-      setConfig(selectedModel.defaultConfig);
+    if (selectedGPT) {
+      setConfig(selectedGPT.defaultConfig);
       setKnowledgeText('');
       setKnowledgeTitle('');
       setKnowledgeDescription('');
@@ -350,7 +350,7 @@ export function TestModelPage() {
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       // In a real implementation, this would save to local storage or a simple database
-      console.log('Publishing model:', {
+      console.log('Publishing GPT:', {
         ...publicationData,
         config,
         knowledgeFiles: uploadedFiles.map(f => f.name),
@@ -361,11 +361,11 @@ export function TestModelPage() {
       });
 
       // Show success and redirect
-      alert('Model published successfully!');
+      alert('GPT published successfully!');
       navigate('/marketplace');
     } catch (error) {
-      console.error('Error publishing model:', error);
-      alert('Error publishing model. Please try again.');
+      console.error('Error publishing GPT:', error);
+      alert('Error publishing GPT. Please try again.');
     } finally {
       setPublishing(false);
       setShowPublish(false);
@@ -397,19 +397,19 @@ export function TestModelPage() {
 
                   {/* Scrollable Content - Ultra Compact with 2-Column Layout */}
                   <div className="flex-1 overflow-y-auto p-3 space-y-3 text-sm">
-                    {/* Model Selection - Full Width */}
+                    {/* GPT Selection - Full Width */}
                     <div>
-                      <label className="block text-xs font-medium text-white/80 mb-1">Model</label>
+                      <label className="block text-xs font-medium text-white/80 mb-1">GPT</label>
                       <button
-                        onClick={() => setShowModelSelector(true)}
+                        onClick={() => setShowGPTSelector(true)}
                         className="w-full glass-input px-2 py-1.5 rounded-lg text-left flex items-center justify-between text-xs"
                       >
-                        <span className="truncate">{selectedModel?.name || 'Select'}</span>
+                        <span className="truncate">{selectedGPT?.name || 'Select'}</span>
                         <Zap className="w-3 h-3 text-white/50 flex-shrink-0" />
                       </button>
                     </div>
 
-                    {/* Model Parameters - 2-Column Layout */}
+                    {/* GPT Parameters - 2-Column Layout */}
                     <div className="space-y-2">
                       <h4 className="text-xs font-semibold text-white/80 border-b border-white/10 pb-1">Parameters</h4>
                       
@@ -638,7 +638,7 @@ export function TestModelPage() {
                       <Sparkles className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <h3 className="font-semibold gradient-text">{selectedModel?.name || 'AI Model Tester'}</h3>
+                      <h3 className="font-semibold gradient-text">{selectedGPT?.name || 'AI GPT Tester'}</h3>
                       <p className="text-sm text-white/60">Powered by Gemini 1.5 Flash</p>
                     </div>
                   </div>
@@ -677,7 +677,7 @@ export function TestModelPage() {
                       className={`flex items-center px-3 py-2 rounded-xl transition-all duration-300 relative ${
                         showConfig ? 'button-primary' : 'glass-subtle hover:glass'
                       } text-white`}
-                      title="Configure model"
+                      title="Configure GPT"
                     >
                       <Settings className="w-4 h-4 mr-2" />
                       <span className="hidden sm:inline">Configure</span>
@@ -689,7 +689,7 @@ export function TestModelPage() {
                     <button
                       onClick={() => setShowPublish(true)}
                       className="flex items-center px-3 py-2 rounded-xl button-primary text-white transition-all duration-300 hover:scale-105"
-                      title="Publish model"
+                      title="Publish GPT"
                     >
                       <Save className="w-4 h-4 mr-2" />
                       <span className="hidden sm:inline">Publish</span>
@@ -720,9 +720,9 @@ export function TestModelPage() {
                   {messages.length === 0 ? (
                     <div className="text-center py-16">
                       <MessageSquare className="w-16 h-16 mx-auto mb-6 text-white/30" />
-                      <h3 className="text-xl font-semibold gradient-text mb-4">Start Testing Your AI Model</h3>
+                      <h3 className="text-xl font-semibold gradient-text mb-4">Start Testing Your AI GPT</h3>
                       <p className="text-white/60 mb-2">
-                        Currently using: <span className="text-purple-400 font-medium">{selectedModel?.name}</span>
+                        Currently using: <span className="text-purple-400 font-medium">{selectedGPT?.name}</span>
                       </p>
                       {(knowledgeText.trim() || uploadedFiles.length > 0) && (
                         <div className="inline-flex items-center px-4 py-2 glass-subtle rounded-xl mt-4">
@@ -809,14 +809,14 @@ export function TestModelPage() {
         </div>
       </div>
 
-      {/* Model Selector Modal */}
-      {showModelSelector && (
+      {/* GPT Selector Modal */}
+      {showGPTSelector && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="glass-strong rounded-2xl p-6 w-full max-w-4xl max-h-[80vh] overflow-y-auto grain-texture">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold gradient-text">Select AI Model</h2>
+              <h2 className="text-2xl font-bold gradient-text">Select AI GPT</h2>
               <button
-                onClick={() => setShowModelSelector(false)}
+                onClick={() => setShowGPTSelector(false)}
                 className="text-white/60 hover:text-white transition-colors"
               >
                 <X className="w-6 h-6" />
@@ -824,25 +824,25 @@ export function TestModelPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {PREDEFINED_MODELS.map((model) => (
+              {PREDEFINED_MODELS.map((gpt) => (
                 <button
-                  key={model.id}
-                  onClick={() => handleModelChange(model.id)}
+                  key={gpt.id}
+                  onClick={() => handleGPTChange(gpt.id)}
                   className={`text-left p-4 rounded-xl transition-all duration-300 ${
-                    selectedModelId === model.id
+                    selectedGPTId === gpt.id
                       ? 'button-primary text-white'
                       : 'glass-subtle hover:glass text-white/90'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-semibold">{model.name}</h3>
+                    <h3 className="font-semibold">{gpt.name}</h3>
                     <span className="text-xs px-2 py-1 rounded-full glass-subtle">
-                      {model.category}
+                      {gpt.category}
                     </span>
                   </div>
-                  <p className="text-sm opacity-80 mb-3">{model.description}</p>
+                  <p className="text-sm opacity-80 mb-3">{gpt.description}</p>
                   <div className="flex flex-wrap gap-1">
-                    {model.tags.slice(0, 3).map((tag, index) => (
+                    {gpt.tags.slice(0, 3).map((tag, index) => (
                       <span key={index} className="text-xs px-2 py-1 rounded-full glass-subtle opacity-60">
                         {tag}
                       </span>
@@ -860,7 +860,7 @@ export function TestModelPage() {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="glass-strong rounded-2xl p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto grain-texture">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold gradient-text">Publish Model</h2>
+              <h2 className="text-2xl font-bold gradient-text">Publish GPT</h2>
               <button
                 onClick={() => setShowPublish(false)}
                 className="text-white/60 hover:text-white transition-colors"
@@ -874,14 +874,14 @@ export function TestModelPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-white/80 mb-2">
-                    Model Name *
+                    GPT Name *
                   </label>
                   <input
                     type="text"
                     value={publicationData.name}
                     onChange={(e) => setPublicationData(prev => ({ ...prev, name: e.target.value }))}
                     className="glass-input w-full px-3 py-2 rounded-xl"
-                    placeholder="Enter model name (3-50 characters)"
+                    placeholder="Enter GPT name (3-50 characters)"
                     minLength={3}
                     maxLength={50}
                   />
@@ -917,7 +917,7 @@ export function TestModelPage() {
                   }}
                   rows={3}
                   className="glass-input w-full px-3 py-2 rounded-xl resize-none"
-                  placeholder="Describe what your model does (50-500 characters)"
+                  placeholder="Describe what your GPT does (50-500 characters)"
                   minLength={50}
                   maxLength={500}
                 />
@@ -1023,7 +1023,7 @@ export function TestModelPage() {
                   required
                 />
                 <label htmlFor="terms" className="text-sm text-white/70">
-                  I agree to the Terms of Service and confirm that I have the right to publish this model configuration.
+                  I agree to the Terms of Service and confirm that I have the right to publish this GPT configuration.
                 </label>
               </div>
 

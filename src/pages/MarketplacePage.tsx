@@ -4,11 +4,11 @@ import { Search, Filter, Download, Shield, Star, Calendar } from 'lucide-react';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import { PREDEFINED_MODELS } from '../lib/gemini';
 
-interface Model {
+interface GPT {
   id: string;
   title: string;
   description: string;
-  model_type: string;
+  gpt_type: string;
   framework: string;
   tags: string[];
   accuracy: number | null;
@@ -20,11 +20,11 @@ interface Model {
   };
 }
 
-const MODEL_TYPES = ['Conversational AI', 'Content Generation', 'Code Assistant', 'Educational', 'Creative Writing', 'Business Assistant', 'Technical Support', 'Other'];
+const GPT_TYPES = ['Conversational AI', 'Content Generation', 'Code Assistant', 'Educational', 'Creative Writing', 'Business Assistant', 'Technical Support', 'Other'];
 const FRAMEWORKS = ['Gemini 1.5 Flash', 'TensorFlow', 'PyTorch', 'Keras', 'Scikit-learn', 'ONNX', 'TensorFlow.js', 'Other'];
 
 export function MarketplacePage() {
-  const [models, setModels] = useState<Model[]>([]);
+  const [gpts, setGPTs] = useState<GPT[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState('');
@@ -35,38 +35,38 @@ export function MarketplacePage() {
   useScrollReveal();
 
   useEffect(() => {
-    fetchModels();
+    fetchGPTs();
   }, [searchTerm, selectedType, selectedFramework, sortBy]);
 
-  const fetchModels = async () => {
+  const fetchGPTs = async () => {
     setLoading(true);
     
     try {
       // Simulate loading delay
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      // Create marketplace models from predefined models + additional community models
-      const marketplaceModels: Model[] = [
+      // Create marketplace GPTs from predefined models + additional community GPTs
+      const marketplaceGPTs: GPT[] = [
         // Convert predefined models
-        ...PREDEFINED_MODELS.map((model, index) => ({
-          id: model.id,
-          title: model.name,
-          description: model.description,
-          model_type: model.category,
+        ...PREDEFINED_MODELS.map((gpt, index) => ({
+          id: gpt.id,
+          title: gpt.name,
+          description: gpt.description,
+          gpt_type: gpt.category,
           framework: 'Gemini 1.5 Flash',
-          tags: model.tags,
+          tags: gpt.tags,
           accuracy: 85 + Math.floor(Math.random() * 15), // Random accuracy between 85-99%
           download_count: Math.floor(Math.random() * 1000) + 100,
           is_verified: true,
           created_at: new Date(Date.now() - Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000).toISOString(),
-          uploader: { display_name: 'AI Model Hub' }
+          uploader: { display_name: 'AI GPT Hub' }
         })),
-        // Additional community models
+        // Additional community GPTs
         {
           id: 'community-1',
           title: 'Advanced Image Classifier',
-          description: 'A state-of-the-art image classification model trained on ImageNet with 95% accuracy.',
-          model_type: 'Computer Vision',
+          description: 'A state-of-the-art image classification GPT trained on ImageNet with 95% accuracy.',
+          gpt_type: 'Computer Vision',
           framework: 'TensorFlow',
           tags: ['image-classification', 'cnn', 'imagenet'],
           accuracy: 95.2,
@@ -78,8 +78,8 @@ export function MarketplacePage() {
         {
           id: 'community-2',
           title: 'Sentiment Analysis BERT',
-          description: 'Fine-tuned BERT model for sentiment analysis on social media text.',
-          model_type: 'Natural Language Processing',
+          description: 'Fine-tuned BERT GPT for sentiment analysis on social media text.',
+          gpt_type: 'Natural Language Processing',
           framework: 'PyTorch',
           tags: ['sentiment-analysis', 'bert', 'nlp'],
           accuracy: 92.8,
@@ -90,9 +90,9 @@ export function MarketplacePage() {
         },
         {
           id: 'community-3',
-          title: 'Speech Recognition Model',
-          description: 'Real-time speech recognition model optimized for mobile devices.',
-          model_type: 'Speech',
+          title: 'Speech Recognition GPT',
+          description: 'Real-time speech recognition GPT optimized for mobile devices.',
+          gpt_type: 'Speech',
           framework: 'TensorFlow.js',
           tags: ['speech-recognition', 'mobile', 'real-time'],
           accuracy: 88.5,
@@ -104,8 +104,8 @@ export function MarketplacePage() {
         {
           id: 'community-4',
           title: 'Object Detection YOLO',
-          description: 'Fast and accurate object detection model for real-time applications.',
-          model_type: 'Computer Vision',
+          description: 'Fast and accurate object detection GPT for real-time applications.',
+          gpt_type: 'Computer Vision',
           framework: 'PyTorch',
           tags: ['object-detection', 'yolo', 'real-time'],
           accuracy: 89.3,
@@ -116,9 +116,9 @@ export function MarketplacePage() {
         },
         {
           id: 'community-5',
-          title: 'Text Summarization Model',
-          description: 'Transformer-based model for automatic text summarization.',
-          model_type: 'Natural Language Processing',
+          title: 'Text Summarization GPT',
+          description: 'Transformer-based GPT for automatic text summarization.',
+          gpt_type: 'Natural Language Processing',
           framework: 'TensorFlow',
           tags: ['text-summarization', 'transformer', 'nlp'],
           accuracy: 91.7,
@@ -130,28 +130,28 @@ export function MarketplacePage() {
       ];
 
       // Apply search filter
-      let filteredModels = [...marketplaceModels];
+      let filteredGPTs = [...marketplaceGPTs];
       if (searchTerm.trim()) {
         const searchLower = searchTerm.toLowerCase();
-        filteredModels = filteredModels.filter(model => 
-          model.title.toLowerCase().includes(searchLower) ||
-          model.description.toLowerCase().includes(searchLower) ||
-          model.tags.some(tag => tag.toLowerCase().includes(searchLower))
+        filteredGPTs = filteredGPTs.filter(gpt => 
+          gpt.title.toLowerCase().includes(searchLower) ||
+          gpt.description.toLowerCase().includes(searchLower) ||
+          gpt.tags.some(tag => tag.toLowerCase().includes(searchLower))
         );
       }
       
       // Apply type filter
       if (selectedType) {
-        filteredModels = filteredModels.filter(model => model.model_type === selectedType);
+        filteredGPTs = filteredGPTs.filter(gpt => gpt.gpt_type === selectedType);
       }
       
       // Apply framework filter
       if (selectedFramework) {
-        filteredModels = filteredModels.filter(model => model.framework === selectedFramework);
+        filteredGPTs = filteredGPTs.filter(gpt => gpt.framework === selectedFramework);
       }
 
       // Apply sorting
-      filteredModels.sort((a, b) => {
+      filteredGPTs.sort((a, b) => {
         switch (sortBy) {
           case 'title':
             return a.title.localeCompare(b.title);
@@ -163,10 +163,10 @@ export function MarketplacePage() {
         }
       });
 
-      setModels(filteredModels);
+      setGPTs(filteredGPTs);
     } catch (error) {
-      console.error('Error fetching models:', error);
-      setModels([]);
+      console.error('Error fetching GPTs:', error);
+      setGPTs([]);
     } finally {
       setLoading(false);
     }
@@ -185,9 +185,9 @@ export function MarketplacePage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="scroll-reveal text-3xl font-bold gradient-text mb-4">AI Model Marketplace</h1>
+          <h1 className="scroll-reveal text-3xl font-bold gradient-text mb-4">AI GPT Marketplace</h1>
           <p className="scroll-reveal text-lg text-white/70">
-            Discover and test AI models from the community
+            Discover and test AI GPTs from the community
           </p>
         </div>
 
@@ -200,7 +200,7 @@ export function MarketplacePage() {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/40 w-5 h-5" />
                 <input
                   type="text"
-                  placeholder="Search models by title, description, or tags..."
+                  placeholder="Search GPTs by title, description, or tags..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="glass-input w-full pl-10 pr-4 py-3 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
@@ -224,7 +224,7 @@ export function MarketplacePage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-white/80 mb-2">
-                    Model Type
+                    GPT Type
                   </label>
                   <select
                     value={selectedType}
@@ -232,7 +232,7 @@ export function MarketplacePage() {
                     className="glass-input w-full px-3 py-2 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   >
                     <option value="">All Types</option>
-                    {MODEL_TYPES.map((type) => (
+                    {GPT_TYPES.map((type) => (
                       <option key={type} value={type}>
                         {type}
                       </option>
@@ -281,21 +281,21 @@ export function MarketplacePage() {
         {loading ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto"></div>
-            <p className="text-white/60 mt-4">Loading models...</p>
+            <p className="text-white/60 mt-4">Loading GPTs...</p>
           </div>
-        ) : models.length === 0 ? (
+        ) : gpts.length === 0 ? (
           <div className="text-center py-12 glass-card rounded-2xl grain-texture">
             <Search className="w-12 h-12 text-white/30 mx-auto mb-4" />
-            <h3 className="text-lg font-medium gradient-text mb-2">No models found</h3>
+            <h3 className="text-lg font-medium gradient-text mb-2">No GPTs found</h3>
             <p className="text-white/60">Try adjusting your search criteria or filters.</p>
           </div>
         ) : (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {models.map((model, index) => (
+              {gpts.map((gpt, index) => (
                 <Link
-                  key={model.id}
-                  to={`/models/${model.id}`}
+                  key={gpt.id}
+                  to={`/gpts/${gpt.id}`}
                   className="glass-card rounded-2xl hover:scale-105 transition-all duration-300 overflow-hidden group grain-texture"
                   style={{ transitionDelay: `${index * 0.1}s` }}
                 >
@@ -303,9 +303,9 @@ export function MarketplacePage() {
                     {/* Header */}
                     <div className="flex items-center justify-between mb-4">
                       <span className="text-xs font-medium px-3 py-1 rounded-full glass-subtle text-white/80">
-                        {model.model_type}
+                        {gpt.gpt_type}
                       </span>
-                      {model.is_verified && (
+                      {gpt.is_verified && (
                         <div className="flex items-center text-green-400">
                           <Shield className="w-4 h-4 mr-1" />
                           <span className="text-xs">Verified</span>
@@ -315,18 +315,18 @@ export function MarketplacePage() {
 
                     {/* Title */}
                     <h3 className="font-semibold gradient-text mb-2 group-hover:gradient-text-primary transition-all duration-300 line-clamp-1">
-                      {model.title}
+                      {gpt.title}
                     </h3>
 
                     {/* Description */}
                     <p className="text-white/60 text-sm mb-4 line-clamp-2">
-                      {model.description || 'No description available.'}
+                      {gpt.description || 'No description available.'}
                     </p>
 
                     {/* Tags */}
-                    {model.tags && model.tags.length > 0 && (
+                    {gpt.tags && gpt.tags.length > 0 && (
                       <div className="flex flex-wrap gap-1 mb-4">
-                        {model.tags.slice(0, 3).map((tag, tagIndex) => (
+                        {gpt.tags.slice(0, 3).map((tag, tagIndex) => (
                           <span
                             key={tagIndex}
                             className="text-xs px-2 py-1 glass-subtle text-white/60 rounded-full"
@@ -334,9 +334,9 @@ export function MarketplacePage() {
                             {tag}
                           </span>
                         ))}
-                        {model.tags.length > 3 && (
+                        {gpt.tags.length > 3 && (
                           <span className="text-xs px-2 py-1 glass-subtle text-white/60 rounded-full">
-                            +{model.tags.length - 3}
+                            +{gpt.tags.length - 3}
                           </span>
                         )}
                       </div>
@@ -346,26 +346,26 @@ export function MarketplacePage() {
                     <div className="flex items-center justify-between text-sm text-white/50 mb-4">
                       <span className="flex items-center">
                         <Calendar className="w-4 h-4 mr-1" />
-                        {formatDate(model.created_at)}
+                        {formatDate(gpt.created_at)}
                       </span>
-                      <span className="glass-subtle px-2 py-1 rounded-lg text-xs">{model.framework}</span>
+                      <span className="glass-subtle px-2 py-1 rounded-lg text-xs">{gpt.framework}</span>
                     </div>
 
                     {/* Stats */}
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-white/60">
-                        by {model.uploader?.display_name || 'Anonymous'}
+                        by {gpt.uploader?.display_name || 'Anonymous'}
                       </span>
                       <div className="flex items-center space-x-4 text-white/50">
-                        {model.accuracy && (
+                        {gpt.accuracy && (
                           <div className="flex items-center">
                             <Star className="w-4 h-4 mr-1 text-yellow-400" />
-                            <span>{model.accuracy}%</span>
+                            <span>{gpt.accuracy}%</span>
                           </div>
                         )}
                         <div className="flex items-center">
                           <Download className="w-4 h-4 mr-1" />
-                          <span>{model.download_count}</span>
+                          <span>{gpt.download_count}</span>
                         </div>
                       </div>
                     </div>
@@ -377,7 +377,7 @@ export function MarketplacePage() {
             {/* Results Summary */}
             <div className="text-center mt-12">
               <p className="text-white/60">
-                Showing {models.length} model{models.length !== 1 ? 's' : ''}
+                Showing {gpts.length} GPT{gpts.length !== 1 ? 's' : ''}
                 {searchTerm && ` matching "${searchTerm}"`}
                 {selectedType && ` in ${selectedType}`}
                 {selectedFramework && ` using ${selectedFramework}`}

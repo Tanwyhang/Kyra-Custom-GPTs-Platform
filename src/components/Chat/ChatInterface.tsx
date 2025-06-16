@@ -23,7 +23,7 @@ interface Message {
   isLoading?: boolean;
 }
 
-interface ModelConfig {
+interface GPTConfig {
   temperature: number;
   topP: number;
   maxTokens: number;
@@ -38,7 +38,7 @@ interface ChatInterfaceProps {
     default_top_p: number;
     default_max_tokens: number;
     knowledge_context?: string;
-    model_type: string;
+    gpt_type: string;
     tags: string[];
     description: string;
   };
@@ -49,7 +49,7 @@ export function ChatInterface({ model }: ChatInterfaceProps) {
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showConfig, setShowConfig] = useState(false);
-  const [config, setConfig] = useState<ModelConfig>({
+  const [config, setConfig] = useState<GPTConfig>({
     temperature: model.default_temperature,
     topP: model.default_top_p,
     maxTokens: model.default_max_tokens
@@ -67,12 +67,12 @@ export function ChatInterface({ model }: ChatInterfaceProps) {
     }
   }, [messages]);
 
-  // Generate personalized introduction based on model's knowledge base
+  // Generate personalized introduction based on GPT's knowledge base
   const generateIntroduction = (model: ChatInterfaceProps['model']) => {
     const capabilities = [];
     
-    // Add capabilities based on model type
-    switch (model.model_type) {
+    // Add capabilities based on GPT type
+    switch (model.gpt_type) {
       case 'Code Assistant':
         capabilities.push(
           '💻 **Code Generation & Debugging** - Write, review, and optimize code across multiple programming languages',
@@ -203,7 +203,7 @@ ${model.knowledge_context}`;
     setMessages(prev => [...prev, loadingMessage]);
 
     try {
-      // Simulate API call to Gemini with model configuration
+      // Simulate API call to Gemini with GPT configuration
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/gemini-chat`, {
         method: 'POST',
         headers: {
@@ -327,7 +327,7 @@ ${model.knowledge_context}`;
               className={`flex items-center px-3 py-2 rounded-xl transition-all duration-300 ${
                 showConfig ? 'button-primary' : 'glass-subtle hover:glass'
               } text-white`}
-              title="Configure model"
+              title="Configure GPT"
             >
               <Settings className="w-4 h-4 mr-2" />
               <span className="hidden sm:inline">Config</span>

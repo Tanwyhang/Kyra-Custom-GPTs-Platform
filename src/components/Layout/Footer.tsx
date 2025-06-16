@@ -12,10 +12,10 @@ export function Footer() {
               <div className="icon-bg-primary p-3 rounded-2xl glow-effect">
                 <Brain className="w-7 h-7 text-white" />
               </div>
-              <span className="text-2xl font-bold gradient-text-primary">AI Model Hub</span>
+              <span className="text-2xl font-bold gradient-text-primary">AI GPT Hub</span>
             </div>
             <p className="text-white/70 text-base leading-relaxed">
-              The decentralized platform for sharing and discovering AI models.
+              The decentralized platform for sharing and discovering AI GPTs.
               Built by the community, for the community.
             </p>
           </div>
@@ -25,7 +25,7 @@ export function Footer() {
             <h3 className="font-bold mb-6 text-white text-lg">Platform</h3>
             <ul className="space-y-3 text-base text-white/70">
               <li><a href="/marketplace" className="hover:text-white transition-colors hover:gradient-text-accent">Marketplace</a></li>
-              <li><a href="/upload" className="hover:text-white transition-colors hover:gradient-text-accent">Upload Model</a></li>
+              <li><a href="/upload" className="hover:text-white transition-colors hover:gradient-text-accent">Upload GPT</a></li>
               <li><a href="/dashboard" className="hover:text-white transition-colors hover:gradient-text-accent">Dashboard</a></li>
               <li><a href="/docs" className="hover:text-white transition-colors hover:gradient-text-accent">Documentation</a></li>
             </ul>
@@ -61,7 +61,7 @@ export function Footer() {
 
         <div className="border-t border-white/10 mt-16 pt-10 flex flex-col md:flex-row justify-between items-center">
           <p className="text-white/70 text-base">
-            © 2025 AI Model Hub. All rights reserved.
+            © 2025 AI GPT Hub. All rights reserved.
           </p>
           <div className="flex space-x-8 mt-6 md:mt-0">
             <a href="#" className="text-white/70 hover:text-white text-base transition-colors hover:gradient-text-accent">Privacy Policy</a>

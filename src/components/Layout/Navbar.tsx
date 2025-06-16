@@ -18,7 +18,7 @@ export function Navbar() {
               <Brain className="w-7 h-7 text-white" />
             </div>
             <span className="text-xl font-bold gradient-text-primary">
-              AI Model Hub
+              AI GPT Hub
             </span>
           </Link>
 
@@ -33,7 +33,7 @@ export function Navbar() {
               }`}
             >
               <TestTube className="w-4 h-4" />
-              <span>Test Model</span>
+              <span>Test GPT</span>
             </Link>
 
             <Link
@@ -70,7 +70,7 @@ export function Navbar() {
                 className="flex items-center space-x-3 px-4 py-3 rounded-2xl text-sm font-semibold text-white/90 hover:text-white glass-subtle hover:glass transition-all duration-300"
               >
                 <TestTube className="w-4 h-4" />
-                <span>Test Model</span>
+                <span>Test GPT</span>
               </Link>
 
               <Link
