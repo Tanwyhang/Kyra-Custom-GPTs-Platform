@@ -30,7 +30,7 @@ serve(async (req) => {
     const { message, config, knowledgeContext, conversationHistory }: ChatRequest = await req.json()
 
     // Use fixed Gemini API key
-    const geminiApiKey = 'AIzaSyBqJzQvzKZJzQvzKZJzQvzKZJzQvzKZJzQvzKZ' // Replace with your actual API key
+    const geminiApiKey = 'AIzaSyCza_BCXf0cQyYTlgOMEG0t2SmhawS3xMQ' // Replace with your actual API key
     
     if (!geminiApiKey) {
       throw new Error('GEMINI_API_KEY not configured')
