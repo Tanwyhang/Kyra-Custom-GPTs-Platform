@@ -44,7 +44,7 @@ export function HomePage() {
       accuracy: 85 + Math.floor(Math.random() * 15), // Random accuracy between 85-99%
       download_count: Math.floor(Math.random() * 1000) + 100,
       is_verified: true,
-      uploader: { display_name: 'AI GPT Hub' }
+      uploader: { display_name: 'GPT Hub' }
     }));
 
     setFeaturedGPTs(featuredGPTs.slice(0, 6));
@@ -66,16 +66,16 @@ export function HomePage() {
           <div className="text-center">
             <div className="scroll-reveal inline-flex items-center px-6 py-3 rounded-full glass-subtle text-white/90 text-sm font-medium mb-8 hover-glow">
               <Brain className="w-5 h-5 mr-2 text-white" />
-              AI GPT Testing Platform
+              GPT Testing Platform
             </div>
             
             <h1 className="scroll-reveal text-4xl sm:text-6xl lg:text-7xl font-bold mb-8 leading-tight">
               <span className="gradient-text block mb-2">Test & Discover</span>
-              <span className="gradient-text-primary">AI GPTs</span>
+              <span className="gradient-text-primary">GPTs</span>
             </h1>
             
             <p className="scroll-reveal text-xl lg:text-2xl text-white/80 mb-12 max-w-4xl mx-auto leading-relaxed">
-              Test AI GPTs powered by Gemini 1.5 Flash for free. Configure parameters, enhance with your knowledge, 
+              Test GPTs powered by Gemini 1.5 Flash for free. Configure parameters, enhance with your knowledge, 
               and discover GPTs from the global community.
             </p>
             
@@ -83,7 +83,7 @@ export function HomePage() {
               <Link
                 to="/test"
                 className="inline-flex items-center px-10 py-5 rounded-2xl text-lg font-semibold text-white button-primary hover:scale-105 transition-all duration-300 shadow-2xl"
-                title="Test AI GPTs for free"
+                title="Test GPTs for free"
               >
                 <TestTube className="w-6 h-6 mr-3 text-white" />
                 Test GPT
@@ -110,7 +110,7 @@ export function HomePage() {
                 <TrendingUp className="w-10 h-10 text-white" />
               </div>
               <div className="text-4xl font-bold gradient-text mb-3">{stats.totalGPTs.toLocaleString()}</div>
-              <div className="text-white/70 text-lg">AI GPTs</div>
+              <div className="text-white/70 text-lg">GPTs</div>
             </div>
             <div className="scroll-reveal text-center glass-card rounded-3xl p-10 grain-texture subtle-hover">
               <div className="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6">
@@ -135,10 +135,10 @@ export function HomePage() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="scroll-reveal text-4xl lg:text-5xl font-bold gradient-text mb-6">
-              Why Choose AI GPT Hub?
+              Why Choose GPT Hub?
             </h2>
             <p className="scroll-reveal text-xl lg:text-2xl text-white/80 max-w-4xl mx-auto">
-              Test GPTs for free, enhance with your knowledge, and discover the best AI GPTs from the community.
+              Test GPTs for free, enhance with your knowledge, and discover the best GPTs from the community.
             </p>
           </div>
 
@@ -150,7 +150,7 @@ export function HomePage() {
                 </div>
                 <h3 className="text-2xl font-bold gradient-text mb-6 text-center">Free Testing</h3>
                 <p className="text-white/80 text-lg leading-relaxed text-center">
-                  Test AI GPTs powered by Gemini 1.5 Flash at zero cost. Configure parameters and enhance with your knowledge.
+                  Test GPTs powered by Gemini 1.5 Flash at zero cost. Configure parameters and enhance with your knowledge.
                 </p>
               </div>
 
@@ -268,10 +268,10 @@ export function HomePage() {
               Start Testing Today
             </div>
             <h2 className="text-4xl lg:text-5xl font-bold gradient-text mb-8">
-              Ready to Test Your AI GPT?
+              Ready to Test Your GPT?
             </h2>
             <p className="text-xl lg:text-2xl text-white/80 mb-12 leading-relaxed">
-              Start testing with Gemini 1.5 Flash for free. Configure, enhance, and explore AI GPTs from the community.
+              Start testing with Gemini 1.5 Flash for free. Configure, enhance, and explore GPTs from the community.
             </p>
             <div className="flex flex-col sm:flex-row gap-6 justify-center">
               <Link
