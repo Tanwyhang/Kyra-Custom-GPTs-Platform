@@ -314,9 +314,9 @@ export function ModelDetailPage() {
             </button>
           </div>
 
-          <div className="p-8">
+          <div className="p-8 h-[600px] flex flex-col">
             {activeTab === 'chat' ? (
-              <div>
+              <div className="flex flex-col h-full">
                 <div className="mb-6">
                   <h3 className="text-lg font-semibold gradient-text mb-2">Chat with {model.title}</h3>
                   <p className="text-white/70">
@@ -326,7 +326,7 @@ export function ModelDetailPage() {
                 <ChatInterface model={model} />
               </div>
             ) : (
-              <div>
+              <div className="overflow-y-auto">
                 {/* Quick Stats */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                   <div className="text-center">
