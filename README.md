@@ -1,4 +1,5 @@
 # ✨ Kyra – Build, Test & Share Custom GPTs
+prototype link: https://kyra-ai.netlify.app/
 
 **Kyra** is a web-based platform that lets anyone **design**, **test**, and **publish** their own custom GPTs — powered by **Gemini 1.5 Flash**. With a fast, no-code workflow scaffolded entirely using **Bolt.new** and **Vite**, Kyra brings conversational AI creation into the hands of everyone.
 
