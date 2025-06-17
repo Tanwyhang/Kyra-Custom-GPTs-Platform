@@ -1,8 +1,3 @@
-Thanks! Here’s the updated `README.md` for **Kyra**, reflecting the correct deployment platform (**Netlify**) and **no authentication** requirement.
-
----
-
-````markdown
 # ✨ Kyra – Build, Test & Share Custom GPTs
 
 **Kyra** is a web-based platform that lets anyone **design**, **test**, and **publish** their own custom GPTs — powered by **Gemini 1.5 Flash**. With a fast, no-code workflow scaffolded entirely using **Bolt.new** and **Vite**, Kyra brings conversational AI creation into the hands of everyone.
@@ -33,7 +28,7 @@ Bolt.new, Vite, React, Tailwind CSS, Gemini 1.5 Flash, Supabase (for metadata on
 
 To run locally (if exported from Bolt):
 
-```bash
+```
 # Clone the repo
 git clone https://github.com/your-username/kyra.git
 cd kyra
