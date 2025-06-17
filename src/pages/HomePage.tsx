@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Search, Shield, TrendingUp, Users, Star, Sparkles, Zap, Brain, TestTube } from 'lucide-react';
+import { ArrowRight, Search, Shield, TrendingUp, Users, Star, Sparkles, Zap, Brain, TestTube, ExternalLink } from 'lucide-react';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import { PREDEFINED_MODELS } from '../lib/gemini';
 import { DatabaseService } from '../lib/database';
@@ -343,6 +343,24 @@ export function HomePage() {
                 <ArrowRight className="w-6 h-6 ml-3 text-white" />
               </Link>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Bolt.new Badge */}
+      <section className="py-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center">
+            <a
+              href="https://bolt.new"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center px-6 py-3 rounded-full glass-subtle text-white/70 hover:text-white text-sm font-medium transition-all duration-300 hover:glass hover:scale-105 group"
+            >
+              <Zap className="w-4 h-4 mr-2 text-purple-400 group-hover:text-purple-300" />
+              Built with Bolt.new
+              <ExternalLink className="w-3 h-3 ml-2 opacity-60 group-hover:opacity-100" />
+            </a>
           </div>
         </div>
       </section>
